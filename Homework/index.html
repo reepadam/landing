@@ -20,11 +20,14 @@ body { font-family:'IBM Plex Mono','JetBrains Mono','Menlo','Consolas','Courier 
 .eyebrow { color:var(--prompt); font-size:0.8rem; letter-spacing:0.18em; margin-bottom:1rem; }
 h1 { font-size:2.6rem; font-weight:700; line-height:1.1; margin-bottom:0.5rem; letter-spacing:-0.02em; }
 .tagline { color:var(--prompt); font-style:italic; font-size:0.95rem; margin-bottom:2rem; }
-.lede { border:1px solid var(--hr); background:var(--panel-bg); padding:1.4rem 1.5rem; margin-bottom:1.5rem; border-left:3px solid var(--accent); }
-.lede p { font-size:0.95rem; margin-bottom:0.7rem; }
-.lede p:last-child { margin-bottom:0; }
-.lede .lead { color:var(--accent); font-weight:700; font-size:0.85rem; letter-spacing:0.08em; margin-bottom:0.6rem; }
-.privacy-note { border:1px solid var(--prompt); background:rgba(255,184,108,0.06); padding:0.9rem 1.2rem; margin-bottom:2rem; font-size:0.85rem; }
+.cta-box { border:1px solid var(--accent); background:linear-gradient(to right, rgba(80,250,123,0.06), rgba(80,250,123,0.01)); padding:1.1rem 1.3rem; margin-bottom:1.2rem; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.8rem 1.2rem; }
+.cta-box .left { flex:1 1 60%; min-width:260px; }
+.cta-box .eyebrow2 { color:var(--prompt); font-size:0.75rem; letter-spacing:0.15em; margin-bottom:0.3rem; }
+.cta-box .title { color:var(--fg); font-size:1rem; font-weight:700; margin-bottom:0.2rem; }
+.cta-box .desc { color:var(--fg-dim); font-size:0.82rem; line-height:1.5; }
+.cta-box a.btn { color:var(--accent); border:1px solid var(--accent); background:transparent; padding:0.55rem 1.1rem; font-family:inherit; font-size:0.85rem; font-weight:700; letter-spacing:0.06em; text-decoration:none; transition:background 0.15s, color 0.15s; white-space:nowrap; }
+.cta-box a.btn:hover { background:var(--accent); color:#0a0e0a; }
+.privacy-note { border:1px solid var(--prompt); background:rgba(255,184,108,0.06); padding:0.9rem 1.2rem; margin:2rem 0; font-size:0.85rem; }
 .privacy-note strong { color:var(--prompt); }
 .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:0.5rem; margin:2rem 0; }
 .stat { background:var(--panel-bg); padding:1.3rem 0.8rem; text-align:center; border:1px solid var(--hr); }
@@ -65,7 +68,6 @@ footer a:hover { color:var(--accent); border-color:var(--accent); }
 </style>
 </head>
 <body>
-
 <div id="stars"></div>
 
 <div class="prompt-line"><span>adam@reep:~$</span> ./extract_invoices.py --input ./5_emailed_invoices/ --output invoices.json</div>
@@ -73,14 +75,22 @@ footer a:hover { color:var(--accent); border-color:var(--accent); }
 <h1>Invoice Extraction Homework</h1>
 <div class="tagline">Lightweight Python &middot; Claude Haiku 4.5 &middot; Antera-shaped JSON output</div>
 
-<div class="lede">
-  <div class="lead">// HOMEWORK CONTEXT</div>
-  <p>After the interview on May 26, Ryan sent five emailed invoice packages and asked for a lightweight Python script that ingests them, extracts five fields per invoice via an LLM API, enforces a strict schema, and emits clean JSON shaped for posting to the Antera API. The five packages contained 27 invoices total.</p>
-  <p>Below: the script source, per-vendor extraction summaries showing the schema and confidence behavior, and the README. Real values redacted on this public view.</p>
+<div class="cta-box">
+  <div class="left">
+    <div class="eyebrow2">SEE THE LIVE DEMO &middot; 10-MODULE OCR + LLM PIPELINE</div>
+    <div class="title">This script is the focused invoice extractor &mdash; the broader system has nine other modules</div>
+    <div class="desc">Try the full live demo to see Artwork &amp; Order Builder, Receipts &amp; Expenses, Spec Sheets, Forms &amp; Notes, Customer Library, Approvals &amp; Change Management, and more.</div>
+  </div>
+  <a class="btn" href="/OCR_LLM_Demo">OPEN FULL DEMO &nbsp;&rarr;</a>
 </div>
 
-<div class="privacy-note">
-  <strong>Data privacy:</strong> the actual extracted dollar amounts, line-item descriptions, vendor PO numbers, and invoice numbers are <strong>not</strong> displayed on this public page. The vendor buckets below show the schema with placeholder values.
+<div class="cta-box">
+  <div class="left">
+    <div class="eyebrow2">RESUME &middot; 20 YEARS MULTI-SITE OPS &amp; SYSTEMS</div>
+    <div class="title">Bourne-styled CV</div>
+    <div class="desc">Background &mdash; EDMC telecom-expense recovery, VA Pittsburgh CCTV deployment, UiPath migration, &amp; more.</div>
+  </div>
+  <a class="btn" href="/CV">OPEN RESUME &nbsp;&rarr;</a>
 </div>
 
 <div class="stats">
@@ -90,9 +100,25 @@ footer a:hover { color:var(--accent); border-color:var(--accent); }
   <div class="stat"><span class="num">1/27</span><span class="label">FLAGGED FOR REVIEW</span></div>
 </div>
 
+<div class="readme">
+<h1>HDS AI Workflow Architect — Invoice Extraction Homework</h1>
+<p><strong>Adam Reep · adamjreep@gmail.com · 2026-05-27</strong></p>
+<p>After the May 26 interview, the homework was a lightweight Python script that ingests 5 emailed invoice packages, extracts five fields per invoice via an LLM, enforces a strict schema, and emits clean JSON for posting to the Antera API.</p>
+<p>The five packages contained 27 invoices. The headline result: <strong>26 of 27 records reconcile cleanly; 1 is flagged for human review with a pre-written vendor follow-up email already drafted.</strong> Cost ~$0.20, runtime ~70 seconds.</p>
+<p>This page shows the script source, per-vendor schema demonstrations (values redacted), and the design notes. The real extracted JSON ships only via the direct email zip.</p>
+<h2>Why the layered controls matter</h2>
+<p>The script doesn't just flag mismatches — it tries to resolve them through three escalations: <strong>vendor-specific parsing notes</strong> for known-quirky formats, an <strong>adjustment-finder pass</strong> that asks Claude to identify the Freight/Tax/Discount lines that explain the math gap, and a <strong>fabrication guard</strong> that rejects any reconciled adjustment with a null field (the model's self-flag for "I'm guessing"). For the one record that still can't reconcile, the script auto-writes the email the AP team should send to the vendor.</p>
+<h2>On the Antera API target</h2>
+<p>Antera's public v1 spec has no vendor-bill / AP endpoint — coverage is sales-side only. The script outputs a clean vendor-bill schema; the production adapter maps <code>invoices[]</code> to whichever AP intake mechanism HDS actually uses. The Design Notes have the longer version.</p>
+</div>
+
+<div class="privacy-note">
+  <strong>Data privacy:</strong> the actual extracted dollar amounts, line-item descriptions, vendor PO numbers, and invoice numbers are <strong>not</strong> displayed on this public page. The vendor buckets below show the schema with placeholder values.
+</div>
+
 <div class="section-cmd">$ results --by vendor (schema demo, values redacted)</div>
 
-<details class="bucket"><summary><span class="bucket-vendor">H## P########## P#######, Inc.</span><span class="bucket-meta">7 invoices extracted &middot; hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">Vendor identification required hybrid text+image path. With the adjustment-aware prompt, all 7 records reconcile cleanly (subtotal validation passes).</div><pre class="json-box"><code>{
+<details class="bucket"><summary><span class="bucket-vendor">H## P########## P#######, Inc.</span><span class="bucket-meta">7 invoices extracted &middot; hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">Vendor identification required hybrid text+image path. With the adjustment-aware prompt, all 7 records reconcile cleanly.</div><pre class="json-box"><code>{
   &quot;vendor&quot;: &quot;H## P########## P#######, Inc.&quot;,
   &quot;extracted_count&quot;: 7,
   &quot;schema_demonstration_record&quot;: {
@@ -1031,80 +1057,6 @@ if __name__ == &quot;__main__&quot;:
     sys.exit(main())
 </code></pre>
 
-<div class="section-cmd">$ cat README.md  # rendered</div>
-
-<div class="readme">
-<h1>HDS AI Workflow Architect — Invoice Extraction Homework</h1>
-<p><strong>Adam Reep · adamjreep@gmail.com · 2026-05-27</strong></p>
-<p>Files in this folder:</p>
-<ul>
-<li><code>extract_invoices.py</code> — the script (run with <code>python extract_invoices.py --input ./invoices_raw --output invoices.json</code>)</li>
-<li><code>invoices.json</code> — output across all 5 emailed invoice packages (27 invoice records)</li>
-<li><code>README.md</code> — this document</li>
-</ul>
-<p>A note on the output shape: I structured the JSON as two cleanly-separated blocks. The <code>invoices[]</code> array is the clean vendor-bill payload, free of implementation details. The <code>_audit</code> block holds extraction metadata — LLM model, source file, confidence, subtotal-check results — for the AP team's review queue.</p>
-<p>The script source, README, and a non-redacted schema demo per vendor are also viewable at <strong><a href="https://adamjreep.com/Homework">adamjreep.com/Homework</a></strong>. The site doesn't host real HDS invoice data; the email zip is the only path to that.</p>
-<hr />
-<h2>1. Choice of LLM: Claude Haiku 4.5</h2>
-<p>Anthropic Claude Haiku 4.5 via the official Python SDK. Three reasons:</p>
-<ul>
-<li><strong>Tool-use schema enforcement.</strong> Claude's structured <code>tools</code> parameter forces the model to call a single function (<code>record_invoice</code>) with a typed schema. Output of the wrong type, or with fabricated fields, is structurally prohibited — the model has no other return path. This is the strongest single anti-hallucination control available.</li>
-<li><strong>Vision in the same model.</strong> No separate OCR pipeline. Scanned/image invoices and text-extractable invoices flow through the same code path. One model, one prompt, one place to reason about behavior.</li>
-<li><strong>Cost + latency.</strong> The full 27-invoice run cost ~$0.20 in ~70 seconds. Production scale (thousands/month) is comfortably under $20/mo.</li>
-</ul>
-<p>GPT-4.1-mini or Gemini Flash would work too. Claude's tool-use is cleanest for forcing schema compliance.</p>
-<h2>2. Prompt engineering against hallucination</h2>
-<ol>
-<li><strong>Forced tool-use with typed schema.</strong> <code>tool_choice</code> pins the model to one function call with required, nullable, typed fields. Wrong types and missing fields are structurally impossible.</li>
-<li><strong>Temperature 0.0.</strong> Deterministic. Same input → same output. No creative register.</li>
-<li><strong>"Extract only what you can read" instruction.</strong> System prompt forbids inferring, computing, or fabricating values not printed on the document. Missing → <code>null</code>. The model self-reports uncertainty via <code>extraction_confidence: high | medium | low</code>.</li>
-<li><strong>Hybrid text + image input.</strong> I caught a vendor-misidentification on the H## P########## P####### invoices: text extraction put the bill-to ("HDS MARKETING/FACILIS GROUP") above the vendor letterhead, and the model named HDS as the vendor. Fix: every page is sent as <strong>both</strong> extracted text <strong>and</strong> rendered image, with the prompt instructing the model to defer to the image for layout-dependent fields. After the change all 7 H## P#### pages identify "H## P########## P#######, Inc." at high confidence.</li>
-<li><strong>Line-item subtotal cross-validation + layered reconciliation.</strong> After Claude returns a record, the script sums <code>quantity × unit_price</code> across line items and compares to <code>total_amount_due</code>. If divergence exceeds 1%, the script doesn't just flag and walk away — it tries to resolve the divergence through three layered escalations:</li>
-</ol>
-<p>a. <strong>Vendor-specific parsing notes.</strong> The vendor master allows each known vendor to carry a <code>parsing_notes</code> field that gets prepended as a re-extract instruction when that vendor's first pass fails. A#### P####### &amp; R########### has a note explaining that their invoices place the line total in the "Unit Price" column on multi-quantity rows (so 500 × $45 Unit Price doesn't mean $22,500 — it means $45 total, $0.09 per unit). That note is the difference between flagging Angel's records and reconciling them. <strong>4 of 5 A#### P####### records now pass cleanly.</strong></p>
-<p>b. <strong>Adjustment reconciliation.</strong> If parsing notes aren't enough, a second Claude pass runs against the same document asking specifically: <em>"the line items I extracted sum to $X but the printed total is $Y; identify the adjustment lines (Freight, Tax, Shipping, Handling, Discount, Surcharge) that account for the $Z delta."</em> The R######### S##### invoice was the textbook case: line items summed to $437.76, total was $455.92, delta = $18.16. The reconciliation pass found Freight: $18.16 on the document, added it, math now balances.</p>
-<p>c. <strong>Fabrication rejection.</strong> The reconciliation pass can be tempted to invent adjustments when none are actually printed. Catching this: any adjustment Claude returns with a <code>null</code> quantity or <code>null</code> unit_price is rejected as a self-flagged guess. AP60578 was the perfect test: Claude tried to fabricate a "Discount: -$22,455" line with <code>quantity: null</code> to bridge the math. The script saw the null, rejected the adjustment, and left the record flagged for human review rather than trusting a value the model couldn't justify.</p>
-<p><strong>Result across the full batch: 26 of 27 records pass cross-validation cleanly (96%). One record (AP60633, A#### P#######) has a 3.4% unexplained delta where the document doesn't show any visible adjustment lines — left flagged for the AP team to investigate the tax/freight question with the vendor.</strong> This is the architectural difference between "the script flags issues for humans" and "the script tries to solve them through layered controls, rejects fabrication, then flags only what it genuinely can't."</p>
-<h2>3. Handling an illegible PDF — and other "ingestion edge cases"</h2>
-<p>The script surfaces failures explicitly rather than hiding them:</p>
-<ul>
-<li><strong>PDF won't open at all</strong> → <code>error_record</code> with <code>reason_code: open_failed</code>. No invoice records fabricated for that source.</li>
-<li><strong>Page opens but is unreadable</strong> → if pypdfium returns &lt; 200 chars of text, the script falls through to image-only vision. The O## B####### P####### PDF (3 scanned pages, zero extractable text) was handled this way; all 3 pages extracted at high confidence. If even vision can't identify both vendor and total, the page becomes an <code>illegible_page</code> audit record rather than fabricated values.</li>
-</ul>
-<p><strong>The R######### S##### case — vendor sends a link, not the invoice.</strong> Their email body contains "View Invoice" / "Download Invoice" hyperlinks pointing to URLs like <code>https://reports.richardsoncap.com/...&amp;apikey=...&amp;p_InvoiceID=NDYxMDk5Ng==</code>. The URLs include an embedded apikey, so they're publicly fetchable. The script:</p>
-<ol>
-<li>Extracts what's visible from the email body itself (vendor, invoice number, PO, date)</li>
-<li>Scans the HTML body for URLs (the plain-text body usually strips the URLs from the anchor text — the HTML version preserves them)</li>
-<li>Filters noise (Outlook XML namespaces, sendgrid tracking pixels, branding links, unsubscribe)</li>
-<li>Prioritises URLs containing invoice/report/bill keywords and fetches them</li>
-<li>Routes the fetched HTML or PDF through the same Claude vision pipeline</li>
-<li>Merges the financial detail from the fetch with the identification fields from the body</li>
-</ol>
-<p>For this batch, the fetch produced a real total ($455.92) and the main line item; the subtotal check noticed a ~4% gap (likely a shipping line the vision pass missed), so the record is flagged for human review with the exact math in the audit note. Honest &gt; confident.</p>
-<p>The output payload includes <code>_audit.review_required</code> — true when any record needs human attention (error, low/medium confidence, subtotal-check failure, or unknown vendor). In production this routes records to a review queue before they reach any downstream system.</p>
-<h2>4. A note on the Antera API target</h2>
-<p>I pulled the public Antera v1 spec from api.anterasaas.com and read through all 79 pages. <strong>The public API exposes no vendor-bill, invoice, payable, or expense endpoint.</strong> Coverage is sales-side only: <code>/accounts</code>, <code>/contacts</code>, <code>/orders</code>, <code>/products</code>, <code>/artwork</code>, <code>/identity</code>. The "expense" mentions in the spec are nested GL-account fields on order items, and the <code>qbExpenseAccount</code> field suggests QuickBooks handles the AP side.</p>
-<p>So the script outputs a clean, well-typed vendor-bill payload, and the <code>_audit.antera_target_endpoint</code> field is honest: <em>"Antera v1 public API has no AP/vendor-bill endpoint (sales-side only). Production adapter would route to whichever AP intake mechanism HDS uses."</em> If HDS has a private/extended Antera endpoint not in the public spec, the script's clean schema maps to it in one place — the adapter layer — without changing the extraction logic.</p>
-<h2>5. Closing the loop on edge cases with HDS-side infrastructure</h2>
-<p>The R######### S##### case (vendor sends a link, not the invoice) is solvable with a small AP-team workflow change that doesn't require any vendor cooperation:</p>
-<ul>
-<li><strong>An <code>outliers@hdsbrands.com</code> mailbox</strong> with an allowlist of internal senders. An agent monitors the mailbox and runs this same pipeline on whatever is forwarded. The forwarder can prepend a context note ("this vendor only ever sends links, no attachments") that flows through to the prompt. The AP team's contribution becomes <em>interpretation</em>, not transcription.</li>
-<li><strong>An Outlook auto-forward rule</strong> so Ryan keeps receiving / reading / replying to the original email transparently, while a copy lands in the bot mailbox for extraction. No behavior change required from him.</li>
-<li><strong>Inbound link safety scanning before the agent (or anyone) clicks</strong>. Vendor invoice URLs are exactly the channel phishing campaigns mimic. A scan layer (Defender ATP, VirusTotal, in-house URL reputation) sits between the mailbox and the extractor, and any link that doesn't clear scan goes to a separate "manual review" tray instead of being auto-fetched. This is a real concern — a senior buyer at HDS shouldn't be the one clicking unverified links from vendor inboxes; the bot pipeline can take that exposure on the team's behalf.</li>
-</ul>
-<p>That trio — outliers mailbox + auto-forward rule + URL scan — closes the link-only-email gap with a few hours of M365 config and no code change to the extractor.</p>
-<h2>6. Closing the loop on the one record that needs human review</h2>
-<p>For the one record the layered controls genuinely can't auto-resolve (AP60633, a 3.4% unexplained delta), the script doesn't dump a flag on a human's desk and walk away — it tees up the work. Every record flagged for review gets a <code>vendor_followup_draft</code> field in the audit block: a fully-written email asking the vendor exactly what we need to know, pre-filled with invoice details, the math discrepancy, and the specific clarification request. The reviewer opens the draft, edits the <code>[vendor contact]</code> placeholder, and sends. The system did the cognitive work of figuring out <em>what to ask</em>; the human handles the relationship layer.</p>
-<p>This is the mini-CRM extension of the extractor. Most LLM-based pipelines either hallucinate to fill the gap or fault with terse error notes. The pattern here is a third option: the AI says "I can't solve this one, but here's everything the human needs to close the loop, including a draft of the message they should send." It's the same loop-closing principle the README's section 5 covered for vendors who only send links — automate the boring, human-up the judgment calls, give the human everything they need so the judgment call takes 10 seconds instead of 10 minutes.</p>
-<p>The accompanying <code>invoices_dashboard.xlsx</code> surfaces the same drafts on a dedicated tab, alongside a projector-friendly invoice/line-item view for stare-and-compare review against the original PDFs.</p>
-<h2>7. Production extensions worth noting</h2>
-<ul>
-<li><strong>Vendor canonicalization against a real master.</strong> The script has a small embedded vendor master that maps observed variants ("H## P########## P#######, Inc." / "H## P#### P#######") to a canonical name and flags unknown vendors to an exceptions list. Production would replace the embedded list with a Sheets-backed or Antera-side vendor master, with fuzzy matching by name <strong>plus</strong> remit-to address as the join key — vendors rename themselves, addresses are more stable.</li>
-<li><strong>Vendor-portal adapter with credentials.</strong> Some vendors (not Richardson — theirs is public) gate their invoice URLs behind a login. For those, a per-vendor credential vault + light Selenium/Playwright adapter is the right shape, isolated to one subsystem.</li>
-<li><strong>Math validation extended to tax + shipping awareness.</strong> The current subtotal check is naive: <code>sum(qty × unit_price) ≈ total</code>. Production would parse named additional lines (tax, freight, surcharge, discount) and validate <code>line_sum + tax + freight - discount ≈ total</code>. That removes false positives like the Richardson shipping discrepancy.</li>
-</ul>
-</div>
-
 <footer>
   <a href="/CV">resume</a>
   <a href="/OCR_LLM_Demo">full live demo</a>
@@ -1128,6 +1080,5 @@ if __name__ == &quot;__main__&quot;:
 })();
 if (window.hljs) { hljs.highlightAll(); }
 </script>
-
 </body>
 </html>
