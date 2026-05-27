@@ -25,7 +25,7 @@ Strategy
   Text extraction can scramble reading order (bill-to ends up above the
   vendor letterhead); the image preserves visual hierarchy.
 * Each PDF page is treated as one invoice. .eml files are not natively
-  supported here — the Richardson Sports edge case (link to vendor portal)
+  supported here — the R######### S##### edge case (link to vendor portal)
   is handled via a pre-processed text input demonstrating the failure-mode
   path; production would extend the script to walk .eml attachments and
   fetch public URLs.
@@ -34,7 +34,7 @@ Strategy
   cross-validation that catches arithmetic divergence between line items
   and the stated total.
 * Vendor canonicalization: a small embedded vendor master maps observed
-  variants ("HIT Promotional Products, Inc." / "Hit Promo Products, Inc.")
+  variants ("H## P########## P#######, Inc." / "H## P#### P#######, Inc.")
   to a single canonical name. Unknown vendors are emitted to an exceptions
   list inside the audit block rather than being silently passed through.
 
@@ -77,11 +77,11 @@ log = logging.getLogger("extract_invoices")
 # homework, we hard-code the five vendors observed in the test batch.
 
 VENDOR_MASTER = [
-    {"canonical": "Angel Printing & Reproduction Inc.", "aliases": ["angel printing"]},
-    {"canonical": "Hit Promotional Products, Inc.",     "aliases": ["hit promotional", "hit promo"]},
-    {"canonical": "S&S Activewear",                     "aliases": ["s s activewear", "ss activewear"]},
-    {"canonical": "Old Brooklyn Printing",              "aliases": ["old brooklyn"]},
-    {"canonical": "Richardson Sports",                  "aliases": ["richardson sports", "richardson"]},
+    {"canonical": "A#### P####### & R########### Inc.", "aliases": ["a#### p#######"]},
+    {"canonical": "H## P########## P#######, Inc.",     "aliases": ["h## p##########", "h## p####"]},
+    {"canonical": "S&# A#########",                     "aliases": ["s ## a#########", "## a#########"]},
+    {"canonical": "O## B####### P#######",              "aliases": ["o## b#######"]},
+    {"canonical": "R######### S#####",                  "aliases": ["r######### s#####", "r#########"]},
 ]
 
 def canonicalize_vendor(name: str | None) -> tuple[str | None, bool, bool]:
@@ -154,7 +154,12 @@ SYSTEM_PROMPT = (
     "that is the customer; identify the vendor billing them instead. "
     "Currency: if a dollar sign is present and no other indicator, use 'USD'. "
     "For line items: include EVERY line with a dollar amount or quantity, "
-    "preserving the order on the invoice. Skip header/total rows."
+    "preserving the order on the invoice. This includes adjustment lines like "
+    "Freight, Shipping, Handling, Tax, Surcharge, and Discount — capture each as a "
+    "separate line_item with item_name set to the adjustment label (e.g. \"Freight\") "
+    "and the dollar amount as unit_price; use quantity 1 if not otherwise stated, "
+    "and a negative unit_price for Discount lines. Skip pure header rows and any "
+    "row that is solely a running subtotal or \"Total\" / \"Amount Due\" line."
 )
 
 USER_TEXT_TEMPLATE = (
@@ -315,6 +320,23 @@ def extract_one_page(client: Anthropic, pdf_path: Path, page_index: int, page: p
     if not record.get("vendor_name") and record.get("total_amount_due") is None:
         return None, error_audit(source_file, page_number, "illegible_page",
                                  "Vendor and total both unreadable; flagged for human review.")
+
+    # Reconcile pass: if line items don't sum to total, ask Claude to find missing adjustments
+    sub_status, _sub_note = validate_subtotal(record)
+    if sub_status == "failed":
+        try:
+            line_sum = sum((li.get("quantity") or 0) * (li.get("unit_price") or 0)
+                           for li in (record.get("line_items") or []))
+            delta = (record.get("total_amount_due") or 0) - line_sum
+            recon = reconcile_subtotal(client, page, text, record.get("line_items") or [], record.get("total_amount_due") or 0, delta)
+            if recon.get("adjustments"):
+                record["line_items"] = (record.get("line_items") or []) + recon["adjustments"]
+                if recon.get("notes"):
+                    record["notes"] = (record.get("notes") or "") + " | reconciled: " + recon["notes"]
+                log.info("    reconciled %d adjustment(s); new line-sum reconciliation attempted", len(recon["adjustments"]))
+        except Exception as e:
+            log.warning("    reconcile pass failed: %s", e)
+
     return split_invoice_and_audit(record, source_file, page_number, used_path, "ok")
 
 def process_pdf(client: Anthropic, pdf_path: Path):
@@ -333,6 +355,65 @@ def process_pdf(client: Anthropic, pdf_path: Path):
         audits.append(aud)
     return invoices, audits
 
+
+
+# ---- reconciliation: when subtotal fails, ask Claude to explain the delta -----
+
+RECONCILE_TOOL = {
+    "name": "reconcile_delta",
+    "description": "List adjustment line items (freight, tax, shipping, discount, surcharge, handling) that reconcile the unaccounted delta between line-item subtotal and total. Return [] if the document shows no such adjustments.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "adjustments": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "item_name": {"type": "string"},
+                        "quantity":  {"type": ["number", "null"]},
+                        "unit_price": {"type": ["number", "null"]},
+                    },
+                    "required": ["item_name", "quantity", "unit_price"],
+                    "additionalProperties": False,
+                },
+            },
+            "explained": {"type": "boolean", "description": "True if the adjustments fully explain the delta within $0.05 / 1%."},
+            "notes": {"type": ["string", "null"]},
+        },
+        "required": ["adjustments", "explained", "notes"],
+        "additionalProperties": False,
+    },
+}
+
+def reconcile_subtotal(client: Anthropic, page, text: str, line_items: list, total: float, delta: float) -> dict:
+    """Second Claude pass: hand it the doc and ask for the adjustments that explain the missing delta."""
+    img_b64 = page_image_b64(page)
+    extracted = ", ".join(f"{li.get('item_name','?')}: {li.get('quantity')} x {li.get('unit_price')}" for li in line_items)
+    prompt = (
+        f"You previously extracted these line items: [{extracted}]. They sum to "
+        f"${sum((li.get('quantity') or 0) * (li.get('unit_price') or 0) for li in line_items):.2f}. "
+        f"But the printed Total Amount Due on this invoice is ${total:.2f}, leaving a delta of "
+        f"${delta:+.2f} unaccounted for. Look at the invoice (image + text below) for "
+        f"adjustment lines that explain this delta — typically labelled Freight, Shipping, "
+        f"Handling, Tax, Surcharge, Discount, or similar. Return those adjustments via the "
+        f"reconcile_delta tool. Return [] if no such adjustments are visible."
+    )
+    content = [
+        {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": img_b64}},
+        {"type": "text", "text": prompt + ("\n\n--- EXTRACTED TEXT ---\n" + text + "\n--- END ---" if text else "")},
+    ]
+    resp = client.messages.create(
+        model=MODEL, max_tokens=1024, temperature=TEMPERATURE,
+        system="You are an invoice reconciliation service. Look ONLY at the printed document to identify adjustments that explain the delta. Never fabricate.",
+        tools=[RECONCILE_TOOL],
+        tool_choice={"type": "tool", "name": "reconcile_delta"},
+        messages=[{"role": "user", "content": content}],
+    )
+    for block in resp.content:
+        if getattr(block, "type", None) == "tool_use" and block.name == "reconcile_delta":
+            return dict(block.input)
+    return {"adjustments": [], "explained": False, "notes": "no tool call returned"}
 
 # ---- email + url fetch helpers ---------------------------------------------
 
