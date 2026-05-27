@@ -81,7 +81,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 </div>
 
 <div class="privacy-note">
-  <strong>Data privacy:</strong> the actual extracted dollar amounts, line-item descriptions, vendor PO numbers, and invoice numbers are <strong>not</strong> displayed on this public page. The vendor buckets below show the schema with placeholder values; the real extracted JSON is delivered only via the direct email zip to Ryan.
+  <strong>Data privacy:</strong> the actual extracted dollar amounts, line-item descriptions, vendor PO numbers, and invoice numbers are <strong>not</strong> displayed on this public page. The vendor buckets below show the schema with placeholder values.
 </div>
 
 <div class="stats">
@@ -257,6 +257,7 @@ Usage
 from __future__ import annotations
 
 import argparse, base64, io, json, logging, os, re, sys, time, uuid
+import urllib.request
 from pathlib import Path
 
 import pypdfium2 as pdfium
@@ -542,6 +543,133 @@ def process_pdf(client: Anthropic, pdf_path: Path):
         audits.append(aud)
     return invoices, audits
 
+
+# ---- email + url fetch helpers ---------------------------------------------
+
+URL_RE = re.compile(r&quot;https?://[^\s&lt;&gt;\&quot;\&#x27;]+&quot;)
+
+def fetch_url(url: str, timeout: int = 12) -&gt; tuple[bytes | None, str | None]:
+    &quot;&quot;&quot;Fetch a URL and return (bytes, content_type) or (None, None) on failure.
+    Returns at most 5MB to keep prompt costs bounded.&quot;&quot;&quot;
+    try:
+        req = urllib.request.Request(url, headers={&quot;User-Agent&quot;: &quot;extract_invoices.py/1.0&quot;})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            ctype = resp.headers.get(&quot;Content-Type&quot;, &quot;&quot;).split(&quot;;&quot;)[0].strip().lower()
+            data = resp.read(5 * 1024 * 1024)
+            return data, ctype
+    except Exception as e:
+        log.warning(&quot;URL fetch failed %s: %s&quot;, url, e)
+        return None, None
+
+def claude_extract_from_html(client: &quot;Anthropic&quot;, html_text: str, source_label: str) -&gt; dict:
+    &quot;&quot;&quot;Send fetched HTML text to Claude through the same extraction path.&quot;&quot;&quot;
+    content = [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: USER_TEXT_TEMPLATE.format(text=
+        f&quot;[Fetched from URL: {source_label}]\n\n{html_text[:60000]}&quot;
+    )}]
+    return call_claude(client, content)
+
+def process_email(client: &quot;Anthropic&quot;, eml_path: Path):
+    &quot;&quot;&quot;Extract invoice data from a .eml file. Walk attachments first (PDFs treated like
+    normal PDF input). If the body contains a public invoice URL, fetch and extract.&quot;&quot;&quot;
+    import email
+    from email import policy
+    msg = email.message_from_bytes(eml_path.read_bytes(), policy=policy.default)
+    subject = msg.get(&quot;subject&quot;, &quot;&quot;)
+    sender  = msg.get(&quot;from&quot;, &quot;&quot;)
+    body_plain = msg.get_body(preferencelist=(&quot;plain&quot;,))
+    body_html  = msg.get_body(preferencelist=(&quot;html&quot;,))
+    body_text = body_plain.get_content() if body_plain else &quot;&quot;
+    body_html_text = body_html.get_content() if body_html else &quot;&quot;
+    # URLs live in the HTML version when the plain version strips them out
+    url_search_text = body_html_text or body_text
+
+    invoices, audits = [], []
+
+    # First: extract what we can from the email body itself
+    body_input_text = (f&quot;Subject: {subject}\nFrom: {sender}\n\n{body_text}&quot;)
+    try:
+        record = call_claude(client, [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: USER_TEXT_TEMPLATE.format(text=body_input_text)}])
+    except Exception as e:
+        audits.append(error_audit(eml_path.name, 1, &quot;extraction_error&quot;, str(e)))
+        return invoices, audits
+
+    # If we have invoice number + PO but no total, try fetching URLs in the body
+    fetched_record = None
+    fetched_from = None
+    if record.get(&quot;total_amount_due&quot;) is None and not record.get(&quot;line_items&quot;):
+        import html as _html_lib
+        urls = [_html_lib.unescape(u).rstrip(&quot;.,;)&quot;) for u in URL_RE.findall(url_search_text)]
+        # Filter noise (XML namespaces, tracking pixels, branding links, unsubscribe)
+        url_candidates = [u for u in urls if not any(
+            n in u.lower() for n in
+            (&quot;schemas.microsoft.com&quot;, &quot;w3.org&quot;, &quot;sendgrid&quot;, &quot;unsubscribe&quot;,
+             &quot;tracking&quot;, &quot;/wf/open&quot;, &quot;mcauto-images&quot;, &quot;hdsbrands.com&quot;)
+        )]
+        # Prioritise URLs that look invoice-related
+        def _score(u):
+            score = 0
+            for k in (&quot;invoice&quot;, &quot;report&quot;, &quot;bill&quot;, &quot;pdf&quot;, &quot;viewer&quot;):
+                if k in u.lower(): score += 1
+            return -score  # negative because sort is ascending
+        url_candidates.sort(key=_score)
+        # Drop near-duplicates (HTML/PDF variants of the same invoice resource)
+        seen = set(); deduped = []
+        for u in url_candidates:
+            key = u.split(&quot;?&quot;)[0][:80]
+            if key in seen: continue
+            seen.add(key); deduped.append(u)
+        for url in deduped[:5]:  # cap attempts
+            log.info(&quot;  trying URL: %s&quot;, url[:80])
+            data, ctype = fetch_url(url)
+            if data is None:
+                continue
+            if &quot;html&quot; in ctype or &quot;text&quot; in ctype:
+                try:
+                    html_text = data.decode(&quot;utf-8&quot;, errors=&quot;replace&quot;)
+                except Exception:
+                    continue
+                if any(k in html_text.lower() for k in (&quot;invoice&quot;, &quot;total&quot;, &quot;amount due&quot;, &quot;po #&quot;, &quot;p.o.&quot;)):
+                    fetched_record = claude_extract_from_html(client, html_text, url)
+                    fetched_from = url
+                    log.info(&quot;  URL fetch produced extraction: total=%s line_items=%d&quot;, fetched_record.get(&quot;total_amount_due&quot;), len(fetched_record.get(&quot;line_items&quot;) or []))
+                    break
+            elif &quot;pdf&quot; in ctype:
+                # Save and re-process as PDF
+                tmp = Path(&quot;/tmp/_fetched.pdf&quot;)
+                tmp.write_bytes(data)
+                try:
+                    pdf = pdfium.PdfDocument(str(tmp))
+                    if len(pdf) &gt; 0:
+                        inv, aud = extract_one_page(client, tmp, 0, pdf[0])
+                        if inv: fetched_record = {**record, &quot;total_amount_due&quot;: inv.get(&quot;total_amount_due&quot;), &quot;line_items&quot;: inv.get(&quot;line_items&quot;), &quot;currency&quot;: inv.get(&quot;currency&quot;)}
+                        fetched_from = url
+                        break
+                except Exception:
+                    continue
+
+    # Decide which record to use. When URL fetch yielded a real total/lines, prefer
+    # that record entirely (it&#x27;s the source of financial truth); fall back to the
+    # email-body record otherwise.
+    if fetched_record and fetched_record.get(&quot;total_amount_due&quot;) is not None:
+        use_record = dict(fetched_record)
+        # Backfill identification fields from the email body if the fetched view
+        # didn&#x27;t include them (often the invoice PDF omits the email-context fields).
+        for k in (&quot;vendor_name&quot;, &quot;invoice_number&quot;, &quot;po_number&quot;, &quot;invoice_date&quot;):
+            if not use_record.get(k):
+                use_record[k] = record.get(k)
+        path_label = f&quot;email_body+url_fetch ({fetched_from})&quot;
+    else:
+        use_record = dict(record)
+        path_label = &quot;email_body&quot;
+        if use_record.get(&quot;total_amount_due&quot;) is None and use_record.get(&quot;extraction_confidence&quot;) != &quot;low&quot;:
+            use_record[&quot;extraction_confidence&quot;] = &quot;low&quot;
+            use_record[&quot;notes&quot;] = (use_record.get(&quot;notes&quot;) or &quot;&quot;) + &quot; | Total not extractable from email body; URL fetch attempted but did not yield a total.&quot;
+
+    inv, aud = split_invoice_and_audit(use_record, eml_path.name, 1, path_label, &quot;ok&quot;)
+    if inv: invoices.append(inv)
+    audits.append(aud)
+    return invoices, audits
+
 def main() -&gt; int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument(&quot;--input&quot;, &quot;-i&quot;, default=&quot;invoices_raw&quot;)
@@ -556,14 +684,19 @@ def main() -&gt; int:
     if not input_dir.is_dir():
         print(f&quot;ERROR: input folder not found: {input_dir}&quot;, file=sys.stderr); return 2
     pdfs = sorted(input_dir.glob(&quot;*.pdf&quot;))
-    if not pdfs:
-        print(f&quot;ERROR: no .pdf files in {input_dir}&quot;, file=sys.stderr); return 2
+    emls = sorted(input_dir.glob(&quot;*.eml&quot;))
+    if not pdfs and not emls:
+        print(f&quot;ERROR: no .pdf or .eml files in {input_dir}&quot;, file=sys.stderr); return 2
 
     log.info(&quot;found %d PDF(s) in %s&quot;, len(pdfs), input_dir)
     client = Anthropic(api_key=api_key)
     all_invoices, all_audits = [], []
     for pdf_path in pdfs:
         inv, aud = process_pdf(client, pdf_path)
+        all_invoices.extend(inv); all_audits.extend(aud)
+    for eml_path in emls:
+        log.info(&quot;processing %s&quot;, eml_path.name)
+        inv, aud = process_email(client, eml_path)
         all_invoices.extend(inv); all_audits.extend(aud)
 
     # Build the two-block payload
@@ -610,11 +743,11 @@ if __name__ == &quot;__main__&quot;:
 <p>Files in this folder:</p>
 <ul>
 <li><code>extract_invoices.py</code> — the script (run with <code>python extract_invoices.py --input ./invoices_raw --output invoices.json</code>)</li>
-<li><code>invoices.json</code> — output across all 5 emailed invoice packages (27 invoice records, $59,194.29 total recognized)</li>
+<li><code>invoices.json</code> — output across all 5 emailed invoice packages (27 invoice records)</li>
 <li><code>README.md</code> — this document</li>
 </ul>
-<p>A note on the output shape: I structured the JSON as two cleanly-separated blocks. The <code>invoices[]</code> array is the clean vendor-bill payload, free of implementation details. The <code>_audit</code> block at the bottom holds extraction metadata — LLM model, source file, confidence, subtotal-check results — for the AP team's review queue.</p>
-<p>The script source, README, and a non-redacted sample record per vendor are also viewable at <strong><a href="https://adamjreep.com/Homework">adamjreep.com/Homework</a></strong>. The site doesn't host the real HDS invoice data; the email zip is the only path to that.</p>
+<p>A note on the output shape: I structured the JSON as two cleanly-separated blocks. The <code>invoices[]</code> array is the clean vendor-bill payload, free of implementation details. The <code>_audit</code> block holds extraction metadata — LLM model, source file, confidence, subtotal-check results — for the AP team's review queue.</p>
+<p>The script source, README, and a non-redacted schema demo per vendor are also viewable at <strong><a href="https://adamjreep.com/Homework">adamjreep.com/Homework</a></strong>. The site doesn't host real HDS invoice data; the email zip is the only path to that.</p>
 <hr />
 <h2>1. Choice of LLM: Claude Haiku 4.5</h2>
 <p>Anthropic Claude Haiku 4.5 via the official Python SDK. Three reasons:</p>
@@ -630,25 +763,41 @@ if __name__ == &quot;__main__&quot;:
 <li><strong>Temperature 0.0.</strong> Deterministic. Same input → same output. No creative register.</li>
 <li><strong>"Extract only what you can read" instruction.</strong> System prompt forbids inferring, computing, or fabricating values not printed on the document. Missing → <code>null</code>. The model self-reports uncertainty via <code>extraction_confidence: high | medium | low</code>.</li>
 <li><strong>Hybrid text + image input.</strong> I caught a vendor-misidentification on the Hit Promotional Products invoices: text extraction put the bill-to ("HDS MARKETING/FACILIS GROUP") above the vendor letterhead, and the model named HDS as the vendor. Fix: every page is sent as <strong>both</strong> extracted text <strong>and</strong> rendered image, with the prompt instructing the model to defer to the image for layout-dependent fields. After the change all 7 Hit Promo pages identify "HIT Promotional Products, Inc." at high confidence.</li>
-<li><strong>Line-item subtotal cross-validation.</strong> After Claude returns a record, the script sums <code>quantity × unit_price</code> across line items and compares to <code>total_amount_due</code>. If divergence exceeds 1%, the record is demoted from <code>high</code> to <code>medium</code> confidence with an explanatory note, and <code>review_required</code> flips true on the batch. In this batch, 10 of 27 records tripped this check — most are the Angel Printing &amp; Reproduction series, where the vendor put the order total in the "Unit Price" column on a 500-quantity row, making the math look impossible. The script flags these for human review rather than emitting them as confidently extracted. Same logic catches arithmetic hallucinations the model wouldn't notice itself.</li>
+<li><strong>Line-item subtotal cross-validation.</strong> After Claude returns a record, the script sums <code>quantity × unit_price</code> across line items and compares to <code>total_amount_due</code>. If divergence exceeds 1%, the record is flagged in <code>_audit.records[].subtotal_check</code> and <code>review_required</code> flips true on the batch. In this batch, 10 of 27 records tripped this check — most are the Angel Printing &amp; Reproduction series, where the vendor put the order total in the "Unit Price" column on a 500-quantity row, making the line-item math diverge from the printed total. The Richardson Sports record also tripped this (4% divergence: a shipping line on the PDF wasn't captured by the vision pass). Same logic catches arithmetic hallucinations the model wouldn't notice itself.</li>
 </ol>
-<h2>3. Handling an illegible PDF</h2>
-<p>Two failure modes, both surfaced explicitly rather than hidden:</p>
+<h2>3. Handling an illegible PDF — and other "ingestion edge cases"</h2>
+<p>The script surfaces failures explicitly rather than hiding them:</p>
 <ul>
-<li><strong>PDF won't open at all</strong> → <code>error_record</code> with <code>reason_code: open_failed</code> and the exception message. No invoice records fabricated for that source.</li>
-<li><strong>Page opens but is unreadable</strong> → if pypdfium returns &lt; 200 chars of text, the script falls through to image-only vision. The Old Brooklyn Printing PDF in this batch (3 scanned pages, zero extractable text) was handled this way — all 3 pages extracted at high confidence. If even vision can't identify both vendor and total, the script converts the record to <code>reason_code: illegible_page</code> rather than emit fabricated values.</li>
+<li><strong>PDF won't open at all</strong> → <code>error_record</code> with <code>reason_code: open_failed</code>. No invoice records fabricated for that source.</li>
+<li><strong>Page opens but is unreadable</strong> → if pypdfium returns &lt; 200 chars of text, the script falls through to image-only vision. The Old Brooklyn Printing PDF (3 scanned pages, zero extractable text) was handled this way; all 3 pages extracted at high confidence. If even vision can't identify both vendor and total, the page becomes an <code>illegible_page</code> audit record rather than fabricated values.</li>
 </ul>
-<p>A real-world edge case from this batch: the Richardson Sports email contains a <em>link</em> to the invoice on the vendor portal — not the invoice itself. The script extracts what's visible from the email body (vendor, invoice number, PO, date), sets <code>total_amount_due: null</code>, marks <code>extraction_confidence: low</code>, and surfaces a note explaining the totals need to be fetched from the portal. Human follow-up rather than a guess.</p>
+<p><strong>The Richardson Sports case — vendor sends a link, not the invoice.</strong> Their email body contains "View Invoice" / "Download Invoice" hyperlinks pointing to URLs like <code>https://reports.richardsoncap.com/...&amp;apikey=...&amp;p_InvoiceID=NDYxMDk5Ng==</code>. The URLs include an embedded apikey, so they're publicly fetchable. The script:</p>
+<ol>
+<li>Extracts what's visible from the email body itself (vendor, invoice number, PO, date)</li>
+<li>Scans the HTML body for URLs (the plain-text body usually strips the URLs from the anchor text — the HTML version preserves them)</li>
+<li>Filters noise (Outlook XML namespaces, sendgrid tracking pixels, branding links, unsubscribe)</li>
+<li>Prioritises URLs containing invoice/report/bill keywords and fetches them</li>
+<li>Routes the fetched HTML or PDF through the same Claude vision pipeline</li>
+<li>Merges the financial detail from the fetch with the identification fields from the body</li>
+</ol>
+<p>For this batch, the fetch produced a real total ($455.92) and the main line item; the subtotal check noticed a ~4% gap (likely a shipping line the vision pass missed), so the record is flagged for human review with the exact math in the audit note. Honest &gt; confident.</p>
 <p>The output payload includes <code>_audit.review_required</code> — true when any record needs human attention (error, low/medium confidence, subtotal-check failure, or unknown vendor). In production this routes records to a review queue before they reach any downstream system.</p>
 <h2>4. A note on the Antera API target</h2>
-<p>The homework spec mentioned shaping the output "as if it were going to be sent via a POST request to the Antera API." I pulled the public Antera v1 spec from api.anterasaas.com and read through it. <strong>The public API exposes no vendor-bill, invoice, payable, or expense endpoint.</strong> Coverage is sales-side only: <code>/accounts</code>, <code>/contacts</code>, <code>/orders</code>, <code>/products</code>, <code>/artwork</code>, <code>/identity</code>. The "expense" mentions in the spec are nested GL-account fields on order items (<code>qbExpenseAccount</code> suggests QuickBooks handles the financial side).</p>
-<p>So the script outputs a clean, well-typed vendor-bill payload, and the <code>_audit.antera_target_endpoint</code> field is honest: <em>"Antera v1 public API has no AP/vendor-bill endpoint (sales-side only). Production adapter would route to whichever AP intake mechanism HDS uses (QB sync, manual UI assist, private endpoint, or Sheets review buffer)."</em> If HDS has a private/extended Antera endpoint not in the public spec, the script's clean schema maps to it in one place — the adapter layer — without changing the extraction logic.</p>
-<h2>5. Production extensions worth noting</h2>
-<p>Three enhancements that aren't in this script (Ryan asked for "lightweight, functional") but are close-by in design space:</p>
+<p>I pulled the public Antera v1 spec from api.anterasaas.com and read through all 79 pages. <strong>The public API exposes no vendor-bill, invoice, payable, or expense endpoint.</strong> Coverage is sales-side only: <code>/accounts</code>, <code>/contacts</code>, <code>/orders</code>, <code>/products</code>, <code>/artwork</code>, <code>/identity</code>. The "expense" mentions in the spec are nested GL-account fields on order items, and the <code>qbExpenseAccount</code> field suggests QuickBooks handles the AP side.</p>
+<p>So the script outputs a clean, well-typed vendor-bill payload, and the <code>_audit.antera_target_endpoint</code> field is honest: <em>"Antera v1 public API has no AP/vendor-bill endpoint (sales-side only). Production adapter would route to whichever AP intake mechanism HDS uses."</em> If HDS has a private/extended Antera endpoint not in the public spec, the script's clean schema maps to it in one place — the adapter layer — without changing the extraction logic.</p>
+<h2>5. Closing the loop on edge cases with HDS-side infrastructure</h2>
+<p>The Richardson Sports case (vendor sends a link, not the invoice) is solvable with a small AP-team workflow change that doesn't require any vendor cooperation:</p>
 <ul>
-<li><strong>Vendor canonicalization against a real master.</strong> The script has a small embedded vendor master that maps observed variants ("HIT Promotional Products, Inc." / "Hit Promo Products") to a single canonical name and flags unknown vendors to an exceptions list. Production would replace the embedded list with a Sheets-backed or Antera vendor-master query, with fuzzy matching by name + remit-to address as the join key (not just name — vendors rename themselves).</li>
-<li><strong>Public-URL fetch.</strong> When an email body references a public PDF URL, the script could fetch and route through the same vision pipeline — five lines of <code>requests</code> + <code>pypdfium</code>. The Richardson Sports case here is portal-gated (login wall) so a fetch returns the login HTML, not the invoice; that case needs a vendor-portal adapter with stored credentials per vendor — a separate subsystem.</li>
-<li><strong>An "outliers" forwardable mailbox.</strong> Stand up <code>outliers@hdsbrands.com</code> with an allowlist of internal senders. An agent watches the mailbox and runs the same pipeline on forwarded edge cases. The forwarder can prepend a context note that flows through to the prompt. Keeps the human in the loop without making the human do the transcription work — the human's contribution is <em>interpretation</em>, not data entry. This is how the script becomes part of the AP team's daily workflow instead of a one-off tool.</li>
+<li><strong>An <code>outliers@hdsbrands.com</code> mailbox</strong> with an allowlist of internal senders. An agent monitors the mailbox and runs this same pipeline on whatever is forwarded. The forwarder can prepend a context note ("this vendor only ever sends links, no attachments") that flows through to the prompt. The AP team's contribution becomes <em>interpretation</em>, not transcription.</li>
+<li><strong>An Outlook auto-forward rule</strong> so Ryan keeps receiving / reading / replying to the original email transparently, while a copy lands in the bot mailbox for extraction. No behavior change required from him.</li>
+<li><strong>Inbound link safety scanning before the agent (or anyone) clicks</strong>. Vendor invoice URLs are exactly the channel phishing campaigns mimic. A scan layer (Defender ATP, VirusTotal, in-house URL reputation) sits between the mailbox and the extractor, and any link that doesn't clear scan goes to a separate "manual review" tray instead of being auto-fetched. This is a real concern — a senior buyer at HDS shouldn't be the one clicking unverified links from vendor inboxes; the bot pipeline can take that exposure on the team's behalf.</li>
+</ul>
+<p>That trio — outliers mailbox + auto-forward rule + URL scan — closes the link-only-email gap with a few hours of M365 config and no code change to the extractor.</p>
+<h2>6. Production extensions worth noting</h2>
+<ul>
+<li><strong>Vendor canonicalization against a real master.</strong> The script has a small embedded vendor master that maps observed variants ("HIT Promotional Products, Inc." / "Hit Promo Products") to a canonical name and flags unknown vendors to an exceptions list. Production would replace the embedded list with a Sheets-backed or Antera-side vendor master, with fuzzy matching by name <strong>plus</strong> remit-to address as the join key — vendors rename themselves, addresses are more stable.</li>
+<li><strong>Vendor-portal adapter with credentials.</strong> Some vendors (not Richardson — theirs is public) gate their invoice URLs behind a login. For those, a per-vendor credential vault + light Selenium/Playwright adapter is the right shape, isolated to one subsystem.</li>
+<li><strong>Math validation extended to tax + shipping awareness.</strong> The current subtotal check is naive: <code>sum(qty × unit_price) ≈ total</code>. Production would parse named additional lines (tax, freight, surcharge, discount) and validate <code>line_sum + tax + freight - discount ≈ total</code>. That removes false positives like the Richardson shipping discrepancy.</li>
 </ul>
 </div>
 

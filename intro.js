@@ -19,7 +19,7 @@ var beginBtn = document.getElementById('beginBtn');
 var muteBtn = document.getElementById('muteBtn');
 var skipBtn = document.getElementById('skipBtn');
 
-var AUDIO_START_MS = 15000;
+var AUDIO_START_MS = 14500;
 var AUTO_FORWARD_MS = 100000;
 var exited = false;
 

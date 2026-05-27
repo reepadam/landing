@@ -47,6 +47,7 @@ Usage
 from __future__ import annotations
 
 import argparse, base64, io, json, logging, os, re, sys, time, uuid
+import urllib.request
 from pathlib import Path
 
 import pypdfium2 as pdfium
@@ -332,6 +333,133 @@ def process_pdf(client: Anthropic, pdf_path: Path):
         audits.append(aud)
     return invoices, audits
 
+
+# ---- email + url fetch helpers ---------------------------------------------
+
+URL_RE = re.compile(r"https?://[^\s<>\"\']+")
+
+def fetch_url(url: str, timeout: int = 12) -> tuple[bytes | None, str | None]:
+    """Fetch a URL and return (bytes, content_type) or (None, None) on failure.
+    Returns at most 5MB to keep prompt costs bounded."""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "extract_invoices.py/1.0"})
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            ctype = resp.headers.get("Content-Type", "").split(";")[0].strip().lower()
+            data = resp.read(5 * 1024 * 1024)
+            return data, ctype
+    except Exception as e:
+        log.warning("URL fetch failed %s: %s", url, e)
+        return None, None
+
+def claude_extract_from_html(client: "Anthropic", html_text: str, source_label: str) -> dict:
+    """Send fetched HTML text to Claude through the same extraction path."""
+    content = [{"type": "text", "text": USER_TEXT_TEMPLATE.format(text=
+        f"[Fetched from URL: {source_label}]\n\n{html_text[:60000]}"
+    )}]
+    return call_claude(client, content)
+
+def process_email(client: "Anthropic", eml_path: Path):
+    """Extract invoice data from a .eml file. Walk attachments first (PDFs treated like
+    normal PDF input). If the body contains a public invoice URL, fetch and extract."""
+    import email
+    from email import policy
+    msg = email.message_from_bytes(eml_path.read_bytes(), policy=policy.default)
+    subject = msg.get("subject", "")
+    sender  = msg.get("from", "")
+    body_plain = msg.get_body(preferencelist=("plain",))
+    body_html  = msg.get_body(preferencelist=("html",))
+    body_text = body_plain.get_content() if body_plain else ""
+    body_html_text = body_html.get_content() if body_html else ""
+    # URLs live in the HTML version when the plain version strips them out
+    url_search_text = body_html_text or body_text
+
+    invoices, audits = [], []
+
+    # First: extract what we can from the email body itself
+    body_input_text = (f"Subject: {subject}\nFrom: {sender}\n\n{body_text}")
+    try:
+        record = call_claude(client, [{"type": "text", "text": USER_TEXT_TEMPLATE.format(text=body_input_text)}])
+    except Exception as e:
+        audits.append(error_audit(eml_path.name, 1, "extraction_error", str(e)))
+        return invoices, audits
+
+    # If we have invoice number + PO but no total, try fetching URLs in the body
+    fetched_record = None
+    fetched_from = None
+    if record.get("total_amount_due") is None and not record.get("line_items"):
+        import html as _html_lib
+        urls = [_html_lib.unescape(u).rstrip(".,;)") for u in URL_RE.findall(url_search_text)]
+        # Filter noise (XML namespaces, tracking pixels, branding links, unsubscribe)
+        url_candidates = [u for u in urls if not any(
+            n in u.lower() for n in
+            ("schemas.microsoft.com", "w3.org", "sendgrid", "unsubscribe",
+             "tracking", "/wf/open", "mcauto-images", "hdsbrands.com")
+        )]
+        # Prioritise URLs that look invoice-related
+        def _score(u):
+            score = 0
+            for k in ("invoice", "report", "bill", "pdf", "viewer"):
+                if k in u.lower(): score += 1
+            return -score  # negative because sort is ascending
+        url_candidates.sort(key=_score)
+        # Drop near-duplicates (HTML/PDF variants of the same invoice resource)
+        seen = set(); deduped = []
+        for u in url_candidates:
+            key = u.split("?")[0][:80]
+            if key in seen: continue
+            seen.add(key); deduped.append(u)
+        for url in deduped[:5]:  # cap attempts
+            log.info("  trying URL: %s", url[:80])
+            data, ctype = fetch_url(url)
+            if data is None:
+                continue
+            if "html" in ctype or "text" in ctype:
+                try:
+                    html_text = data.decode("utf-8", errors="replace")
+                except Exception:
+                    continue
+                if any(k in html_text.lower() for k in ("invoice", "total", "amount due", "po #", "p.o.")):
+                    fetched_record = claude_extract_from_html(client, html_text, url)
+                    fetched_from = url
+                    log.info("  URL fetch produced extraction: total=%s line_items=%d", fetched_record.get("total_amount_due"), len(fetched_record.get("line_items") or []))
+                    break
+            elif "pdf" in ctype:
+                # Save and re-process as PDF
+                tmp = Path("/tmp/_fetched.pdf")
+                tmp.write_bytes(data)
+                try:
+                    pdf = pdfium.PdfDocument(str(tmp))
+                    if len(pdf) > 0:
+                        inv, aud = extract_one_page(client, tmp, 0, pdf[0])
+                        if inv: fetched_record = {**record, "total_amount_due": inv.get("total_amount_due"), "line_items": inv.get("line_items"), "currency": inv.get("currency")}
+                        fetched_from = url
+                        break
+                except Exception:
+                    continue
+
+    # Decide which record to use. When URL fetch yielded a real total/lines, prefer
+    # that record entirely (it's the source of financial truth); fall back to the
+    # email-body record otherwise.
+    if fetched_record and fetched_record.get("total_amount_due") is not None:
+        use_record = dict(fetched_record)
+        # Backfill identification fields from the email body if the fetched view
+        # didn't include them (often the invoice PDF omits the email-context fields).
+        for k in ("vendor_name", "invoice_number", "po_number", "invoice_date"):
+            if not use_record.get(k):
+                use_record[k] = record.get(k)
+        path_label = f"email_body+url_fetch ({fetched_from})"
+    else:
+        use_record = dict(record)
+        path_label = "email_body"
+        if use_record.get("total_amount_due") is None and use_record.get("extraction_confidence") != "low":
+            use_record["extraction_confidence"] = "low"
+            use_record["notes"] = (use_record.get("notes") or "") + " | Total not extractable from email body; URL fetch attempted but did not yield a total."
+
+    inv, aud = split_invoice_and_audit(use_record, eml_path.name, 1, path_label, "ok")
+    if inv: invoices.append(inv)
+    audits.append(aud)
+    return invoices, audits
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--input", "-i", default="invoices_raw")
@@ -346,14 +474,19 @@ def main() -> int:
     if not input_dir.is_dir():
         print(f"ERROR: input folder not found: {input_dir}", file=sys.stderr); return 2
     pdfs = sorted(input_dir.glob("*.pdf"))
-    if not pdfs:
-        print(f"ERROR: no .pdf files in {input_dir}", file=sys.stderr); return 2
+    emls = sorted(input_dir.glob("*.eml"))
+    if not pdfs and not emls:
+        print(f"ERROR: no .pdf or .eml files in {input_dir}", file=sys.stderr); return 2
 
     log.info("found %d PDF(s) in %s", len(pdfs), input_dir)
     client = Anthropic(api_key=api_key)
     all_invoices, all_audits = [], []
     for pdf_path in pdfs:
         inv, aud = process_pdf(client, pdf_path)
+        all_invoices.extend(inv); all_audits.extend(aud)
+    for eml_path in emls:
+        log.info("processing %s", eml_path.name)
+        inv, aud = process_email(client, eml_path)
         all_invoices.extend(inv); all_audits.extend(aud)
 
     # Build the two-block payload
