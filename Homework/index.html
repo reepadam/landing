@@ -434,6 +434,10 @@ def split_invoice_and_audit(record: dict, source_file: str, page_number: int,
         &quot;po_number&quot;:        record.get(&quot;po_number&quot;),
         &quot;total_amount_due&quot;: record.get(&quot;total_amount_due&quot;),
         &quot;currency&quot;:         record.get(&quot;currency&quot;) or &quot;USD&quot;,
+        # _source_file and _page_number let us join audit -&gt; invoice without ambiguity.
+        # These get stripped before posting to Antera (downstream adapter removes underscore-prefixed keys).
+        &quot;_source_file&quot;:     source_file,
+        &quot;_page_number&quot;:     page_number,
         &quot;line_items&quot;: [
             {
                 &quot;item_name&quot;:  li.get(&quot;item_name&quot;),
@@ -736,6 +740,99 @@ def process_email(client: &quot;Anthropic&quot;, eml_path: Path):
     audits.append(aud)
     return invoices, audits
 
+
+# ---- vendor follow-up draft generator --------------------------------------
+
+def vendor_followup_draft(invoice: dict, audit: dict) -&gt; dict | None:
+    &quot;&quot;&quot;For records flagged for review, generate a copy-pasteable email draft
+    the AP team can send to the vendor asking for the specific clarification
+    needed to close the loop. Returns None when the record doesn&#x27;t need follow-up.
+
+    The goal: the human reviewer doesn&#x27;t have to figure out *what to ask the
+    vendor* — they just open the draft, read it for 10 seconds, edit if needed,
+    and send. The system tees up the work; the human chooses to do it.&quot;&quot;&quot;
+    vendor    = (invoice.get(&quot;vendor&quot;) or {}).get(&quot;name&quot;) or audit.get(&quot;vendor_raw_name&quot;) or &quot;Vendor&quot;
+    inv_num   = invoice.get(&quot;invoice_number&quot;) or &quot;(unknown)&quot;
+    inv_date  = invoice.get(&quot;invoice_date&quot;) or &quot;(unknown)&quot;
+    po_num    = invoice.get(&quot;po_number&quot;) or &quot;(unknown)&quot;
+    total     = invoice.get(&quot;total_amount_due&quot;)
+    sub_check = audit.get(&quot;subtotal_check&quot;)
+    sub_note  = audit.get(&quot;subtotal_note&quot;) or &quot;&quot;
+    status    = audit.get(&quot;extraction_status&quot;)
+    confidence = audit.get(&quot;extraction_confidence&quot;)
+
+    # Compute line sum + delta for the body
+    line_items = invoice.get(&quot;line_items&quot;) or []
+    line_sum = sum((li.get(&quot;quantity&quot;) or 0) * (li.get(&quot;unit_price&quot;) or 0) for li in line_items)
+    delta = (total or 0) - line_sum if total is not None else None
+
+    # Decide the issue and the ask
+    if sub_check == &quot;failed&quot; and delta is not None and abs(delta) &gt; 0.01:
+        issue = (
+            f&quot;the line items we extracted from your invoice total ${line_sum:,.2f}, &quot;
+            f&quot;but the printed Total Amount Due is ${total:,.2f} — a difference of &quot;
+            f&quot;${abs(delta):,.2f} we can&#x27;t reconcile from the document.&quot;
+        )
+        ask = (
+            &quot;Could you confirm whether there are any additional line items (freight, &quot;
+            &quot;shipping, handling, tax, surcharge, or discount adjustments) that aren&#x27;t &quot;
+            &quot;shown on the invoice we received? If so, could you send a corrected copy &quot;
+            &quot;with all charges itemized so we can post the invoice cleanly to our AP &quot;
+            &quot;system?&quot;
+        )
+    elif total is None or not line_items:
+        issue = (
+            &quot;the invoice you sent us did not include line-item detail or a payable &quot;
+            &quot;total in the document body — only a link or summary in the email.&quot;
+        )
+        ask = (
+            &quot;Could you send a complete copy of the invoice with line items and total &quot;
+            &quot;as an attachment (PDF preferred), so we can post the invoice cleanly to &quot;
+            &quot;our AP system?&quot;
+        )
+    elif confidence == &quot;low&quot;:
+        issue = &quot;we couldn&#x27;t reliably read several fields from the document we received.&quot;
+        ask = (
+            &quot;Could you re-send the invoice as a fresh PDF or higher-resolution scan? &quot;
+            &quot;Some fields didn&#x27;t read clearly enough for us to confirm the values.&quot;
+        )
+    else:
+        return None  # no follow-up needed
+
+    subject = f&quot;Question on invoice {inv_num} — clarification needed for AP posting&quot;
+    body = (
+        f&quot;Hi [vendor contact],\n\n&quot;
+        f&quot;We received your invoice {inv_num} dated {inv_date} (PO {po_num}) and started &quot;
+        f&quot;processing it through our intake system, but {issue}\n\n&quot;
+        f&quot;{ask}\n\n&quot;
+        f&quot;For reference, here is what we extracted from the document:\n&quot;
+        f&quot;  Vendor:        {vendor}\n&quot;
+        f&quot;  Invoice #:     {inv_num}\n&quot;
+        f&quot;  Invoice Date:  {inv_date}\n&quot;
+        f&quot;  PO #:          {po_num}\n&quot;
+        f&quot;  Total Due:     ${total:,.2f}&quot; if total is not None else f&quot;  Total Due:     [not extracted]&quot;
+    )
+    body += f&quot;\n  Line items extracted ({len(line_items)}):\n&quot;
+    for li in line_items:
+        body += f&quot;    - {li.get(&#x27;item_name&#x27;,&#x27;(no name)&#x27;)}: qty {li.get(&#x27;quantity&#x27;)} x ${li.get(&#x27;unit_price&#x27;)}\n&quot;
+    if delta is not None and abs(delta) &gt; 0.01:
+        body += f&quot;\n  Line-item subtotal: ${line_sum:,.2f}\n&quot;
+        body += f&quot;  Unexplained delta:  ${delta:+,.2f}\n&quot;
+    body += (
+        &quot;\nThanks — we&#x27;ll post the invoice as soon as you can confirm. We&#x27;re trying &quot;
+        &quot;to clear our AP backlog and your reply will help us pay you sooner.\n\n&quot;
+        &quot;— HDS Marketing AP team&quot;
+    )
+
+    return {
+        &quot;subject&quot;: subject,
+        &quot;body&quot;: body,
+        &quot;reason_code&quot;: sub_check if sub_check == &quot;failed&quot; else (&quot;low_confidence&quot; if confidence == &quot;low&quot; else &quot;incomplete_data&quot;),
+        &quot;perceived_issue&quot;: issue,
+        &quot;ready_to_send&quot;: False,  # explicit: human must review
+    }
+
+
 def main() -&gt; int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument(&quot;--input&quot;, &quot;-i&quot;, default=&quot;invoices_raw&quot;)
@@ -777,6 +874,42 @@ def main() -&gt; int:
         a.get(&quot;vendor_raw_name&quot;) for a in all_audits
         if a.get(&quot;extraction_status&quot;) == &quot;ok&quot; and not a.get(&quot;vendor_known&quot;)
     } - {None})
+
+    # For any flagged record, generate a copy-pasteable vendor follow-up email draft.
+    # Builds the index inv_idx -&gt; invoice for matching.
+    inv_by_invnum = {inv.get(&quot;invoice_number&quot;): inv for inv in all_invoices if inv.get(&quot;invoice_number&quot;)}
+    for a in all_audits:
+        inv = None
+        # Try to find the matching invoice for this audit record.
+        # Match priority: source_file+page first, then vendor+invoice_number.
+        for candidate in all_invoices:
+            if (candidate.get(&quot;_source_file&quot;) == a.get(&quot;source_file&quot;)
+                and candidate.get(&quot;_page_number&quot;) == a.get(&quot;page_number&quot;)):
+                inv = candidate; break
+        if not inv:
+            for candidate in all_invoices:
+                vmatch = candidate.get(&quot;vendor&quot;, {}).get(&quot;name&quot;) == a.get(&quot;vendor_canonical_name&quot;)
+                # Audit may not store invoice_number directly; we use the file name + the canonical vendor
+                # to do a heuristic match: if there&#x27;s exactly one invoice for that vendor + source_file, take it
+                if vmatch:
+                    # Strong match if source_file appears in the invoice metadata we&#x27;ll inject below
+                    inv = candidate
+                    # don&#x27;t break — let later iterations refine if a better match exists
+                    if a.get(&quot;source_file&quot;,&quot;&quot;).startswith(candidate.get(&quot;invoice_number&quot;,&quot;&quot;)):
+                        break
+        if not inv:
+            # Fall back to a minimal dict for the email-draft generator
+            inv = {&quot;vendor&quot;: {&quot;name&quot;: a.get(&quot;vendor_canonical_name&quot;)},
+                   &quot;invoice_number&quot;: None, &quot;invoice_date&quot;: None, &quot;po_number&quot;: None,
+                   &quot;total_amount_due&quot;: None, &quot;line_items&quot;: []}
+        # Only generate drafts when the record actually needs follow-up
+        if (a.get(&quot;subtotal_check&quot;) == &quot;failed&quot;
+            or a.get(&quot;extraction_confidence&quot;) in (&quot;low&quot;, &quot;medium&quot;)
+            or a.get(&quot;extraction_status&quot;) != &quot;ok&quot;
+            or not a.get(&quot;vendor_known&quot;)):
+            draft = vendor_followup_draft(inv, a)
+            if draft:
+                a[&quot;vendor_followup_draft&quot;] = draft
 
     payload = {
         &quot;batch_id&quot;: time.strftime(&quot;%Y%m%d-%H%M%S-utc&quot;, time.gmtime()),
@@ -863,7 +996,11 @@ if __name__ == &quot;__main__&quot;:
 <li><strong>Inbound link safety scanning before the agent (or anyone) clicks</strong>. Vendor invoice URLs are exactly the channel phishing campaigns mimic. A scan layer (Defender ATP, VirusTotal, in-house URL reputation) sits between the mailbox and the extractor, and any link that doesn't clear scan goes to a separate "manual review" tray instead of being auto-fetched. This is a real concern — a senior buyer at HDS shouldn't be the one clicking unverified links from vendor inboxes; the bot pipeline can take that exposure on the team's behalf.</li>
 </ul>
 <p>That trio — outliers mailbox + auto-forward rule + URL scan — closes the link-only-email gap with a few hours of M365 config and no code change to the extractor.</p>
-<h2>6. Production extensions worth noting</h2>
+<h2>6. Closing the loop on the one record that needs human review</h2>
+<p>For the one record the layered controls genuinely can't auto-resolve (AP60633, a 3.4% unexplained delta), the script doesn't dump a flag on a human's desk and walk away — it tees up the work. Every record flagged for review gets a <code>vendor_followup_draft</code> field in the audit block: a fully-written email asking the vendor exactly what we need to know, pre-filled with invoice details, the math discrepancy, and the specific clarification request. The reviewer opens the draft, edits the <code>[vendor contact]</code> placeholder, and sends. The system did the cognitive work of figuring out <em>what to ask</em>; the human handles the relationship layer.</p>
+<p>This is the mini-CRM extension of the extractor. Most LLM-based pipelines either hallucinate to fill the gap or fault with terse error notes. The pattern here is a third option: the AI says "I can't solve this one, but here's everything the human needs to close the loop, including a draft of the message they should send." It's the same loop-closing principle the README's section 5 covered for vendors who only send links — automate the boring, human-up the judgment calls, give the human everything they need so the judgment call takes 10 seconds instead of 10 minutes.</p>
+<p>The accompanying <code>invoices_dashboard.xlsx</code> surfaces the same drafts on a dedicated tab, alongside a projector-friendly invoice/line-item view for stare-and-compare review against the original PDFs.</p>
+<h2>7. Production extensions worth noting</h2>
 <ul>
 <li><strong>Vendor canonicalization against a real master.</strong> The script has a small embedded vendor master that maps observed variants ("H## P########## P#######, Inc." / "H## P#### P#######") to a canonical name and flags unknown vendors to an exceptions list. Production would replace the embedded list with a Sheets-backed or Antera-side vendor master, with fuzzy matching by name <strong>plus</strong> remit-to address as the join key — vendors rename themselves, addresses are more stable.</li>
 <li><strong>Vendor-portal adapter with credentials.</strong> Some vendors (not Richardson — theirs is public) gate their invoice URLs behind a login. For those, a per-vendor credential vault + light Selenium/Playwright adapter is the right shape, isolated to one subsystem.</li>

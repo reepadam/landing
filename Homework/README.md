@@ -76,7 +76,15 @@ The R######### S##### case (vendor sends a link, not the invoice) is solvable wi
 
 That trio — outliers mailbox + auto-forward rule + URL scan — closes the link-only-email gap with a few hours of M365 config and no code change to the extractor.
 
-## 6. Production extensions worth noting
+## 6. Closing the loop on the one record that needs human review
+
+For the one record the layered controls genuinely can't auto-resolve (AP60633, a 3.4% unexplained delta), the script doesn't dump a flag on a human's desk and walk away — it tees up the work. Every record flagged for review gets a `vendor_followup_draft` field in the audit block: a fully-written email asking the vendor exactly what we need to know, pre-filled with invoice details, the math discrepancy, and the specific clarification request. The reviewer opens the draft, edits the `[vendor contact]` placeholder, and sends. The system did the cognitive work of figuring out *what to ask*; the human handles the relationship layer.
+
+This is the mini-CRM extension of the extractor. Most LLM-based pipelines either hallucinate to fill the gap or fault with terse error notes. The pattern here is a third option: the AI says "I can't solve this one, but here's everything the human needs to close the loop, including a draft of the message they should send." It's the same loop-closing principle the README's section 5 covered for vendors who only send links — automate the boring, human-up the judgment calls, give the human everything they need so the judgment call takes 10 seconds instead of 10 minutes.
+
+The accompanying `invoices_dashboard.xlsx` surfaces the same drafts on a dedicated tab, alongside a projector-friendly invoice/line-item view for stare-and-compare review against the original PDFs.
+
+## 7. Production extensions worth noting
 
 - **Vendor canonicalization against a real master.** The script has a small embedded vendor master that maps observed variants ("H## P########## P#######, Inc." / "H## P#### P#######") to a canonical name and flags unknown vendors to an exceptions list. Production would replace the embedded list with a Sheets-backed or Antera-side vendor master, with fuzzy matching by name **plus** remit-to address as the join key — vendors rename themselves, addresses are more stable.
 - **Vendor-portal adapter with credentials.** Some vendors (not Richardson — theirs is public) gate their invoice URLs behind a login. For those, a per-vendor credential vault + light Selenium/Playwright adapter is the right shape, isolated to one subsystem.

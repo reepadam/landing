@@ -294,6 +294,10 @@ def split_invoice_and_audit(record: dict, source_file: str, page_number: int,
         "po_number":        record.get("po_number"),
         "total_amount_due": record.get("total_amount_due"),
         "currency":         record.get("currency") or "USD",
+        # _source_file and _page_number let us join audit -> invoice without ambiguity.
+        # These get stripped before posting to Antera (downstream adapter removes underscore-prefixed keys).
+        "_source_file":     source_file,
+        "_page_number":     page_number,
         "line_items": [
             {
                 "item_name":  li.get("item_name"),
@@ -596,6 +600,99 @@ def process_email(client: "Anthropic", eml_path: Path):
     audits.append(aud)
     return invoices, audits
 
+
+# ---- vendor follow-up draft generator --------------------------------------
+
+def vendor_followup_draft(invoice: dict, audit: dict) -> dict | None:
+    """For records flagged for review, generate a copy-pasteable email draft
+    the AP team can send to the vendor asking for the specific clarification
+    needed to close the loop. Returns None when the record doesn't need follow-up.
+
+    The goal: the human reviewer doesn't have to figure out *what to ask the
+    vendor* — they just open the draft, read it for 10 seconds, edit if needed,
+    and send. The system tees up the work; the human chooses to do it."""
+    vendor    = (invoice.get("vendor") or {}).get("name") or audit.get("vendor_raw_name") or "Vendor"
+    inv_num   = invoice.get("invoice_number") or "(unknown)"
+    inv_date  = invoice.get("invoice_date") or "(unknown)"
+    po_num    = invoice.get("po_number") or "(unknown)"
+    total     = invoice.get("total_amount_due")
+    sub_check = audit.get("subtotal_check")
+    sub_note  = audit.get("subtotal_note") or ""
+    status    = audit.get("extraction_status")
+    confidence = audit.get("extraction_confidence")
+
+    # Compute line sum + delta for the body
+    line_items = invoice.get("line_items") or []
+    line_sum = sum((li.get("quantity") or 0) * (li.get("unit_price") or 0) for li in line_items)
+    delta = (total or 0) - line_sum if total is not None else None
+
+    # Decide the issue and the ask
+    if sub_check == "failed" and delta is not None and abs(delta) > 0.01:
+        issue = (
+            f"the line items we extracted from your invoice total ${line_sum:,.2f}, "
+            f"but the printed Total Amount Due is ${total:,.2f} — a difference of "
+            f"${abs(delta):,.2f} we can't reconcile from the document."
+        )
+        ask = (
+            "Could you confirm whether there are any additional line items (freight, "
+            "shipping, handling, tax, surcharge, or discount adjustments) that aren't "
+            "shown on the invoice we received? If so, could you send a corrected copy "
+            "with all charges itemized so we can post the invoice cleanly to our AP "
+            "system?"
+        )
+    elif total is None or not line_items:
+        issue = (
+            "the invoice you sent us did not include line-item detail or a payable "
+            "total in the document body — only a link or summary in the email."
+        )
+        ask = (
+            "Could you send a complete copy of the invoice with line items and total "
+            "as an attachment (PDF preferred), so we can post the invoice cleanly to "
+            "our AP system?"
+        )
+    elif confidence == "low":
+        issue = "we couldn't reliably read several fields from the document we received."
+        ask = (
+            "Could you re-send the invoice as a fresh PDF or higher-resolution scan? "
+            "Some fields didn't read clearly enough for us to confirm the values."
+        )
+    else:
+        return None  # no follow-up needed
+
+    subject = f"Question on invoice {inv_num} — clarification needed for AP posting"
+    body = (
+        f"Hi [vendor contact],\n\n"
+        f"We received your invoice {inv_num} dated {inv_date} (PO {po_num}) and started "
+        f"processing it through our intake system, but {issue}\n\n"
+        f"{ask}\n\n"
+        f"For reference, here is what we extracted from the document:\n"
+        f"  Vendor:        {vendor}\n"
+        f"  Invoice #:     {inv_num}\n"
+        f"  Invoice Date:  {inv_date}\n"
+        f"  PO #:          {po_num}\n"
+        f"  Total Due:     ${total:,.2f}" if total is not None else f"  Total Due:     [not extracted]"
+    )
+    body += f"\n  Line items extracted ({len(line_items)}):\n"
+    for li in line_items:
+        body += f"    - {li.get('item_name','(no name)')}: qty {li.get('quantity')} x ${li.get('unit_price')}\n"
+    if delta is not None and abs(delta) > 0.01:
+        body += f"\n  Line-item subtotal: ${line_sum:,.2f}\n"
+        body += f"  Unexplained delta:  ${delta:+,.2f}\n"
+    body += (
+        "\nThanks — we'll post the invoice as soon as you can confirm. We're trying "
+        "to clear our AP backlog and your reply will help us pay you sooner.\n\n"
+        "— HDS Marketing AP team"
+    )
+
+    return {
+        "subject": subject,
+        "body": body,
+        "reason_code": sub_check if sub_check == "failed" else ("low_confidence" if confidence == "low" else "incomplete_data"),
+        "perceived_issue": issue,
+        "ready_to_send": False,  # explicit: human must review
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--input", "-i", default="invoices_raw")
@@ -637,6 +734,42 @@ def main() -> int:
         a.get("vendor_raw_name") for a in all_audits
         if a.get("extraction_status") == "ok" and not a.get("vendor_known")
     } - {None})
+
+    # For any flagged record, generate a copy-pasteable vendor follow-up email draft.
+    # Builds the index inv_idx -> invoice for matching.
+    inv_by_invnum = {inv.get("invoice_number"): inv for inv in all_invoices if inv.get("invoice_number")}
+    for a in all_audits:
+        inv = None
+        # Try to find the matching invoice for this audit record.
+        # Match priority: source_file+page first, then vendor+invoice_number.
+        for candidate in all_invoices:
+            if (candidate.get("_source_file") == a.get("source_file")
+                and candidate.get("_page_number") == a.get("page_number")):
+                inv = candidate; break
+        if not inv:
+            for candidate in all_invoices:
+                vmatch = candidate.get("vendor", {}).get("name") == a.get("vendor_canonical_name")
+                # Audit may not store invoice_number directly; we use the file name + the canonical vendor
+                # to do a heuristic match: if there's exactly one invoice for that vendor + source_file, take it
+                if vmatch:
+                    # Strong match if source_file appears in the invoice metadata we'll inject below
+                    inv = candidate
+                    # don't break — let later iterations refine if a better match exists
+                    if a.get("source_file","").startswith(candidate.get("invoice_number","")):
+                        break
+        if not inv:
+            # Fall back to a minimal dict for the email-draft generator
+            inv = {"vendor": {"name": a.get("vendor_canonical_name")},
+                   "invoice_number": None, "invoice_date": None, "po_number": None,
+                   "total_amount_due": None, "line_items": []}
+        # Only generate drafts when the record actually needs follow-up
+        if (a.get("subtotal_check") == "failed"
+            or a.get("extraction_confidence") in ("low", "medium")
+            or a.get("extraction_status") != "ok"
+            or not a.get("vendor_known")):
+            draft = vendor_followup_draft(inv, a)
+            if draft:
+                a["vendor_followup_draft"] = draft
 
     payload = {
         "batch_id": time.strftime("%Y%m%d-%H%M%S-utc", time.gmtime()),
