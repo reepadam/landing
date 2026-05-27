@@ -1,6 +1,98 @@
 <!DOCTYPE html>
-<html lang
-<details class="bucket"><summary><span class="bucket-vendor">H## P########## P#######, Inc.</span><span class="bucket-meta">7 invoices extracted · hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">Vendor identification required hybrid text+image path. With the adjustment-aware prompt, all 7 records reconcile cleanly (subtotal validation passes).</div><pre class="json-box"><code>{
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>HDS Homework — Adam J. Reep</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css">
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<style>
+:root { --bg:#0a0e0a; --fg:#c8d8c8; --fg-dim:#6a8a6a; --accent:#50fa7b; --prompt:#ffb86c; --hr:#1a2a1a; --panel-bg:#0f1a0f; }
+* { box-sizing:border-box; margin:0; padding:0; }
+html { font-size:16px; scroll-behavior:smooth; }
+body { font-family:'IBM Plex Mono','JetBrains Mono','Menlo','Consolas','Courier New',monospace; background:var(--bg); color:var(--fg); line-height:1.55; padding:2rem 1.5rem 4rem; max-width:960px; margin:0 auto; position:relative; z-index:1; }
+#stars { position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.35; }
+.star { position:absolute; background:#fff; border-radius:50%; animation:twinkle 4s infinite ease-in-out; }
+@keyframes twinkle { 0%,100%{opacity:0.2;} 50%{opacity:1;} }
+.prompt-line { color:var(--prompt); font-size:0.85rem; margin-bottom:0.5rem; }
+.eyebrow { color:var(--prompt); font-size:0.8rem; letter-spacing:0.18em; margin-bottom:1rem; }
+h1 { font-size:2.6rem; font-weight:700; line-height:1.1; margin-bottom:0.5rem; letter-spacing:-0.02em; }
+.tagline { color:var(--prompt); font-style:italic; font-size:0.95rem; margin-bottom:2rem; }
+.lede { border:1px solid var(--hr); background:var(--panel-bg); padding:1.4rem 1.5rem; margin-bottom:1.5rem; border-left:3px solid var(--accent); }
+.lede p { font-size:0.95rem; margin-bottom:0.7rem; }
+.lede p:last-child { margin-bottom:0; }
+.lede .lead { color:var(--accent); font-weight:700; font-size:0.85rem; letter-spacing:0.08em; margin-bottom:0.6rem; }
+.privacy-note { border:1px solid var(--prompt); background:rgba(255,184,108,0.06); padding:0.9rem 1.2rem; margin-bottom:2rem; font-size:0.85rem; }
+.privacy-note strong { color:var(--prompt); }
+.stats { display:grid; grid-template-columns:repeat(4,1fr); gap:0.5rem; margin:2rem 0; }
+.stat { background:var(--panel-bg); padding:1.3rem 0.8rem; text-align:center; border:1px solid var(--hr); }
+.stat .num { font-size:1.8rem; font-weight:700; color:var(--accent); display:block; margin-bottom:0.3rem; letter-spacing:-0.02em; }
+.stat .label { font-size:0.7rem; color:var(--fg-dim); letter-spacing:0.04em; }
+@media (max-width:680px) { .stats { grid-template-columns:repeat(2,1fr); } h1 { font-size:2rem; } }
+.section-cmd { color:var(--prompt); font-size:0.95rem; margin:2.8rem 0 1.3rem; letter-spacing:0.02em; border-bottom:1px solid var(--hr); padding-bottom:0.5rem; }
+.bucket { background:var(--panel-bg); border:1px solid var(--hr); margin-bottom:0.6rem; border-left:3px solid var(--fg-dim); transition:border-left-color 0.15s; }
+.bucket[open] { border-left-color:var(--accent); }
+.bucket summary { padding:0.9rem 1.1rem; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; list-style:none; }
+.bucket summary::-webkit-details-marker { display:none; }
+.bucket summary::before { content:"\25B8 "; color:var(--fg-dim); font-weight:700; margin-right:0.4rem; }
+.bucket[open] summary::before { content:"\25BE "; color:var(--accent); }
+.bucket-vendor { color:var(--fg); font-weight:700; font-size:1rem; }
+.bucket-meta { color:var(--fg-dim); font-size:0.82rem; }
+.bucket-body { padding:0.4rem 1.1rem 1.1rem; border-top:1px solid var(--hr); }
+.bucket-source { color:var(--fg-dim); font-size:0.85rem; margin:0.6rem 0 0.8rem; font-style:italic; }
+.json-box { background:#050a05; border:1px solid var(--hr); padding:1rem; font-size:0.78rem; overflow-x:auto; color:var(--fg); max-height:480px; overflow-y:auto; }
+pre { background:#050a05; border:1px solid var(--hr); padding:1rem; font-size:0.78rem; overflow-x:auto; margin:1rem 0; border-radius:2px; }
+pre code.hljs { background:transparent !important; padding:0 !important; }
+code { font-family:inherit; font-size:0.88em; color:var(--accent); }
+.readme { font-size:0.92rem; }
+.readme h1, .readme h2, .readme h3 { color:var(--fg); margin-top:1.8rem; margin-bottom:0.7rem; font-weight:700; }
+.readme h1 { font-size:1.5rem; }
+.readme h2 { font-size:1.2rem; color:var(--prompt); }
+.readme h3 { font-size:1rem; }
+.readme p { margin-bottom:0.9rem; }
+.readme ul, .readme ol { margin-left:1.5rem; margin-bottom:0.9rem; }
+.readme li { margin-bottom:0.3rem; }
+.readme strong { color:var(--fg); }
+.readme em { color:var(--fg-dim); }
+.readme code { background:rgba(80,250,123,0.08); padding:0.1em 0.3em; border-radius:2px; }
+.readme a { color:var(--accent); border-bottom:1px dotted var(--accent); text-decoration:none; }
+.readme hr { border:0; border-top:1px solid var(--hr); margin:1.5rem 0; }
+footer { margin-top:3.5rem; padding-top:1.5rem; border-top:1px solid var(--hr); color:var(--fg-dim); font-size:0.75rem; text-align:center; }
+footer a { color:var(--fg-dim); text-decoration:none; border-bottom:1px dotted var(--fg-dim); margin:0 0.6rem; }
+footer a:hover { color:var(--accent); border-color:var(--accent); }
+</style>
+</head>
+<body>
+
+<div id="stars"></div>
+
+<div class="prompt-line"><span>adam@reep:~$</span> ./extract_invoices.py --input ./5_emailed_invoices/ --output invoices.json</div>
+<div class="eyebrow">HDS HOMEWORK &middot; INVOICE EXTRACTION &middot; 2026-05-27</div>
+<h1>Invoice Extraction Homework</h1>
+<div class="tagline">Lightweight Python &middot; Claude Haiku 4.5 &middot; Antera-shaped JSON output</div>
+
+<div class="lede">
+  <div class="lead">// HOMEWORK CONTEXT</div>
+  <p>After the interview on May 26, Ryan sent five emailed invoice packages and asked for a lightweight Python script that ingests them, extracts five fields per invoice via an LLM API, enforces a strict schema, and emits clean JSON shaped for posting to the Antera API. The five packages contained 27 invoices total.</p>
+  <p>Below: the script source, per-vendor extraction summaries showing the schema and confidence behavior, and the README. Real values redacted on this public view.</p>
+</div>
+
+<div class="privacy-note">
+  <strong>Data privacy:</strong> the actual extracted dollar amounts, line-item descriptions, vendor PO numbers, and invoice numbers are <strong>not</strong> displayed on this public page. The vendor buckets below show the schema with placeholder values.
+</div>
+
+<div class="stats">
+  <div class="stat"><span class="num">27</span><span class="label">INVOICES EXTRACTED</span></div>
+  <div class="stat"><span class="num">5</span><span class="label">CANONICAL VENDORS</span></div>
+  <div class="stat"><span class="num">26/27</span><span class="label">SUBTOTAL PASSED</span></div>
+  <div class="stat"><span class="num">1/27</span><span class="label">FLAGGED FOR REVIEW</span></div>
+</div>
+
+<div class="section-cmd">$ results --by vendor (schema demo, values redacted)</div>
+
+<details class="bucket"><summary><span class="bucket-vendor">H## P########## P#######, Inc.</span><span class="bucket-meta">7 invoices extracted &middot; hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">Vendor identification required hybrid text+image path. With the adjustment-aware prompt, all 7 records reconcile cleanly (subtotal validation passes).</div><pre class="json-box"><code>{
   &quot;vendor&quot;: &quot;H## P########## P#######, Inc.&quot;,
   &quot;extracted_count&quot;: 7,
   &quot;schema_demonstration_record&quot;: {
@@ -27,7 +119,8 @@
   },
   &quot;note&quot;: &quot;Real values are not displayed on the public site.&quot;
 }</code></pre></div></details>
-<details class="bucket"><summary><span class="bucket-vendor">S&amp;# A#########</span><span class="bucket-meta">11 invoices extracted · hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">Multi-invoice PDF — each of 11 pages is a separate invoice. All 11 extracted at high confidence; subtotal cross-validation passes on every record.</div><pre class="json-box"><code>{
+
+<details class="bucket"><summary><span class="bucket-vendor">S&amp;# A#########</span><span class="bucket-meta">11 invoices extracted &middot; hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">Multi-invoice PDF — each of 11 pages is a separate invoice. All 11 extracted at high confidence; subtotal cross-validation passes on every record.</div><pre class="json-box"><code>{
   &quot;vendor&quot;: &quot;S&amp;# A#########&quot;,
   &quot;extracted_count&quot;: 11,
   &quot;schema_demonstration_record&quot;: {
@@ -54,7 +147,8 @@
   },
   &quot;note&quot;: &quot;Real values are not displayed on the public site.&quot;
 }</code></pre></div></details>
-<details class="bucket"><summary><span class="bucket-vendor">A#### P####### &amp; R########### Inc.</span><span class="bucket-meta">5 invoices extracted · hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">4 of 5 records flagged by subtotal cross-validation — vendor&#x27;s invoice format puts the order total in the &quot;Unit Price&quot; column on a 500-quantity row, making line-item math diverge from the printed total. Script demotes confidence to medium and flags for human review. Real data quality issue, not a script issue.</div><pre class="json-box"><code>{
+
+<details class="bucket"><summary><span class="bucket-vendor">A#### P####### &amp; R########### Inc.</span><span class="bucket-meta">5 invoices extracted &middot; hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">Vendor-specific parsing notes in the vendor master taught the prompt that this vendor&#x27;s invoices put the line total in the &quot;Unit Price&quot; column. 4 of 5 records now reconcile; 1 has a 3.4% unexplained delta and ships with an auto-generated vendor follow-up email draft.</div><pre class="json-box"><code>{
   &quot;vendor&quot;: &quot;A#### P####### &amp; R########### Inc.&quot;,
   &quot;extracted_count&quot;: 5,
   &quot;schema_demonstration_record&quot;: {
@@ -81,7 +175,8 @@
   },
   &quot;note&quot;: &quot;Real values are not displayed on the public site.&quot;
 }</code></pre></div></details>
-<details class="bucket"><summary><span class="bucket-vendor">O## B####### P#######</span><span class="bucket-meta">3 invoices extracted · vision (scanned)</span></summary><div class="bucket-body"><div class="bucket-source">Image-based scanned PDF, zero extractable text — handled via Claude vision-only path. All 3 invoices extracted at high confidence with passing subtotals.</div><pre class="json-box"><code>{
+
+<details class="bucket"><summary><span class="bucket-vendor">O## B####### P#######</span><span class="bucket-meta">3 invoices extracted &middot; vision (scanned)</span></summary><div class="bucket-body"><div class="bucket-source">Image-based scanned PDF, zero extractable text — handled via Claude vision-only path. All 3 invoices extracted at high confidence with passing subtotals.</div><pre class="json-box"><code>{
   &quot;vendor&quot;: &quot;O## B####### P#######&quot;,
   &quot;extracted_count&quot;: 3,
   &quot;schema_demonstration_record&quot;: {
@@ -108,7 +203,8 @@
   },
   &quot;note&quot;: &quot;Real values are not displayed on the public site.&quot;
 }</code></pre></div></details>
-<details class="bucket"><summary><span class="bucket-vendor">R######### S#####</span><span class="bucket-meta">1 invoice extracted · email body + URL fetch</span></summary><div class="bucket-body"><div class="bucket-source">Email body contained a public URL to the invoice (embedded apikey, no auth required). Script fetched it through the same vision pipeline. First-pass subtotal missed a Freight line; reconciliation pass found Freight: $18.16 and added it. Math now balances.</div><pre class="json-box"><code>{
+
+<details class="bucket"><summary><span class="bucket-vendor">R######### S#####</span><span class="bucket-meta">1 invoice extracted &middot; email body + URL fetch</span></summary><div class="bucket-body"><div class="bucket-source">Email contained a public URL to the invoice (embedded apikey, no auth required). Script fetched it through the same vision pipeline. Reconciliation pass found Freight: $18.16 to close the math.</div><pre class="json-box"><code>{
   &quot;vendor&quot;: &quot;R######### S#####&quot;,
   &quot;extracted_count&quot;: 1,
   &quot;schema_demonstration_record&quot;: {
@@ -135,6 +231,7 @@
   },
   &quot;note&quot;: &quot;Real values are not displayed on the public site.&quot;
 }</code></pre></div></details>
+
 
 <div class="section-cmd">$ cat extract_invoices.py</div>
 
@@ -1031,5 +1128,6 @@ if __name__ == &quot;__main__&quot;:
 })();
 if (window.hljs) { hljs.highlightAll(); }
 </script>
+
 </body>
 </html>
