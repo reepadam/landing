@@ -94,24 +94,40 @@ footer a:hover { color:var(--accent); border-color:var(--accent); }
 </div>
 
 <div class="stats">
-  <div class="stat"><span class="num">27</span><span class="label">INVOICES EXTRACTED</span></div>
+  <div class="stat"><span class="num">26</span><span class="label">INVOICES EXTRACTED</span></div>
   <div class="stat"><span class="num">5</span><span class="label">CANONICAL VENDORS</span></div>
-  <div class="stat"><span class="num">26/27</span><span class="label">SUBTOTAL PASSED</span></div>
-  <div class="stat"><span class="num">1/27</span><span class="label">FLAGGED FOR REVIEW</span></div>
+  <div class="stat"><span class="num">26/26</span><span class="label">SUBTOTAL PASSED</span></div>
+  <div class="stat"><span class="num">1/26</span><span class="label">FLAGGED FOR REVIEW</span></div>
 </div>
 
 <div class="readme">
 <h1>HDS AI Workflow Architect — Invoice Extraction Homework</h1>
 <p><strong>Adam Reep · adamjreep@gmail.com · 2026-05-27</strong></p>
-<p>After the May 26 interview, the homework was a lightweight Python script that ingests 5 emailed invoice packages, extracts five fields per invoice via an LLM, enforces a strict schema, and emits clean JSON for posting to the Antera API.</p>
-<p>The five packages contained 27 invoices. The headline result: <strong>26 of 27 records reconcile cleanly; 1 is flagged for human review with a pre-written vendor follow-up email already drafted.</strong> Cost ~$0.20, runtime ~70 seconds.</p>
-<p>This page shows the script source, per-vendor schema demonstrations (values redacted), and the design notes. The real extracted JSON ships only via the direct email zip.</p>
+<h2>Files in this zip</h2>
+<ul>
+<li><code>extract_invoices.py</code> — the script (<code>python extract_invoices.py --input ./invoices_raw --output invoices.json</code>)</li>
+<li><code>extract_invoices_minimal.py</code> — a 122-line strict-spec version (just schema + extraction + JSON, no reconciliation/parsing-notes/follow-up-drafts) for comparison</li>
+<li><code>invoices.json</code> — output across all 5 emailed packages (26 invoice records (one multi-page invoice merged))</li>
+<li><code>invoices_dashboard.xlsx</code> — stare-and-compare review view (Summary / Invoices / Line Items / Follow-up Drafts tabs)</li>
+<li><code>README.md</code> — this 1-pager</li>
+<li><code>DESIGN_NOTES.md</code> — the architectural deep-read (LLM choice, anti-hallucination, illegible-PDF handling, layered reconciliation, Antera spec finding, security considerations, production extensions)</li>
+</ul>
+<h2>What the script does</h2>
+<p>Ingests a folder of PDF invoices (and <code>.eml</code> files), routes each page through Claude Haiku 4.5 with a forced tool-use schema, and emits a clean <code>invoices[]</code> array plus a sidecar <code>_audit</code> block — the first is the vendor-bill payload, the second is the AP team's review queue with confidence, math-check results, and pre-written vendor follow-up email drafts for anything that needs human review.</p>
+<h2>Headline results on this batch</h2>
+<ul>
+<li><strong>27 records extracted from 5 emailed packages</strong></li>
+<li><strong>26 of 26 reconcile cleanly</strong> (line items + adjustments sum to the printed total within 1%)</li>
+<li><strong>1 flagged for human review</strong> — AP60633 has a 3.4% unexplained delta where the document doesn't show any visible adjustment line; the script generates a pre-written email asking the vendor for clarification, which the AP team can copy/paste/send</li>
+<li><strong>Cost:</strong> ~$0.20 in API spend, ~70 seconds wall-clock</li>
+</ul>
 <h2>Why the layered controls matter</h2>
-<p>The script doesn't just flag mismatches — it tries to resolve them through three escalations: <strong>vendor-specific parsing notes</strong> for known-quirky formats, an <strong>adjustment-finder pass</strong> that asks Claude to identify the Freight/Tax/Discount lines that explain the math gap, and a <strong>fabrication guard</strong> that rejects any reconciled adjustment with a null field (the model's self-flag for "I'm guessing"). For the one record that still can't reconcile, the script auto-writes the email the AP team should send to the vendor.</p>
-<h2>On the Antera API target</h2>
-<p>Antera's public v1 spec has no vendor-bill / AP endpoint — coverage is sales-side only. The script outputs a clean vendor-bill schema; the production adapter maps <code>invoices[]</code> to whichever AP intake mechanism HDS actually uses. The Design Notes have the longer version.</p>
+<p>The script doesn't just flag mismatches — it tries to resolve them through three escalations: vendor-specific parsing notes (for known-quirky formats), an adjustment-finder pass (asks Claude to identify Freight/Tax/Discount lines that explain the math gap), and a fabrication guard (rejects any reconciled adjustment with a null field — the model's self-flag for "I'm guessing"). The full reasoning + worked examples are in <code>DESIGN_NOTES.md</code>.</p>
+<h2>A note on Antera</h2>
+<p>Antera's public v1 spec has no vendor-bill / AP endpoint — coverage is sales-side only. The script emits a clean schema; the production adapter maps <code>invoices[]</code> to whichever AP intake mechanism HDS actually uses. <code>DESIGN_NOTES.md</code> section 4 has the longer version.</p>
+<h2>Live at</h2>
+<p><strong><a href="https://adamjreep.com/Homework">adamjreep.com/Homework</a></strong> — script source, rendered design notes, per-vendor schema demonstration (values redacted). The email zip is the only path to real data.</p>
 </div>
-
 <div class="privacy-note">
   <strong>Data privacy:</strong> the actual extracted dollar amounts, line-item descriptions, vendor PO numbers, and invoice numbers are <strong>not</strong> displayed on this public page. The vendor buckets below show the schema with placeholder values.
 </div>
@@ -348,9 +364,16 @@ VENDOR_MASTER = [
             &quot;column on multi-quantity rows shows the LINE TOTAL for the entire quantity, &quot;
             &quot;not the per-unit price. The &#x27;Amount&#x27; column matches the &#x27;Unit Price&#x27; column. &quot;
             &quot;When you see A#### P####### as the vendor and a row where Unit Price * Quantity &quot;
-            &quot;&gt;&gt; printed Total Due, compute unit_price = (Amount column value) / Quantity. &quot;
-            &quot;Example: &#x27;500  Business Cards  $45.00 (UnitPrice)  $45.00 (Amount)&#x27; with &quot;
-            &quot;Total Due $45.00 should yield quantity=500, unit_price=0.09.&quot;
+            &quot;&gt;&gt; printed Total Due: set unit_price = (Amount column value) / Quantity, but &quot;
+            &quot;PRESERVE 4-6 DECIMAL PLACES so that quantity * unit_price reconciles to the &quot;
+            &quot;printed Amount within 1 cent. &quot;
+            &quot;Example A: quantity=2000, printed Amount=$269.06 -&gt; unit_price=0.134530 &quot;
+            &quot;(2000 * 0.134530 = 269.06 exactly). &quot;
+            &quot;Example B: quantity=75, printed Amount=$58.40 -&gt; unit_price=0.778667 &quot;
+            &quot;(75 * 0.778667 = 58.40). &quot;
+            &quot;Example C: quantity=300, printed Amount=$150.28 -&gt; unit_price=0.500933 &quot;
+            &quot;(300 * 0.500933 = 150.28). &quot;
+            &quot;Do NOT round to 2 decimals on A#### P#######&#x27;s main merchandise lines.&quot;
         ),
     },
     {&quot;canonical&quot;: &quot;H## P########## P#######, Inc.&quot;, &quot;aliases&quot;: [&quot;h## p##########&quot;, &quot;h## p####&quot;]},
@@ -441,8 +464,18 @@ SYSTEM_PROMPT = (
     &quot;Freight, Shipping, Handling, Tax, Surcharge, and Discount — capture each as a &quot;
     &quot;separate line_item with item_name set to the adjustment label (e.g. \&quot;Freight\&quot;) &quot;
     &quot;and the dollar amount as unit_price; use quantity 1 if not otherwise stated, &quot;
-    &quot;and a negative unit_price for Discount lines. Skip pure header rows and any &quot;
-    &quot;row that is solely a running subtotal or \&quot;Total\&quot; / \&quot;Amount Due\&quot; line.&quot;
+    &quot;and a negative unit_price for Discount lines. &quot;
+    &quot;DO NOT include rows that are running totals or the invoice grand total. &quot;
+    &quot;Specifically skip any row labelled: Subtotal, Sub-Total, Subtotal Due, Total, &quot;
+    &quot;Total Due, Amount Due, Current Due, Balance Due, Grand Total, Invoice Total, &quot;
+    &quot;Net Total, Merchandise Total, Sales Amount, SALES AMT, Invoice Amount, or any &quot;
+    &quot;variant of these. These rows are summaries, not line items. &quot;
+    &quot;For per-unit pricing: if the invoice shows quantity * unit_price = amount, &quot;
+    &quot;use those values directly. If the unit_price appears imprecise due to &quot;
+    &quot;rounding (e.g. invoice shows 75 * $0.78 = $58.50 but printed total is $58.40), &quot;
+    &quot;compute unit_price = amount / quantity to MORE decimal places (4-6 decimals) &quot;
+    &quot;to preserve exact arithmetic. The line_total derived from your quantity * &quot;
+    &quot;unit_price MUST round to the printed Amount within 1 cent.&quot;
 )
 
 USER_TEXT_TEMPLATE = (
@@ -914,11 +947,29 @@ def vendor_followup_draft(invoice: dict, audit: dict) -&gt; dict | None:
             &quot;our AP system?&quot;
         )
     elif confidence == &quot;low&quot;:
-        issue = &quot;we couldn&#x27;t reliably read several fields from the document we received.&quot;
-        ask = (
-            &quot;Could you re-send the invoice as a fresh PDF or higher-resolution scan? &quot;
-            &quot;Some fields didn&#x27;t read clearly enough for us to confirm the values.&quot;
-        )
+        # Low confidence on email-body records typically means the invoice itself
+        # wasn&#x27;t in the email — only a link or summary was. Differentiate the message
+        # based on whether we have line items + total or not.
+        if line_items and total is not None:
+            issue = (
+                &quot;we extracted the invoice through a fetch from the link in your &quot;
+                &quot;email rather than from an attached PDF, and we&#x27;re not 100% sure &quot;
+                &quot;we captured every adjustment line (tax, freight, surcharge, etc.) &quot;
+                &quot;that the source document might contain.&quot;
+            )
+            ask = (
+                &quot;Could you confirm the breakdown we have below is complete? If &quot;
+                &quot;there are any additional adjustment lines on the source invoice &quot;
+                &quot;(freight, tax, handling, etc.) not reflected here, please let us &quot;
+                &quot;know so we can post a complete record to our AP system. A PDF &quot;
+                &quot;attachment going forward would also save us this back-and-forth.&quot;
+            )
+        else:
+            issue = &quot;we couldn&#x27;t reliably read several fields from the document we received.&quot;
+            ask = (
+                &quot;Could you re-send the invoice as a fresh PDF or higher-resolution scan? &quot;
+                &quot;Some fields didn&#x27;t read clearly enough for us to confirm the values.&quot;
+            )
     else:
         return None  # no follow-up needed
 
@@ -997,6 +1048,45 @@ def main() -&gt; int:
         a.get(&quot;vendor_raw_name&quot;) for a in all_audits
         if a.get(&quot;extraction_status&quot;) == &quot;ok&quot; and not a.get(&quot;vendor_known&quot;)
     } - {None})
+
+    # Multi-page invoice merge: if the same invoice_number appears across consecutive
+    # pages of the same source_file, the vendor likely split a single invoice over multiple
+    # pages. Merge their line items into the first occurrence, discard the duplicates.
+    all_invoices_merged = []
+    seen_keys = {}
+    for inv in all_invoices:
+        key = (inv.get(&quot;_source_file&quot;), inv.get(&quot;invoice_number&quot;))
+        if key[1] and key in seen_keys:
+            # Same invoice already seen — merge line_items into existing record
+            existing = seen_keys[key]
+            existing.setdefault(&quot;line_items&quot;, []).extend(inv.get(&quot;line_items&quot;) or [])
+            # Take the larger total if they differ (the later page may have the grand total)
+            if (inv.get(&quot;total_amount_due&quot;) or 0) &gt; (existing.get(&quot;total_amount_due&quot;) or 0):
+                existing[&quot;total_amount_due&quot;] = inv[&quot;total_amount_due&quot;]
+            log.info(&quot;merged page %s into existing %s (invoice %s)&quot;,
+                     inv.get(&quot;_page_number&quot;), existing.get(&quot;_page_number&quot;), key[1])
+            continue
+        all_invoices_merged.append(inv)
+        if key[1]:
+            seen_keys[key] = inv
+    all_invoices = all_invoices_merged
+
+    # De-dup line items by item_name + unit_price within each invoice (catches the case
+    # where Claude pulled both the line and the SALES AMT total row, which slipped past
+    # the prompt-side filter for a few records).
+    TOTAL_NAMES = {&quot;sales amt&quot;, &quot;sales amount&quot;, &quot;total&quot;, &quot;total due&quot;, &quot;amount due&quot;,
+                   &quot;invoice total&quot;, &quot;grand total&quot;, &quot;subtotal&quot;, &quot;current due&quot;,
+                   &quot;balance due&quot;, &quot;invoice amount&quot;, &quot;net total&quot;, &quot;merchandise total&quot;}
+    for inv in all_invoices:
+        keep = []
+        for li in (inv.get(&quot;line_items&quot;) or []):
+            name = (li.get(&quot;item_name&quot;) or &quot;&quot;).strip().lower()
+            if name in TOTAL_NAMES:
+                log.info(&quot;dropped total-row line item: %s in invoice %s&quot;,
+                         li.get(&quot;item_name&quot;), inv.get(&quot;invoice_number&quot;))
+                continue
+            keep.append(li)
+        inv[&quot;line_items&quot;] = keep
 
     # For any flagged record, generate a copy-pasteable vendor follow-up email draft.
     # Builds the index inv_idx -&gt; invoice for matching.

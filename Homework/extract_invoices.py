@@ -85,9 +85,16 @@ VENDOR_MASTER = [
             "column on multi-quantity rows shows the LINE TOTAL for the entire quantity, "
             "not the per-unit price. The 'Amount' column matches the 'Unit Price' column. "
             "When you see A#### P####### as the vendor and a row where Unit Price * Quantity "
-            ">> printed Total Due, compute unit_price = (Amount column value) / Quantity. "
-            "Example: '500  Business Cards  $45.00 (UnitPrice)  $45.00 (Amount)' with "
-            "Total Due $45.00 should yield quantity=500, unit_price=0.09."
+            ">> printed Total Due: set unit_price = (Amount column value) / Quantity, but "
+            "PRESERVE 4-6 DECIMAL PLACES so that quantity * unit_price reconciles to the "
+            "printed Amount within 1 cent. "
+            "Example A: quantity=2000, printed Amount=$269.06 -> unit_price=0.134530 "
+            "(2000 * 0.134530 = 269.06 exactly). "
+            "Example B: quantity=75, printed Amount=$58.40 -> unit_price=0.778667 "
+            "(75 * 0.778667 = 58.40). "
+            "Example C: quantity=300, printed Amount=$150.28 -> unit_price=0.500933 "
+            "(300 * 0.500933 = 150.28). "
+            "Do NOT round to 2 decimals on A#### P#######'s main merchandise lines."
         ),
     },
     {"canonical": "H## P########## P#######, Inc.", "aliases": ["h## p##########", "h## p####"]},
@@ -178,8 +185,18 @@ SYSTEM_PROMPT = (
     "Freight, Shipping, Handling, Tax, Surcharge, and Discount — capture each as a "
     "separate line_item with item_name set to the adjustment label (e.g. \"Freight\") "
     "and the dollar amount as unit_price; use quantity 1 if not otherwise stated, "
-    "and a negative unit_price for Discount lines. Skip pure header rows and any "
-    "row that is solely a running subtotal or \"Total\" / \"Amount Due\" line."
+    "and a negative unit_price for Discount lines. "
+    "DO NOT include rows that are running totals or the invoice grand total. "
+    "Specifically skip any row labelled: Subtotal, Sub-Total, Subtotal Due, Total, "
+    "Total Due, Amount Due, Current Due, Balance Due, Grand Total, Invoice Total, "
+    "Net Total, Merchandise Total, Sales Amount, SALES AMT, Invoice Amount, or any "
+    "variant of these. These rows are summaries, not line items. "
+    "For per-unit pricing: if the invoice shows quantity * unit_price = amount, "
+    "use those values directly. If the unit_price appears imprecise due to "
+    "rounding (e.g. invoice shows 75 * $0.78 = $58.50 but printed total is $58.40), "
+    "compute unit_price = amount / quantity to MORE decimal places (4-6 decimals) "
+    "to preserve exact arithmetic. The line_total derived from your quantity * "
+    "unit_price MUST round to the printed Amount within 1 cent."
 )
 
 USER_TEXT_TEMPLATE = (
@@ -651,11 +668,29 @@ def vendor_followup_draft(invoice: dict, audit: dict) -> dict | None:
             "our AP system?"
         )
     elif confidence == "low":
-        issue = "we couldn't reliably read several fields from the document we received."
-        ask = (
-            "Could you re-send the invoice as a fresh PDF or higher-resolution scan? "
-            "Some fields didn't read clearly enough for us to confirm the values."
-        )
+        # Low confidence on email-body records typically means the invoice itself
+        # wasn't in the email — only a link or summary was. Differentiate the message
+        # based on whether we have line items + total or not.
+        if line_items and total is not None:
+            issue = (
+                "we extracted the invoice through a fetch from the link in your "
+                "email rather than from an attached PDF, and we're not 100% sure "
+                "we captured every adjustment line (tax, freight, surcharge, etc.) "
+                "that the source document might contain."
+            )
+            ask = (
+                "Could you confirm the breakdown we have below is complete? If "
+                "there are any additional adjustment lines on the source invoice "
+                "(freight, tax, handling, etc.) not reflected here, please let us "
+                "know so we can post a complete record to our AP system. A PDF "
+                "attachment going forward would also save us this back-and-forth."
+            )
+        else:
+            issue = "we couldn't reliably read several fields from the document we received."
+            ask = (
+                "Could you re-send the invoice as a fresh PDF or higher-resolution scan? "
+                "Some fields didn't read clearly enough for us to confirm the values."
+            )
     else:
         return None  # no follow-up needed
 
@@ -734,6 +769,45 @@ def main() -> int:
         a.get("vendor_raw_name") for a in all_audits
         if a.get("extraction_status") == "ok" and not a.get("vendor_known")
     } - {None})
+
+    # Multi-page invoice merge: if the same invoice_number appears across consecutive
+    # pages of the same source_file, the vendor likely split a single invoice over multiple
+    # pages. Merge their line items into the first occurrence, discard the duplicates.
+    all_invoices_merged = []
+    seen_keys = {}
+    for inv in all_invoices:
+        key = (inv.get("_source_file"), inv.get("invoice_number"))
+        if key[1] and key in seen_keys:
+            # Same invoice already seen — merge line_items into existing record
+            existing = seen_keys[key]
+            existing.setdefault("line_items", []).extend(inv.get("line_items") or [])
+            # Take the larger total if they differ (the later page may have the grand total)
+            if (inv.get("total_amount_due") or 0) > (existing.get("total_amount_due") or 0):
+                existing["total_amount_due"] = inv["total_amount_due"]
+            log.info("merged page %s into existing %s (invoice %s)",
+                     inv.get("_page_number"), existing.get("_page_number"), key[1])
+            continue
+        all_invoices_merged.append(inv)
+        if key[1]:
+            seen_keys[key] = inv
+    all_invoices = all_invoices_merged
+
+    # De-dup line items by item_name + unit_price within each invoice (catches the case
+    # where Claude pulled both the line and the SALES AMT total row, which slipped past
+    # the prompt-side filter for a few records).
+    TOTAL_NAMES = {"sales amt", "sales amount", "total", "total due", "amount due",
+                   "invoice total", "grand total", "subtotal", "current due",
+                   "balance due", "invoice amount", "net total", "merchandise total"}
+    for inv in all_invoices:
+        keep = []
+        for li in (inv.get("line_items") or []):
+            name = (li.get("item_name") or "").strip().lower()
+            if name in TOTAL_NAMES:
+                log.info("dropped total-row line item: %s in invoice %s",
+                         li.get("item_name"), inv.get("invoice_number"))
+                continue
+            keep.append(li)
+        inv["line_items"] = keep
 
     # For any flagged record, generate a copy-pasteable vendor follow-up email draft.
     # Builds the index inv_idx -> invoice for matching.
