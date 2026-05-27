@@ -1,0 +1,8 @@
+# Never deploy git internals, wrangler internals, or config metadata
+.git/
+.git
+.wrangler/
+.gitignore
+.assetsignore
+wrangler.jsonc
+node_modules/
