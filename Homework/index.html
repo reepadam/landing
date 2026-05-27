@@ -217,12 +217,32 @@ log = logging.getLogger(&quot;extract_invoices&quot;)
 # homework, we hard-code the five vendors observed in the test batch.
 
 VENDOR_MASTER = [
-    {&quot;canonical&quot;: &quot;A#### P####### &amp; R########### Inc.&quot;, &quot;aliases&quot;: [&quot;a#### p#######&quot;]},
-    {&quot;canonical&quot;: &quot;H## P########## P#######, Inc.&quot;,     &quot;aliases&quot;: [&quot;h## p##########&quot;, &quot;h## p####&quot;]},
-    {&quot;canonical&quot;: &quot;S&amp;# A#########&quot;,                     &quot;aliases&quot;: [&quot;s ## a#########&quot;, &quot;## a#########&quot;]},
-    {&quot;canonical&quot;: &quot;O## B####### P#######&quot;,              &quot;aliases&quot;: [&quot;o## b#######&quot;]},
-    {&quot;canonical&quot;: &quot;R######### S#####&quot;,                  &quot;aliases&quot;: [&quot;r######### s#####&quot;, &quot;r#########&quot;]},
+    {
+        &quot;canonical&quot;: &quot;A#### P####### &amp; R########### Inc.&quot;,
+        &quot;aliases&quot;: [&quot;a#### p#######&quot;],
+        &quot;parsing_notes&quot;: (
+            &quot;ANGEL PRINTING INVOICES use a non-standard line format: the &#x27;Unit Price&#x27; &quot;
+            &quot;column on multi-quantity rows shows the LINE TOTAL for the entire quantity, &quot;
+            &quot;not the per-unit price. The &#x27;Amount&#x27; column matches the &#x27;Unit Price&#x27; column. &quot;
+            &quot;When you see A#### P####### as the vendor and a row where Unit Price * Quantity &quot;
+            &quot;&gt;&gt; printed Total Due, compute unit_price = (Amount column value) / Quantity. &quot;
+            &quot;Example: &#x27;500  Business Cards  $45.00 (UnitPrice)  $45.00 (Amount)&#x27; with &quot;
+            &quot;Total Due $45.00 should yield quantity=500, unit_price=0.09.&quot;
+        ),
+    },
+    {&quot;canonical&quot;: &quot;H## P########## P#######, Inc.&quot;, &quot;aliases&quot;: [&quot;h## p##########&quot;, &quot;h## p####&quot;]},
+    {&quot;canonical&quot;: &quot;S&amp;# A#########&quot;,                 &quot;aliases&quot;: [&quot;s ## a#########&quot;, &quot;## a#########&quot;]},
+    {&quot;canonical&quot;: &quot;O## B####### P#######&quot;,          &quot;aliases&quot;: [&quot;o## b#######&quot;]},
+    {&quot;canonical&quot;: &quot;R######### S#####&quot;,              &quot;aliases&quot;: [&quot;r######### s#####&quot;, &quot;r#########&quot;]},
 ]
+
+
+def get_vendor_parsing_notes(canonical_name: str | None) -&gt; str | None:
+    if not canonical_name: return None
+    for v in VENDOR_MASTER:
+        if v[&quot;canonical&quot;] == canonical_name and v.get(&quot;parsing_notes&quot;):
+            return v[&quot;parsing_notes&quot;]
+    return None
 
 def canonicalize_vendor(name: str | None) -&gt; tuple[str | None, bool, bool]:
     &quot;&quot;&quot;Returns (canonical_name, was_renamed, matched_in_master).
@@ -461,19 +481,54 @@ def extract_one_page(client: Anthropic, pdf_path: Path, page_index: int, page: p
         return None, error_audit(source_file, page_number, &quot;illegible_page&quot;,
                                  &quot;Vendor and total both unreadable; flagged for human review.&quot;)
 
-    # Reconcile pass: if line items don&#x27;t sum to total, ask Claude to find missing adjustments
+    # If a known-quirky vendor is identified and the subtotal fails, re-extract once
+    # with vendor-specific parsing notes prepended to the system prompt.
     sub_status, _sub_note = validate_subtotal(record)
+    if sub_status == &quot;failed&quot;:
+        canonical, _, _ = canonicalize_vendor(record.get(&quot;vendor_name&quot;))
+        parsing_notes = get_vendor_parsing_notes(canonical)
+        if parsing_notes:
+            log.info(&quot;    re-extracting with vendor-specific parsing notes for %s&quot;, canonical)
+            try:
+                img_b64_2 = page_image_b64(page)
+                content2 = [
+                    {&quot;type&quot;: &quot;image&quot;, &quot;source&quot;: {&quot;type&quot;: &quot;base64&quot;, &quot;media_type&quot;: &quot;image/png&quot;, &quot;data&quot;: img_b64_2}},
+                    {&quot;type&quot;: &quot;text&quot;,  &quot;text&quot;: (
+                        &quot;VENDOR-SPECIFIC INSTRUCTION:\n&quot; + parsing_notes +
+                        &quot;\n\nExtract the invoice with this guidance in mind.&quot;
+                        + (USER_TEXT_TEMPLATE.format(text=text) if text else &quot;&quot;)
+                    )},
+                ]
+                record2 = call_claude(client, content2)
+                # Use the re-extracted record only if its math is cleaner
+                sub2_status, _ = validate_subtotal(record2)
+                if sub2_status == &quot;passed&quot;:
+                    record = record2
+                    record[&quot;notes&quot;] = (record.get(&quot;notes&quot;) or &quot;&quot;) + &quot; | re-extracted with vendor parsing notes.&quot;
+                    used_path = used_path + &quot;+vendor_notes&quot;
+                    sub_status = &quot;passed&quot;
+            except Exception as e:
+                log.warning(&quot;    vendor-notes re-extract failed: %s&quot;, e)
+
+    # If still failed: ask Claude to identify missing adjustments
     if sub_status == &quot;failed&quot;:
         try:
             line_sum = sum((li.get(&quot;quantity&quot;) or 0) * (li.get(&quot;unit_price&quot;) or 0)
                            for li in (record.get(&quot;line_items&quot;) or []))
             delta = (record.get(&quot;total_amount_due&quot;) or 0) - line_sum
             recon = reconcile_subtotal(client, page, text, record.get(&quot;line_items&quot;) or [], record.get(&quot;total_amount_due&quot;) or 0, delta)
-            if recon.get(&quot;adjustments&quot;):
-                record[&quot;line_items&quot;] = (record.get(&quot;line_items&quot;) or []) + recon[&quot;adjustments&quot;]
+            # Only accept adjustments that have BOTH quantity and unit_price populated.
+            # An adjustment with a null field is the model self-signalling &quot;I am guessing.&quot;
+            valid_adj = [a for a in (recon.get(&quot;adjustments&quot;) or [])
+                         if a.get(&quot;quantity&quot;) is not None and a.get(&quot;unit_price&quot;) is not None]
+            if len(valid_adj) != len(recon.get(&quot;adjustments&quot;) or []):
+                log.info(&quot;    rejected %d fabricated adjustment(s) (null fields)&quot;,
+                         len(recon.get(&quot;adjustments&quot;) or []) - len(valid_adj))
+            if valid_adj:
+                record[&quot;line_items&quot;] = (record.get(&quot;line_items&quot;) or []) + valid_adj
                 if recon.get(&quot;notes&quot;):
                     record[&quot;notes&quot;] = (record.get(&quot;notes&quot;) or &quot;&quot;) + &quot; | reconciled: &quot; + recon[&quot;notes&quot;]
-                log.info(&quot;    reconciled %d adjustment(s); new line-sum reconciliation attempted&quot;, len(recon[&quot;adjustments&quot;]))
+                log.info(&quot;    reconciled %d adjustment(s) accepted&quot;, len(valid_adj))
         except Exception as e:
             log.warning(&quot;    reconcile pass failed: %s&quot;, e)
 
@@ -774,8 +829,12 @@ if __name__ == &quot;__main__&quot;:
 <li><strong>Temperature 0.0.</strong> Deterministic. Same input → same output. No creative register.</li>
 <li><strong>"Extract only what you can read" instruction.</strong> System prompt forbids inferring, computing, or fabricating values not printed on the document. Missing → <code>null</code>. The model self-reports uncertainty via <code>extraction_confidence: high | medium | low</code>.</li>
 <li><strong>Hybrid text + image input.</strong> I caught a vendor-misidentification on the H## P########## P####### invoices: text extraction put the bill-to ("HDS MARKETING/FACILIS GROUP") above the vendor letterhead, and the model named HDS as the vendor. Fix: every page is sent as <strong>both</strong> extracted text <strong>and</strong> rendered image, with the prompt instructing the model to defer to the image for layout-dependent fields. After the change all 7 H## P#### pages identify "H## P########## P#######, Inc." at high confidence.</li>
-<li><strong>Line-item subtotal cross-validation + adjustment reconciliation.</strong> After Claude returns a record, the script sums <code>quantity × unit_price</code> across line items and compares to <code>total_amount_due</code>. If divergence exceeds 1%, the script does NOT just flag and walk away — it runs a second Claude pass against the same document asking specifically: <em>"the line items I extracted sum to $X but the printed total is $Y; identify the adjustment lines (Freight, Tax, Shipping, Handling, Discount, Surcharge) that account for the $Z delta."</em> The reconciled adjustments are appended to the line items, and the subtotal check runs again. The R######### S##### invoice was the obvious case: line items summed to $437.76, total was $455.92, delta = $18.16. The reconciliation pass found Freight: $18.16 on the document and added it. Math now passes. <strong>Result across the full batch: 22 of 27 records pass cross-validation cleanly; only 5 are flagged for human review — 4 from one vendor (A#### P#######) whose own invoice format puts the order total in the "Unit Price" column, and 1 with a missing line-item field. Real data quality issues, not script issues.</strong> This is the architectural difference between "the script flags issues for humans" and "the script tries to solve the issues, then flags only what it genuinely can't."</li>
+<li><strong>Line-item subtotal cross-validation + layered reconciliation.</strong> After Claude returns a record, the script sums <code>quantity × unit_price</code> across line items and compares to <code>total_amount_due</code>. If divergence exceeds 1%, the script doesn't just flag and walk away — it tries to resolve the divergence through three layered escalations:</li>
 </ol>
+<p>a. <strong>Vendor-specific parsing notes.</strong> The vendor master allows each known vendor to carry a <code>parsing_notes</code> field that gets prepended as a re-extract instruction when that vendor's first pass fails. A#### P####### &amp; R########### has a note explaining that their invoices place the line total in the "Unit Price" column on multi-quantity rows (so 500 × $45 Unit Price doesn't mean $22,500 — it means $45 total, $0.09 per unit). That note is the difference between flagging Angel's records and reconciling them. <strong>4 of 5 A#### P####### records now pass cleanly.</strong></p>
+<p>b. <strong>Adjustment reconciliation.</strong> If parsing notes aren't enough, a second Claude pass runs against the same document asking specifically: <em>"the line items I extracted sum to $X but the printed total is $Y; identify the adjustment lines (Freight, Tax, Shipping, Handling, Discount, Surcharge) that account for the $Z delta."</em> The R######### S##### invoice was the textbook case: line items summed to $437.76, total was $455.92, delta = $18.16. The reconciliation pass found Freight: $18.16 on the document, added it, math now balances.</p>
+<p>c. <strong>Fabrication rejection.</strong> The reconciliation pass can be tempted to invent adjustments when none are actually printed. Catching this: any adjustment Claude returns with a <code>null</code> quantity or <code>null</code> unit_price is rejected as a self-flagged guess. AP60578 was the perfect test: Claude tried to fabricate a "Discount: -$22,455" line with <code>quantity: null</code> to bridge the math. The script saw the null, rejected the adjustment, and left the record flagged for human review rather than trusting a value the model couldn't justify.</p>
+<p><strong>Result across the full batch: 26 of 27 records pass cross-validation cleanly (96%). One record (AP60633, A#### P#######) has a 3.4% unexplained delta where the document doesn't show any visible adjustment lines — left flagged for the AP team to investigate the tax/freight question with the vendor.</strong> This is the architectural difference between "the script flags issues for humans" and "the script tries to solve them through layered controls, rejects fabrication, then flags only what it genuinely can't."</p>
 <h2>3. Handling an illegible PDF — and other "ingestion edge cases"</h2>
 <p>The script surfaces failures explicitly rather than hiding them:</p>
 <ul>

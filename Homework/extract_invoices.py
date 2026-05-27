@@ -77,12 +77,32 @@ log = logging.getLogger("extract_invoices")
 # homework, we hard-code the five vendors observed in the test batch.
 
 VENDOR_MASTER = [
-    {"canonical": "A#### P####### & R########### Inc.", "aliases": ["a#### p#######"]},
-    {"canonical": "H## P########## P#######, Inc.",     "aliases": ["h## p##########", "h## p####"]},
-    {"canonical": "S&# A#########",                     "aliases": ["s ## a#########", "## a#########"]},
-    {"canonical": "O## B####### P#######",              "aliases": ["o## b#######"]},
-    {"canonical": "R######### S#####",                  "aliases": ["r######### s#####", "r#########"]},
+    {
+        "canonical": "A#### P####### & R########### Inc.",
+        "aliases": ["a#### p#######"],
+        "parsing_notes": (
+            "ANGEL PRINTING INVOICES use a non-standard line format: the 'Unit Price' "
+            "column on multi-quantity rows shows the LINE TOTAL for the entire quantity, "
+            "not the per-unit price. The 'Amount' column matches the 'Unit Price' column. "
+            "When you see A#### P####### as the vendor and a row where Unit Price * Quantity "
+            ">> printed Total Due, compute unit_price = (Amount column value) / Quantity. "
+            "Example: '500  Business Cards  $45.00 (UnitPrice)  $45.00 (Amount)' with "
+            "Total Due $45.00 should yield quantity=500, unit_price=0.09."
+        ),
+    },
+    {"canonical": "H## P########## P#######, Inc.", "aliases": ["h## p##########", "h## p####"]},
+    {"canonical": "S&# A#########",                 "aliases": ["s ## a#########", "## a#########"]},
+    {"canonical": "O## B####### P#######",          "aliases": ["o## b#######"]},
+    {"canonical": "R######### S#####",              "aliases": ["r######### s#####", "r#########"]},
 ]
+
+
+def get_vendor_parsing_notes(canonical_name: str | None) -> str | None:
+    if not canonical_name: return None
+    for v in VENDOR_MASTER:
+        if v["canonical"] == canonical_name and v.get("parsing_notes"):
+            return v["parsing_notes"]
+    return None
 
 def canonicalize_vendor(name: str | None) -> tuple[str | None, bool, bool]:
     """Returns (canonical_name, was_renamed, matched_in_master).
@@ -321,19 +341,54 @@ def extract_one_page(client: Anthropic, pdf_path: Path, page_index: int, page: p
         return None, error_audit(source_file, page_number, "illegible_page",
                                  "Vendor and total both unreadable; flagged for human review.")
 
-    # Reconcile pass: if line items don't sum to total, ask Claude to find missing adjustments
+    # If a known-quirky vendor is identified and the subtotal fails, re-extract once
+    # with vendor-specific parsing notes prepended to the system prompt.
     sub_status, _sub_note = validate_subtotal(record)
+    if sub_status == "failed":
+        canonical, _, _ = canonicalize_vendor(record.get("vendor_name"))
+        parsing_notes = get_vendor_parsing_notes(canonical)
+        if parsing_notes:
+            log.info("    re-extracting with vendor-specific parsing notes for %s", canonical)
+            try:
+                img_b64_2 = page_image_b64(page)
+                content2 = [
+                    {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": img_b64_2}},
+                    {"type": "text",  "text": (
+                        "VENDOR-SPECIFIC INSTRUCTION:\n" + parsing_notes +
+                        "\n\nExtract the invoice with this guidance in mind."
+                        + (USER_TEXT_TEMPLATE.format(text=text) if text else "")
+                    )},
+                ]
+                record2 = call_claude(client, content2)
+                # Use the re-extracted record only if its math is cleaner
+                sub2_status, _ = validate_subtotal(record2)
+                if sub2_status == "passed":
+                    record = record2
+                    record["notes"] = (record.get("notes") or "") + " | re-extracted with vendor parsing notes."
+                    used_path = used_path + "+vendor_notes"
+                    sub_status = "passed"
+            except Exception as e:
+                log.warning("    vendor-notes re-extract failed: %s", e)
+
+    # If still failed: ask Claude to identify missing adjustments
     if sub_status == "failed":
         try:
             line_sum = sum((li.get("quantity") or 0) * (li.get("unit_price") or 0)
                            for li in (record.get("line_items") or []))
             delta = (record.get("total_amount_due") or 0) - line_sum
             recon = reconcile_subtotal(client, page, text, record.get("line_items") or [], record.get("total_amount_due") or 0, delta)
-            if recon.get("adjustments"):
-                record["line_items"] = (record.get("line_items") or []) + recon["adjustments"]
+            # Only accept adjustments that have BOTH quantity and unit_price populated.
+            # An adjustment with a null field is the model self-signalling "I am guessing."
+            valid_adj = [a for a in (recon.get("adjustments") or [])
+                         if a.get("quantity") is not None and a.get("unit_price") is not None]
+            if len(valid_adj) != len(recon.get("adjustments") or []):
+                log.info("    rejected %d fabricated adjustment(s) (null fields)",
+                         len(recon.get("adjustments") or []) - len(valid_adj))
+            if valid_adj:
+                record["line_items"] = (record.get("line_items") or []) + valid_adj
                 if recon.get("notes"):
                     record["notes"] = (record.get("notes") or "") + " | reconciled: " + recon["notes"]
-                log.info("    reconciled %d adjustment(s); new line-sum reconciliation attempted", len(recon["adjustments"]))
+                log.info("    reconciled %d adjustment(s) accepted", len(valid_adj))
         except Exception as e:
             log.warning("    reconcile pass failed: %s", e)
 
