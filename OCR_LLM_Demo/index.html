@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HDS Document Pipeline — Adam J. Reep</title>
+<style>
+:root {
+  --bg: #0a0e0a;
+  --fg: #c8d8c8;
+  --fg-dim: #6a8a6a;
+  --accent: #50fa7b;
+  --prompt: #ffb86c;
+  --hr: #1a2a1a;
+  --panel-bg: #0f1a0f;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', 'Menlo', 'Consolas', 'Courier New', monospace;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.55;
+  padding: 2.5rem 1.5rem 4rem;
+  max-width: 880px;
+  margin: 0 auto;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+#stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+#stars .star {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  animation: twinkle 4s infinite ease-in-out;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+.prompt-line {
+  color: var(--prompt);
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+.eyebrow {
+  color: var(--prompt);
+  font-size: 0.8rem;
+  letter-spacing: 0.18em;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: 2.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.tagline {
+  color: var(--prompt);
+  font-style: italic;
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+}
+
+/* ============================================================
+   THANK-YOU PANEL
+   ============================================================ */
+.thanks {
+  border: 1px solid var(--hr);
+  background: var(--panel-bg);
+  padding: 1.4rem 1.5rem;
+  margin-bottom: 2rem;
+  border-left: 3px solid var(--accent);
+}
+.thanks p {
+  font-size: 0.95rem;
+  color: var(--fg);
+  margin-bottom: 0.7rem;
+}
+.thanks p:last-child { margin-bottom: 0; }
+.thanks .lead {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+}
+
+/* ============================================================
+   PITCH PARAGRAPH
+   ============================================================ */
+.pitch {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  color: var(--fg);
+}
+.pitch strong {
+  color: var(--accent);
+}
+
+.badge {
+  display: inline-block;
+  background: rgba(80,250,123,0.08);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 0.3rem 0.8rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  margin-bottom: 2rem;
+  font-weight: 700;
+}
+
+/* ============================================================
+   PRIMARY CTA — open the demo
+   ============================================================ */
+.cta-wrap {
+  margin: 2.5rem 0 2rem;
+  text-align: center;
+}
+.cta {
+  display: inline-block;
+  border: 2px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  padding: 1.1rem 2.5rem;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  transition: background 0.18s, color 0.18s, transform 0.12s;
+}
+.cta:hover {
+  background: var(--accent);
+  color: #0a0e0a;
+}
+.cta:active { transform: translateY(1px); }
+.cta-note {
+  font-size: 0.75rem;
+  color: var(--fg-dim);
+  margin-top: 0.7rem;
+  letter-spacing: 0.05em;
+}
+
+/* ============================================================
+   MODULE LIST
+   ============================================================ */
+.section-cmd {
+  color: var(--prompt);
+  font-size: 0.9rem;
+  margin: 2.5rem 0 1.2rem;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--hr);
+  padding-bottom: 0.5rem;
+}
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+}
+.module {
+  background: var(--panel-bg);
+  border: 1px solid var(--hr);
+  padding: 0.7rem 0.9rem;
+  font-size: 0.85rem;
+}
+.module .name {
+  color: var(--fg);
+  font-weight: 700;
+  margin-bottom: 0.1rem;
+}
+.module .desc {
+  color: var(--fg-dim);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 600px) {
+  .module-grid { grid-template-columns: 1fr; }
+  h1 { font-size: 2rem; }
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--hr);
+  color: var(--fg-dim);
+  font-size: 0.75rem;
+  text-align: center;
+}
+footer a {
+  color: var(--fg-dim);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--fg-dim);
+  transition: color 0.15s, border-color 0.15s;
+  margin: 0 0.6rem;
+}
+footer a:hover { color: var(--accent); border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div id="stars"></div>
+
+<div class="prompt-line">
+  <span>adam@reep:~$</span> ./hds_document_pipeline --launch
+</div>
+
+<div class="eyebrow">PROOF OF CONCEPT &middot; LIVE DEMO</div>
+
+<h1>HDS Document Pipeline</h1>
+<div class="tagline">Making the complex, easy.</div>
+
+<div class="thanks">
+  <div class="lead">// THANKS FOR CLICKING THROUGH</div>
+  <p>What follows is the ten-module OCR + LLM document pipeline I built &mdash; the system I wanted to walk you through.</p>
+  <p>Click the button below to open the live demo. Each module ingests one document or artwork type and produces structured output ready for downstream systems. Demo data is pre-loaded so you can explore every module without uploading anything yourself, though uploads work too.</p>
+</div>
+
+<p class="pitch">A modular OCR + LLM pipeline that <strong>augments your existing ERP &mdash; it does not replace it.</strong> Each module ingests one document or artwork type and hands structured data off to the system of record (or to a Sheets review buffer your team approves before ingest).</p>
+
+<span class="badge">PROOF OF CONCEPT</span>
+
+<div class="cta-wrap">
+  <a class="cta" href="https://hds-document-pipeline-demo.streamlit.app" target="_blank" rel="noopener">OPEN THE DEMO &nbsp;&rarr;</a>
+</div>
+
+<div class="section-cmd">$ modules --list</div>
+
+<div class="module-grid">
+  <div class="module">
+    <div class="name">🎨 Artwork &amp; Order Builder</div>
+    <div class="desc">Customer logo &rarr; color analysis &rarr; recommended decoration method &rarr; production sheet &rarr; multi-line quote with 2D mockups</div>
+  </div>
+  <div class="module">
+    <div class="name">🧾 Bills &amp; Invoices</div>
+    <div class="desc">Vendor and freight invoices &rarr; extract vendor, line items, totals, payment method; flag fields needing human review</div>
+  </div>
+  <div class="module">
+    <div class="name">💳 Receipts &amp; Expenses</div>
+    <div class="desc">Field-rep receipt snap &rarr; merchant, date, total, tax, tip, category &rarr; filed to selected customer + job</div>
+  </div>
+  <div class="module">
+    <div class="name">📋 Spec Sheets</div>
+    <div class="desc">Manufacturer data sheets &rarr; standardized reference table (composition, ratings, mechanical, care, certifications)</div>
+  </div>
+  <div class="module">
+    <div class="name">✍️ Forms &amp; Notes</div>
+    <div class="desc">Handwritten production-floor notes or printed forms &rarr; dates, author, key fields, action items, open questions</div>
+  </div>
+  <div class="module">
+    <div class="name">🛒 Customer Orders</div>
+    <div class="desc">Emailed order request &rarr; customer info, items, decoration spec, in-hands date &rarr; filed under customer profile</div>
+  </div>
+  <div class="module">
+    <div class="name">👥 Customer Library</div>
+    <div class="desc">Browse customers, saved artwork with thumbnails, full order history &mdash; the data layer for a future chat-driven ordering assistant</div>
+  </div>
+  <div class="module">
+    <div class="name">🔧 Universal Text Extractor</div>
+    <div class="desc">Drop any file &mdash; PDF, image, SVG, DOCX, AI &mdash; and get all text in a copyable block plus contextual notes on what the document is</div>
+  </div>
+  <div class="module">
+    <div class="name">📊 Reporting</div>
+    <div class="desc">Drill into accepted queues across all modules &mdash; by customer, job, category, vendor, date. One view per business question.</div>
+  </div>
+  <div class="module">
+    <div class="name">📋 Approvals &amp; Change Mgmt</div>
+    <div class="desc">Kanban view of every order by approval stage. Sports/licensed flows (team &rarr; league &rarr; sponsor) vs. corporate flows. Change orders with audit log.</div>
+  </div>
+</div>
+
+<div class="cta-wrap">
+  <a class="cta" href="https://hds-document-pipeline-demo.streamlit.app" target="_blank" rel="noopener">OPEN THE DEMO &nbsp;&rarr;</a>
+</div>
+
+<footer>
+  Stack: Google Cloud Vision &middot; Anthropic Claude &middot; Streamlit + PIL + svglib &middot; pypdfium2 &middot; python-docx<br><br>
+  <a href="/CV">&larr; back to resume</a>
+  <a href="/">&larr;&larr; back to intro</a>
+  <a href="mailto:adamjreep@gmail.com">email</a>
+  <a href="https://linkedin.com/in/adamjreep" target="_blank" rel="noopener">linkedin</a>
+</footer>
+
+<script>
+(function generateStars() {
+  const container = document.getElementById('stars');
+  const count = 150;
+  for (let i = 0; i < count; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    const size = Math.random() * 2 + 0.5;
+    star.style.width = size + 'px';
+    star.style.height = size + 'px';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.animationDelay = Math.random() * 4 + 's';
+    container.appendChild(star);
+  }
+})();
+</script>
+
+</body>
+</html>
+                                                                                                               

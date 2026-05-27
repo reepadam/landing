@@ -1,0 +1,8 @@
+# Legacy crawl URL → new home
+/crawl       /              301
+/crawl.html  /              301
+
+# Common alternate casing for the demo route
+/ocr_llm_demo  /OCR_LLM_Demo  301
+/demo          /OCR_LLM_Demo  301
+/cv            /CV            301

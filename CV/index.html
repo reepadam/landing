@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adam J. Reep — Business Systems Analyst</title>
+<style>
+/* ============================================================
+   THEME VARIABLES
+   ============================================================ */
+:root {
+  --bg: #0a0e0a;
+  --fg: #c8d8c8;
+  --fg-dim: #6a8a6a;
+  --accent: #50fa7b;
+  --prompt: #ffb86c;
+  --hr: #1a2a1a;
+  --stat-bg: #0f1a0f;
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', 'Menlo', 'Consolas', 'Courier New', monospace;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.55;
+  padding: 2rem 1.5rem;
+  max-width: 920px;
+  margin: 0 auto;
+  transition: background 0.3s ease, color 0.3s ease;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================
+   STAR FIELD (Star Wars + decorative for dark)
+   ============================================================ */
+#stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+#stars .star {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  animation: twinkle 4s infinite ease-in-out;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.prompt-line {
+  color: var(--prompt);
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.02em;
+}
+.prompt-line .prompt { color: var(--prompt); }
+.prompt-line .info { color: var(--fg-dim); margin-left: 0.5em; }
+
+.tagline {
+  font-size: 0.95rem;
+  color: var(--fg-dim);
+  margin-bottom: 0.75rem;
+}
+
+h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1.05;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.2rem;
+  font-size: 0.9rem;
+  color: var(--fg-dim);
+  margin-bottom: 2.5rem;
+}
+.contact a {
+  color: var(--fg-dim);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--fg-dim);
+  transition: color 0.15s, border-color 0.15s;
+}
+.contact a:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ============================================================
+   FEATURED CTA — points to live demo
+   ============================================================ */
+.featured-cta {
+  border: 1px solid var(--accent);
+  background: linear-gradient(to right, rgba(80,250,123,0.04), rgba(80,250,123,0.01));
+  padding: 1.1rem 1.3rem;
+  margin-bottom: 2.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem 1.2rem;
+}
+.featured-cta .left {
+  flex: 1 1 60%;
+  min-width: 260px;
+}
+.featured-cta .eyebrow {
+  color: var(--prompt);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.3rem;
+}
+.featured-cta .title {
+  color: var(--fg);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.2rem;
+}
+.featured-cta .desc {
+  color: var(--fg-dim);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.featured-cta a.btn {
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  background: transparent;
+  padding: 0.55rem 1.1rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.featured-cta a.btn:hover {
+  background: var(--accent);
+  color: #0a0e0a;
+}
+
+/* ============================================================
+   STATS GRID
+   ============================================================ */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 3rem;
+}
+.stat {
+  background: var(--stat-bg);
+  padding: 1.5rem 1rem;
+  text-align: center;
+  border: 1px solid var(--hr);
+}
+.stat .num {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 0.3rem;
+  letter-spacing: -0.02em;
+}
+.stat .label {
+  font-size: 0.75rem;
+  color: var(--fg-dim);
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 680px) {
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  h1 { font-size: 2.5rem; }
+}
+
+/* ============================================================
+   SECTION HEADERS (command prompts)
+   ============================================================ */
+.section-cmd {
+  color: var(--prompt);
+  font-size: 0.95rem;
+  margin: 3rem 0 1.5rem;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--hr);
+  padding-bottom: 0.5rem;
+}
+
+/* ============================================================
+   EXPERIENCE
+   ============================================================ */
+.role {
+  margin-bottom: 2.2rem;
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: 0.3rem 1rem;
+}
+.role .num {
+  color: var(--fg-dim);
+  font-size: 0.95rem;
+  font-weight: 700;
+  grid-row: span 4;
+  padding-top: 0.15rem;
+}
+.role .title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--fg);
+}
+.role .company-line {
+  font-size: 0.85rem;
+  color: var(--fg-dim);
+  margin-bottom: 0.5rem;
+}
+.role .company-line .dates { color: var(--fg-dim); }
+.role .company-line .pipe { margin: 0 0.5em; color: var(--hr); }
+.role ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.4rem 0 0;
+}
+.role li {
+  font-size: 0.88rem;
+  color: var(--fg);
+  margin-bottom: 0.4rem;
+  padding-left: 1.2rem;
+  position: relative;
+}
+.role li::before {
+  content: '└─';
+  position: absolute;
+  left: 0;
+  color: var(--fg-dim);
+}
+
+@media (max-width: 600px) {
+  .role { grid-template-columns: 2rem 1fr; }
+  .role .num { font-size: 0.85rem; }
+}
+
+/* ============================================================
+   PROJECTS / EDUCATION / CERTS / SKILLS
+   ============================================================ */
+.project {
+  margin-bottom: 1.5rem;
+}
+.project .title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--fg);
+  margin-bottom: 0.3rem;
+}
+.project .meta {
+  font-size: 0.8rem;
+  color: var(--fg-dim);
+  margin-bottom: 0.5rem;
+  font-style: italic;
+}
+.project p {
+  font-size: 0.88rem;
+  color: var(--fg);
+  margin-bottom: 0.4rem;
+}
+.project a.inline-link {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--accent);
+}
+.project a.inline-link:hover { color: var(--prompt); border-color: var(--prompt); }
+
+.edu, .certs {
+  margin-bottom: 0.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.edu .degree, .certs .label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--fg);
+}
+.edu .school, .certs .items {
+  font-size: 0.85rem;
+  color: var(--fg-dim);
+}
+
+.skills-block {
+  margin-bottom: 1rem;
+}
+.skills-block .label {
+  font-weight: 700;
+  color: var(--fg);
+  font-size: 0.9rem;
+  display: inline;
+}
+.skills-block .items {
+  display: inline;
+  color: var(--fg-dim);
+  font-size: 0.85rem;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+footer {
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--hr);
+  color: var(--fg-dim);
+  font-size: 0.75rem;
+  text-align: center;
+}
+footer a {
+  color: var(--fg-dim);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--fg-dim);
+  transition: color 0.15s, border-color 0.15s;
+}
+footer a:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ============================================================
+   TYPEWRITER
+   ============================================================ */
+.typing-cursor::after {
+  content: '▊';
+  display: inline-block;
+  animation: blink 1s steps(2) infinite;
+  color: var(--accent);
+  margin-left: 2px;
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<div id="stars"></div>
+
+<div class="prompt-line">
+  <span class="prompt">adam@reep:~$</span>
+  <span class="info">Pittsburgh, PA · adamjreep@gmail.com · 412-499-5325</span>
+</div>
+
+<div class="tagline">Business Systems Analyst — Multi-Site Operations &amp; Builder</div>
+
+<h1>Adam J. Reep</h1>
+
+<div class="contact">
+  <a href="mailto:adamjreep@gmail.com">adamjreep@gmail.com</a>
+  <a href="tel:4124995325">412-499-5325</a>
+  <a href="https://linkedin.com/in/adamjreep" target="_blank" rel="noopener">linkedin.com/in/adamjreep</a>
+  <span>Pittsburgh, PA</span>
+</div>
+
+<div class="featured-cta">
+  <div class="left">
+    <div class="eyebrow">LATEST PROJECT &middot; LIVE</div>
+    <div class="title">HDS Document Pipeline POC</div>
+    <div class="desc">Ten-module OCR + LLM document intelligence demo. Built in four days. Try it.</div>
+  </div>
+  <a class="btn" href="/OCR_LLM_Demo">OPEN DEMO &nbsp;&rarr;</a>
+</div>
+
+<div class="stats">
+  <div class="stat"><span class="num">20+</span><span class="label">YEARS MULTI-SITE OPS</span></div>
+  <div class="stat"><span class="num">$2.5M+</span><span class="label">RECURRING SAVINGS RUN-RATE</span></div>
+  <div class="stat"><span class="num">129</span><span class="label">CAMPUS FOOTPRINT (EDMC)</span></div>
+  <div class="stat"><span class="num">1,332</span><span class="label">ZERO-ERROR MIGRATION</span></div>
+</div>
+
+<div class="section-cmd">$ experience --list --verbose</div>
+
+<div class="role">
+  <div class="num">01.</div>
+  <div class="title">IT Security Project Coordinator</div>
+  <div class="company-line"><span>Miller Information Systems — Allison Park, PA</span><span class="pipe">|</span><span class="dates">2022.01–2026.04</span></div>
+  <ul>
+    <li>Designed the operational tracking system for a roughly 900-camera CCTV deployment at the VA Pittsburgh Healthcare System — dependency-driven, gate-checked, paired with a custom AppSheet mobile app for field-tech updates without data corruption.</li>
+    <li>Built an OCR-based ticket-intake pipeline (Google Cloud Vision + Apps Script + Sheets + Trello) that converted the client's paper-only service-ticket process into structured workload data used in client contract-scope discussions.</li>
+    <li>Migrated 1,332 cardholder profiles between access-control systems using a UiPath workflow + SQL parsing + reverse-comparison verification — no recorded errors, replaced the vendor's paid migration utility, documented as a reusable pipeline.</li>
+    <li>Built a quote-generation tool reducing per-quote build time from ~1 hour to ~15 minutes; built credit-card spend categorization and outlier-flagging for finance.</li>
+    <li>Developed PowerShell utilities for DHCP/static-IP toggling and ARP-based camera discovery, moving field installs from sequential to parallel.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <div class="num">02.</div>
+  <div class="title">Founder</div>
+  <div class="company-line"><span>Adam Makes Stuff — Pittsburgh, PA</span><span class="pipe">|</span><span class="dates">2021.02–Present</span></div>
+  <ul>
+    <li>Woodworking and CNC fabrication side business — design, milling, finishing, client delivery, bookkeeping, and tax filings.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <div class="num">03.</div>
+  <div class="title">Operations &amp; Telecom Analyst</div>
+  <div class="company-line"><span>Adhawk Solutions (Mercy Behavioral Health engagement) — Pittsburgh, PA</span><span class="pipe">|</span><span class="dates">2019.01–2021.01</span></div>
+  <ul>
+    <li>Line-item telecom billing audit across 80+ sites — identified discrepancies, unused services, and consolidation opportunities; informed follow-on IP telephony feasibility study.</li>
+    <li>Authored on-prem (Avaya) vs. cloud PBX comparison for leadership, translating technical architecture into business-impact terms.</li>
+    <li>Built a Sheets-based PPE ordering and replenishment system for ~100 sites at COVID-19 onset — no reported stockouts.</li>
+    <li>Established the Iron Mountain PII destruction process — chain-of-custody documentation, certificate-of-destruction tracking, legal/compliance review package.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <div class="num">04.</div>
+  <div class="title">Property &amp; Facilities Coordinator</div>
+  <div class="company-line"><span>Penn Forest Natural Burial Park — Verona, PA</span><span class="pipe">|</span><span class="dates">2018.08–2019.01</span></div>
+  <ul>
+    <li>Five-month transitional role following EDMC's national restructuring; grounds maintenance, trail work, light construction, livestock care, burial-service logistics, and ongoing land restoration and invasive-species management.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <div class="num">05.</div>
+  <div class="title">Telecom Analyst IV</div>
+  <div class="company-line"><span>Education Management Corporation — Remote (California)</span><span class="pipe">|</span><span class="dates">2015.01–2018.08</span></div>
+  <ul>
+    <li>Continued ownership of the telecom-expense recovery practice across EDMC's 129-campus footprint — contributing to the 2011–2016 program that reached a peak run-rate of $2.5M+ in annual recurring savings.</li>
+    <li>Carrier-side single point of contact for new-service orders across AT&amp;T, CenturyLink, Verizon; standardized the order-to-handoff package adopted by downstream support teams.</li>
+    <li>Validated vendor invoices and reconciled active services against in-use systems for Telecom Expense Management.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <div class="num">06.</div>
+  <div class="title">Network Provisioning Supervisor</div>
+  <div class="company-line"><span>Education Management Corporation — Pittsburgh, PA + Los Angeles + Denver</span><span class="pipe">|</span><span class="dates">2012.03–2015.01</span></div>
+  <ul>
+    <li>Provisioned 258 redundant AT&amp;T and CenturyLink MPLS circuits across the 129-campus footprint — contributing to $1.5M reduction in recurring network costs.</li>
+    <li>Built the monthly billing reconciliation and outlier-analysis process that contributed to $1M+ in voice-cost recovery.</li>
+    <li>Managed 84 concurrent Avaya and Siemens IP phone-system upgrades with budgets exceeding $1M per site; standardized install processes adopted company-wide.</li>
+    <li>Initiated the 2011–2016 telecom-expense recovery program — reached a peak run-rate of $2.5M+ in annual recurring savings.</li>
+    <li>Managed a team of three telecom and network analysts supporting tier-2 operations and project delivery.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <div class="num">07.</div>
+  <div class="title">Senior Telecom Analyst</div>
+  <div class="company-line"><span>Education Management Corporation — Pittsburgh, PA</span><span class="pipe">|</span><span class="dates">2011.10–2012.03</span></div>
+  <ul>
+    <li>Authored the standardized circuit-provisioning procedure later adopted across the telecom support team.</li>
+    <li>Sole submitter for new-service orders across primary carriers; standardized the order-to-support workflow including stakeholder tracking, escalation handling, and structured handoff packages with circuit IDs, install locations, IP addresses, and Visio drawings.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <div class="num">08.</div>
+  <div class="title">Telecom Analyst</div>
+  <div class="company-line"><span>Education Management Corporation — Pittsburgh, PA</span><span class="pipe">|</span><span class="dates">2009.03–2011.10</span></div>
+  <ul>
+    <li>Installed and configured Siemens and Avaya telephone systems across 120+ campuses nationally; coordinated equipment procurement, vendor scheduling, and hardware rollouts.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <div class="num">09.</div>
+  <div class="title">IT Asset Refresh Lead (consulting)</div>
+  <div class="company-line"><span>BNY Mellon, via Robert J. DePaul Consulting — Pittsburgh, PA + LA + Boston</span><span class="pipe">|</span><span class="dates">2008.04–2009.03</span></div>
+  <ul>
+    <li>Partnered with BNY Mellon IT Project Management to identify end-of-life hardware, stage replacement PCs with user data and custom software loads, and execute deployments with ~25% national travel.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <div class="num">10.</div>
+  <div class="title">IT Desktop Analyst</div>
+  <div class="company-line"><span>Education Management Corporation (Art Institutes) — Pittsburgh, PA</span><span class="pipe">|</span><span class="dates">2003.10–2008.04</span></div>
+  <ul>
+    <li>Tier 1/2 support for ~1,200 users at a 1:700 IT-to-employee ratio; communication across all levels, on-site and remote.</li>
+    <li>Supported creative-production environments at the Art Institutes — specialty hardware, large-file design workflows, Adobe Creative Suite.</li>
+    <li>Early telephone-system programming through software and 66/110-block wiring — the foundation for later telecom analyst work.</li>
+  </ul>
+</div>
+
+<div class="section-cmd">$ projects --independent</div>
+
+<div class="project">
+  <div class="title">HDS Document Pipeline POC</div>
+  <div class="meta">live demo · built in four days · OCR + LLM</div>
+  <p>Ten-module document intelligence pipeline targeting the operational chokepoints small enterprises hit when manual processes outpace headcount. Modules cover artwork &amp; order building, vendor invoices, receipts &amp; expense classification, spec sheets, handwritten production notes, customer order requests, a universal text extractor, customer library with order history, reporting, and a kanban-style approval-and-change-management layer.</p>
+  <p>Stack: Google Cloud Vision (OCR/labels/logos/colors) · Anthropic Claude (schema-prompted JSON extraction) · Streamlit · python-docx · reportlab · svglib · pypdfium2 · JSON-backed customer/order/queue persistence. <a class="inline-link" href="/OCR_LLM_Demo">Open the demo &rarr;</a></p>
+</div>
+
+<div class="project">
+  <div class="title">Fenrir — No-Limit Hold'em AI Agent</div>
+  <div class="meta">in development</div>
+  <p>Self-directed research project building a no-limit Texas Hold'em decision agent in the lineage of academic poker AI work from Carnegie Mellon and Facebook AI Research (Libratus, Pluribus). In test scenarios using published Pluribus hand histories, action selection has demonstrated meaningful agreement with the reference agent's choices.</p>
+  <p>Engineered around long-running, multi-session workflows with Claude and Claude Code: scheduled execution, context-window management, and structured handoffs between conversations and compactions.</p>
+</div>
+
+<div class="project">
+  <div class="title">Pittsburgh Restaurant Specials App</div>
+  <div class="meta">in development</div>
+  <p>Geo-located restaurant-specials platform sourced from a 400+ entry Pittsburgh-area database cleaned from the PA business registry. Crowd-sourced and crowd-verified specials with an AI-assisted moderation layer. Per-location subscription model tied to verifiable view-to-visit conversion data.</p>
+</div>
+
+<div class="section-cmd">$ education</div>
+
+<div class="edu">
+  <div class="degree">A.A.S. — Business Management</div>
+  <div class="school">Community College of Allegheny County · 2001–2004</div>
+</div>
+
+<div class="section-cmd">$ certifications</div>
+
+<div class="certs">
+  <div class="label">Certifications:</div>
+  <div class="items">OSHA 10</div>
+</div>
+
+<div class="section-cmd">$ skills --list</div>
+
+<div class="skills-block">
+  <span class="label">Spreadsheet &amp; Low-Code:</span>
+  <span class="items">Google Sheets (ARRAYFORMULA, QUERY, REGEXEXTRACT, IMPORTRANGE, XLOOKUP), Excel (VBA, macros, pivots, conditional-format dashboards), Apps Script, Forms, AppSheet, UiPath, Power Automate Desktop</span>
+</div>
+
+<div class="skills-block">
+  <span class="label">Scripting &amp; Automation:</span>
+  <span class="items">PowerShell, Apps Script, Excel VBA, Python, RPA / UI automation, OCR pipelines (Google Cloud Vision, Azure AI Vision)</span>
+</div>
+
+<div class="skills-block">
+  <span class="label">AI-Assisted Development:</span>
+  <span class="items">Claude, Claude Code, Cowork, ChatGPT — used to accelerate prototyping, implementation, and validation across internal tooling, data pipelines, and personal research</span>
+</div>
+
+<div class="skills-block">
+  <span class="label">Networking &amp; Telecom:</span>
+  <span class="items">MPLS / WAN provisioning, VoIP (Avaya, Siemens, Cisco Unified), SIP trunking, PRI / DID / toll-free porting, carrier billing reconciliation, DHCP / DNS / ARP, IP troubleshooting</span>
+</div>
+
+<div class="skills-block">
+  <span class="label">Security Systems:</span>
+  <span class="items">CCTV (Avigilon, Hanwha/Wisenet, Pelco, Genetec), Access Control (RS2, Mercury, Acre, Genetec), Intrusion Detection (Bosch), Low-Voltage Wiring</span>
+</div>
+
+<div class="skills-block">
+  <span class="label">Design &amp; Production:</span>
+  <span class="items">Adobe Photoshop and Illustrator, CNC fabrication and 3D printing (CAM, toolpathing, slicing), Visio</span>
+</div>
+
+<div class="skills-block">
+  <span class="label">Collaboration &amp; Ops Platforms:</span>
+  <span class="items">Trello, ServiceNow, PowerPoint, Active Directory, Azure (basic), VMware (basic)</span>
+</div>
+
+<footer>
+  adam@reep:~$ exit · last updated 2026.05.26 · <a href="/">replay intro</a>
+</footer>
+
+<script>
+/* ============================================================
+   STAR FIELD GENERATION
+   ============================================================ */
+function generateStars(count) {
+  const container = document.getElementById('stars');
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    const size = Math.random() * 2 + 0.5;
+    star.style.width = size + 'px';
+    star.style.height = size + 'px';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.animationDelay = Math.random() * 4 + 's';
+    container.appendChild(star);
+  }
+}
+generateStars(150);
+
+/* ============================================================
+   TYPEWRITER INTRO
+   ============================================================ */
+function triggerTypewriter() {
+  const tagline = document.querySelector('.tagline');
+  const originalText = tagline.textContent;
+  tagline.textContent = '';
+  tagline.classList.add('typing-cursor');
+
+  let i = 0;
+  const interval = setInterval(() => {
+    tagline.textContent = originalText.substring(0, i);
+    i++;
+    if (i > originalText.length) {
+      clearInterval(interval);
+      setTimeout(() => tagline.classList.remove('typing-cursor'), 1500);
+    }
+  }, 25);
+
+  const h1 = document.querySelector('h1');
+  h1.style.opacity = '0.3';
+  setTimeout(() => {
+    h1.style.transition = 'opacity 0.6s ease';
+    h1.style.opacity = '1';
+  }, 200);
+}
+triggerTypewriter();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adam J. Reep — A New Hire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pathway+Gothic+One&display=swap">
+<style>
+@font-face { font-family: 'Star Jedi SE'; src: url('fonts/StarJediSE.ttf') format('truetype'); font-display: swap; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: #000; color: #feda4a; font-family: 'Helvetica Neue', Arial, sans-serif; overflow: hidden; }
+body.fading { opacity: 0; transition: opacity 2.5s ease; }
+#start { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; flex-direction: column; background: #000; transition: opacity 1s ease; padding: 1.5rem; }
+#start.hidden { opacity: 0; pointer-events: none; }
+#start .name { color: #feda4a; font-family: 'Star Jedi SE', 'Helvetica Neue', Arial, sans-serif; font-size: clamp(2rem, 6vw, 4.5rem); letter-spacing: 0.04em; text-align: center; font-weight: 400; margin-bottom: 0.6rem; white-space: nowrap; }
+#start .ep { color: #888; font-size: clamp(0.8rem, 1.5vw, 1rem); letter-spacing: 0.4em; margin-bottom: 2.5rem; }
+#start button { background: transparent; border: 2px solid #feda4a; color: #feda4a; padding: 1rem 2.5rem; font-size: 0.9rem; letter-spacing: 0.25em; cursor: pointer; font-family: inherit; transition: all 0.2s; font-weight: 700; }
+#start button:hover { background: #feda4a; color: #000; }
+#start .hint { color: #555; font-size: 0.7rem; margin-top: 2.5rem; letter-spacing: 0.1em; text-align: center; max-width: 30rem; line-height: 1.6; }
+#start .resume-link { margin-top: 1.5rem; color: #888; font-size: 0.7rem; letter-spacing: 0.18em; text-decoration: none; border-bottom: 1px dotted #444; padding-bottom: 2px; transition: color 0.2s, border-color 0.2s; }
+#start .resume-link:hover { color: #feda4a; border-color: #feda4a; }
+#stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle 3s infinite ease-in-out; }
+@keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+.intro { position: fixed; top: 42%; left: 50%; transform: translate(-50%, -50%); color: #4bd5ee; font-size: clamp(1.1rem, 2.4vw, 1.8rem); text-align: center; z-index: 5; opacity: 0; width: min(92%, 50rem); line-height: 1.5; }
+.intro3 { font-style: italic; }
+body.playing .intro1 { animation: introFade 5s ease-out forwards; }
+body.playing .intro2 { animation: introFade 5s ease-out 5.5s forwards; }
+body.playing .intro3 { animation: introFadeShort 4s ease-out 11s forwards; }
+@keyframes introFade { 0% { opacity: 0; } 15% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes introFadeShort { 0% { opacity: 0; } 18% { opacity: 1; } 72% { opacity: 1; } 100% { opacity: 0; } }
+.logo { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.05); color: #feda4a; font-family: 'Star Jedi SE', 'Helvetica Neue', Arial, sans-serif; font-size: clamp(2rem, 7.5vw, 6rem); font-weight: 400; letter-spacing: 0.04em; text-align: center; line-height: 1; opacity: 0; z-index: 5; white-space: nowrap; text-shadow: 0 0 14px rgba(254,218,74,0.4); pointer-events: none; }
+body.playing .logo { animation: logoZoom 10s ease-out 15s forwards; }
+@keyframes logoZoom { 0% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); } 10% { opacity: 1; } 60% { opacity: 1; transform: translate(-50%, -50%) scale(0.35); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(0.03); } }
+.crawl-stage { position: fixed; inset: 0; perspective: 700px; perspective-origin: 50% 100%; overflow: hidden; z-index: 4; pointer-events: none; }
+.crawl { position: absolute; top: 100%; left: 50%; transform: translateX(-50%) rotateX(20deg); transform-origin: 50% 100%; width: min(96%, 85rem); color: #feda4a; font-family: 'Pathway Gothic One', 'Trebuchet MS', sans-serif; font-weight: 400; text-align: justify; font-size: clamp(2.2rem, 6vw, 5rem); letter-spacing: 0.05em; line-height: 1.5; }
+body.playing .crawl { animation: crawl 110s linear 22s forwards; }
+@keyframes crawl { 0% { top: 100%; } 100% { top: -1050%; } }
+.crawl h2 { text-align: center; font-family: 'Pathway Gothic One', sans-serif; font-size: 1.5em; margin-bottom: 1.8em; font-weight: 400; letter-spacing: 0.08em; line-height: 1.15; }
+.crawl h2 .episode { display: block; font-family: 'Pathway Gothic One', sans-serif; font-size: 0.55em; letter-spacing: 0.32em; margin-bottom: 0.6em; font-weight: 400; }
+.crawl p { margin-bottom: 1.4em; }
+.crawl .doctrine { text-align: center; margin: 1.6em 0; }
+.crawl .doctrine p { margin-bottom: 0.5em; }
+.crawl .end { text-align: center; margin-top: 2.5em; letter-spacing: 0.15em; }
+.crawl-stage::before { content: ''; position: absolute; inset: 0 0 55% 0; background: linear-gradient(to bottom, #000 25%, transparent); z-index: 5; pointer-events: none; }
+.controls { position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 100; display: none; gap: 0.5rem; }
+body.playing .controls { display: flex; }
+.controls button { background: rgba(0,0,0,0.7); border: 1px solid #feda4a; color: #feda4a; padding: 0.55rem 1rem; font-size: 0.7rem; letter-spacing: 0.15em; cursor: pointer; font-family: inherit; font-weight: 700; }
+.controls button:hover { background: rgba(254,218,74,0.12); }
+@media (max-width: 600px) { .controls { bottom: 1rem; right: 1rem; } .controls button { padding: 0.45rem 0.8rem; font-size: 0.65rem; } }
+</style>
+</head>
+<body>
+<div id="start">
+  <div class="name">ADAM J. REEP</div>
+  <div class="ep">EPISODE X &middot; A NEW HIRE</div>
+  <button id="beginBtn">BEGIN TRANSMISSION</button>
+  <div class="hint">Turn your sound on for the full experience.<br>Runs ~1:40. Press <strong>ESC</strong> at any time to exit to the resume.</div>
+  <a href="/CV" class="resume-link">SKIP TO RESUME &rarr;</a>
+</div>
+<div id="stars"></div>
+<section class="intro intro1">
+  Across the great expanse of the Ohio River,<br>
+  a new talent emerges....
+</section>
+<section class="intro intro2">
+  Capable of making The Vessel Run<br>
+  in under 30 parsecs.
+</section>
+<section class="intro intro3">(Depending on traffic, n'at.)</section>
+<section class="logo">ADAM J. REEP</section>
+<div class="crawl-stage">
+  <div class="crawl">
+    <h2><span class="episode">EPISODE X</span>A NEW HIRE</h2>
+    <p>It is a period of operational disorder.</p>
+    <p>Multi-site enterprises are drowning in fractured systems. Siloed ERPs that refuse to communicate. Fragile spreadsheets traded over email. Receipts photographed on the fly. Handwritten production notes buried in filing cabinets.</p>
+    <p>For more than twenty years, ADAM REEP has dismantled this pattern.</p>
+    <p>At EDMC, he initiated a telecom-expense recovery program that recaptured $2.5M in annual recurring savings across a 129-campus footprint.</p>
+    <p>At MILLER, he turned paper into queryable data &mdash; an OCR-to-Trello pipeline that gave the field workload metrics for the first time &mdash; while migrating 1,332 cardholder profiles between competing vendors with zero recorded errors.</p>
+    <p>And in four days, he built a ten-module OCR + LLM document engine designed to address the exact operational chokepoints where growing businesses get trapped.</p>
+    <p>His method has hardened into a discipline:</p>
+    <div class="doctrine">
+      <p>Find the system of record.</p>
+      <p>Build it if it doesn't exist.</p>
+      <p>Force every tool to read from it.</p>
+      <p>AI at the edge. Automation at the core.</p>
+      <p>Eradicate the paperwork. Reinvest the hours.</p>
+      <p>Machines process. People solve.</p>
+    </div>
+    <p class="end">The next mission begins....<br><br>Now.</p>
+  </div>
+</div>
+<audio id="audio" src="crawl.mp3" preload="auto"></audio>
+<div class="controls">
+  <button id="muteBtn">MUTE</button>
+  <button id="skipBtn">RESUME &rarr;</button>
+</div>
+<script src="intro.js"></script>
+</body>
+</html>

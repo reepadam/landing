@@ -1,0 +1,7 @@
+# never commit secrets, API keys, or sandbox-only files
+*.env
+.env
+*.key
+api_key*
+**/__pycache__/
+.DS_Store

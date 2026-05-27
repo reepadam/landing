@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HDS Homework — Adam J. Reep</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css">
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+<style>
+:root {
+  --bg: #0a0e0a;
+  --fg: #c8d8c8;
+  --fg-dim: #6a8a6a;
+  --accent: #50fa7b;
+  --prompt: #ffb86c;
+  --hr: #1a2a1a;
+  --panel-bg: #0f1a0f;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', 'Menlo', 'Consolas', 'Courier New', monospace;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.55;
+  padding: 2rem 1.5rem 4rem;
+  max-width: 960px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+#stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.35; }
+.star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle 4s infinite ease-in-out; }
+@keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+
+.prompt-line { color: var(--prompt); font-size: 0.85rem; margin-bottom: 0.5rem; letter-spacing: 0.02em; }
+.eyebrow { color: var(--prompt); font-size: 0.8rem; letter-spacing: 0.18em; margin-bottom: 1rem; }
+h1 { font-size: 2.6rem; font-weight: 700; line-height: 1.1; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+.tagline { color: var(--prompt); font-style: italic; font-size: 0.95rem; margin-bottom: 2rem; }
+
+.lede {
+  border: 1px solid var(--hr);
+  background: var(--panel-bg);
+  padding: 1.4rem 1.5rem;
+  margin-bottom: 2rem;
+  border-left: 3px solid var(--accent);
+}
+.lede p { font-size: 0.95rem; margin-bottom: 0.7rem; }
+.lede p:last-child { margin-bottom: 0; }
+.lede .lead { color: var(--accent); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.08em; margin-bottom: 0.6rem; }
+
+/* stats grid */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin: 2rem 0; }
+.stat { background: var(--panel-bg); padding: 1.3rem 0.8rem; text-align: center; border: 1px solid var(--hr); }
+.stat .num { font-size: 1.8rem; font-weight: 700; color: var(--accent); display: block; margin-bottom: 0.3rem; letter-spacing: -0.02em; }
+.stat .label { font-size: 0.7rem; color: var(--fg-dim); letter-spacing: 0.04em; }
+@media (max-width: 680px) { .stats { grid-template-columns: repeat(2, 1fr); } h1 { font-size: 2rem; } }
+
+.section-cmd {
+  color: var(--prompt); font-size: 0.95rem;
+  margin: 2.8rem 0 1.3rem; letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--hr); padding-bottom: 0.5rem;
+}
+
+/* vendor buckets */
+.bucket {
+  background: var(--panel-bg);
+  border: 1px solid var(--hr);
+  margin-bottom: 0.6rem;
+  border-left: 3px solid var(--fg-dim);
+  transition: border-left-color 0.15s;
+}
+.bucket[open] { border-left-color: var(--accent); }
+.bucket summary {
+  padding: 0.9rem 1.1rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  list-style: none;
+}
+.bucket summary::-webkit-details-marker { display: none; }
+.bucket summary::before {
+  content: "▸ ";
+  color: var(--fg-dim);
+  font-weight: 700;
+  margin-right: 0.4rem;
+  transition: transform 0.15s;
+}
+.bucket[open] summary::before { content: "▾ "; color: var(--accent); }
+.bucket-vendor { color: var(--fg); font-weight: 700; font-size: 1rem; }
+.bucket-meta { color: var(--fg-dim); font-size: 0.82rem; }
+.bucket-body {
+  padding: 0.4rem 1.1rem 1.1rem;
+  border-top: 1px solid var(--hr);
+}
+.bucket-source { color: var(--fg-dim); font-size: 0.78rem; margin: 0.6rem 0; }
+.bucket-source code { color: var(--prompt); }
+.json-box {
+  background: #050a05;
+  border: 1px solid var(--hr);
+  padding: 1rem;
+  font-size: 0.78rem;
+  overflow-x: auto;
+  color: var(--fg);
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+/* code blocks */
+pre {
+  background: #050a05;
+  border: 1px solid var(--hr);
+  padding: 1rem;
+  font-size: 0.78rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  border-radius: 2px;
+}
+pre code.hljs {
+  background: transparent !important;
+  padding: 0 !important;
+}
+code { font-family: inherit; font-size: 0.88em; color: var(--accent); }
+
+/* readme block */
+.readme { font-size: 0.92rem; }
+.readme h1, .readme h2, .readme h3 { color: var(--fg); margin-top: 1.8rem; margin-bottom: 0.7rem; font-weight: 700; }
+.readme h1 { font-size: 1.5rem; }
+.readme h2 { font-size: 1.2rem; color: var(--prompt); }
+.readme h3 { font-size: 1rem; }
+.readme h2:first-child, .readme h1:first-child { margin-top: 0; }
+.readme p { margin-bottom: 0.9rem; }
+.readme ul, .readme ol { margin-left: 1.5rem; margin-bottom: 0.9rem; }
+.readme li { margin-bottom: 0.3rem; }
+.readme strong { color: var(--fg); }
+.readme em { color: var(--fg-dim); }
+.readme code { background: rgba(80,250,123,0.08); padding: 0.1em 0.3em; border-radius: 2px; }
+.readme a { color: var(--accent); border-bottom: 1px dotted var(--accent); text-decoration: none; }
+.readme a:hover { color: var(--prompt); border-color: var(--prompt); }
+.readme hr { border: 0; border-top: 1px solid var(--hr); margin: 1.5rem 0; }
+
+/* downloads strip */
+.downloads {
+  display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.2rem 0;
+}
+.downloads a {
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  padding: 0.55rem 1rem;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.downloads a:hover { background: var(--accent); color: #0a0e0a; }
+
+footer {
+  margin-top: 3.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--hr);
+  color: var(--fg-dim);
+  font-size: 0.75rem;
+  text-align: center;
+}
+footer a {
+  color: var(--fg-dim);
+  text-decoration: none;
+  border-bottom: 1px dotted var(--fg-dim);
+  margin: 0 0.6rem;
+}
+footer a:hover { color: var(--accent); border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div id="stars"></div>
+
+<div class="prompt-line"><span>adam@reep:~$</span> ./extract_invoices.py --input ./5_emailed_invoices/ --output invoices.json</div>
+<div class="eyebrow">HDS HOMEWORK · INVOICE EXTRACTION · 2026-05-27</div>
+<h1>Invoice Extraction Homework</h1>
+<div class="tagline">Lightweight Python · Claude Haiku 4.5 · Antera-shaped JSON output</div>
+
+<div class="lede">
+  <div class="lead">// HOMEWORK CONTEXT</div>
+  <p>After our interview on May 26, Ryan sent five emailed invoice packages and asked for a lightweight Python script that ingests them, extracts five fields per invoice via an LLM API, enforces a strict schema, and emits clean JSON shaped like a POST to the Antera API.</p>
+  <p>Below: the five vendor buckets with their actual extracted results, the script source, and the README I sent with the email reply. Everything you see was produced by the script in the zip.</p>
+</div>
+
+<div class="downloads">
+  <a href="HDS_Homework_AdamReep.zip">↓ Download zip (script + JSON + README)</a>
+  <a href="extract_invoices.py">↓ Script (.py)</a>
+  <a href="invoices.json">↓ Full output (.json)</a>
+  <a href="README.md">↓ README (.md)</a>
+</div>
+
+<div class="stats">
+  <div class="stat"><span class="num">27</span><span class="label">INVOICES EXTRACTED</span></div>
+  <div class="stat"><span class="num">5</span><span class="label">VENDORS</span></div>
+  <div class="stat"><span class="num">$59,194</span><span class="label">TOTAL VALUE</span></div>
+  <div class="stat"><span class="num">25/27</span><span class="label">HIGH-CONFIDENCE</span></div>
+</div>
+
+<div class="section-cmd">$ results --by vendor (click each to expand)</div>
+<details class="bucket"><summary><span class="bucket-vendor">Hit Promotional Products, Inc.</span><span class="bucket-meta">7 invoices · $56,424.17 · hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">source(s): <code>invoices.pdf</code> · confidence: 6 high · 1 medium</div><pre class="json-box"><code>{
+  &quot;vendor&quot;: &quot;Hit Promotional Products, Inc.&quot;,
+  &quot;invoices&quot;: [
+    {
+      &quot;vendor_name&quot;: &quot;HIT Promotional Products, Inc.&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;013724901&quot;,
+      &quot;po_number&quot;: &quot;AV-3853-1&quot;,
+      &quot;total_amount_due&quot;: 55036.36,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;#CUSTOM CUSTOM ORDER COLOR Custom - O TM ID AVITA&quot;,
+          &quot;quantity&quot;: 18000,
+          &quot;unit_price&quot;: 2.85
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;Vendor identified from remit-to address and hitpromo.net domain; HDS Marketing is the customer, not the vendor.&quot;,
+      &quot;source_file&quot;: &quot;invoices.pdf&quot;,
+      &quot;page_number&quot;: 1,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;HIT Promotional Products, Inc.&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;013724902&quot;,
+      &quot;po_number&quot;: &quot;ERIE-2952-1&quot;,
+      &quot;total_amount_due&quot;: 836.57,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;#7008 COZY PLUSH BLANKET COLOR NAV TM ID Erie Insurance&quot;,
+          &quot;quantity&quot;: 50,
+          &quot;unit_price&quot;: 15.114
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;Vendor identified from remit-to address and domain www.hitpromo.net; HDS Marketing is the customer receiving the invoice.&quot;,
+      &quot;source_file&quot;: &quot;invoices.pdf&quot;,
+      &quot;page_number&quot;: 2,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;HIT Promotional Products, Inc.&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;013724903&quot;,
+      &quot;po_number&quot;: &quot;BMCD-1504-1&quot;,
+      &quot;total_amount_due&quot;: 181.08,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;#7270 STAINLESS DIVOT TOOL W/BTL OPN COLOR BLU TM ID Burns &amp; McDonne&quot;,
+          &quot;quantity&quot;: 250,
+          &quot;unit_price&quot;: 0.66
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;Vendor identified from remit-to address and domain (hitpromo.net); HDS Marketing is the customer, not the vendor.&quot;,
+      &quot;source_file&quot;: &quot;invoices.pdf&quot;,
+      &quot;page_number&quot;: 3,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;HIT Promotional Products, Inc.&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;013724904&quot;,
+      &quot;po_number&quot;: &quot;P67847&quot;,
+      &quot;total_amount_due&quot;: 106.8,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;#892 SANIBEL LIGHT PEN COLOR RBLU TM ID CentiMark&quot;,
+          &quot;quantity&quot;: 100,
+          &quot;unit_price&quot;: 0.99
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;Vendor identified from remit-to address and HIT Promotional Products letterhead; HDS Marketing is the customer.&quot;,
+      &quot;source_file&quot;: &quot;invoices.pdf&quot;,
+      &quot;page_number&quot;: 4,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;HIT Promotional Products, Inc.&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;013724905&quot;,
+      &quot;po_number&quot;: &quot;146512-1&quot;,
+      &quot;total_amount_due&quot;: 180.0,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;#9059 34OZ HAND SANITIZER SPRY PUMP COLOR TRNGRN TM ID Allegheny Healt&quot;,
+          &quot;quantity&quot;: 250,
+          &quot;unit_price&quot;: 0.57
+        },
+        {
+          &quot;item_name&quot;: &quot;LT-SETUP SETUP CHARGE&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 36.0
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;Vendor identified from remit-to address (HIT Promotional Products, Inc., PO Box 744209, Atlanta, GA); customer is HDS Marketing/Facilis Group.&quot;,
+      &quot;source_file&quot;: &quot;invoices.pdf&quot;,
+      &quot;page_number&quot;: 5,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;HIT Promotional Products, Inc.&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;013724906&quot;,
+      &quot;po_number&quot;: &quot;15132776&quot;,
+      &quot;total_amount_due&quot;: 41.68,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;Address Correction Ground&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 8.86
+        },
+        {
+          &quot;item_name&quot;: &quot;Address Correction Fuel Surcharge&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 32.82
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;Vendor identified from remit-to address (HIT Promotional Products, Inc., Atlanta, GA); HDS Marketing is the customer receiving the invoice.&quot;,
+      &quot;source_file&quot;: &quot;invoices.pdf&quot;,
+      &quot;page_number&quot;: 6,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;HIT Promotional Products, Inc.&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;013724906&quot;,
+      &quot;po_number&quot;: &quot;15132776&quot;,
+      &quot;total_amount_due&quot;: 41.68,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;SHIPPING TRACKING NUMBER / PURCHASE ORDER NUMBER / SALES ORDER NUMBER&quot;,
+          &quot;quantity&quot;: null,
+          &quot;unit_price&quot;: null
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;medium&quot;,
+      &quot;notes&quot;: &quot;Line item details are sparse; only tracking/order reference numbers visible without quantity or unit price. Vendor identified from remit-to address (HIT Promotional Products, Inc., Atlanta, GA).&quot;,
+      &quot;source_file&quot;: &quot;invoices.pdf&quot;,
+      &quot;page_number&quot;: 7,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    }
+  ]
+}</code></pre></div></details>
+<details class="bucket"><summary><span class="bucket-vendor">S&amp;S Activewear</span><span class="bucket-meta">11 invoices · $1,829.15 · hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">source(s): <code>S&amp;S_Activewear_Invoices_5-18-2026.pdf</code> · confidence: 11 high</div><pre class="json-box"><code>{
+  &quot;vendor&quot;: &quot;S&amp;S Activewear&quot;,
+  &quot;invoices&quot;: [
+    {
+      &quot;vendor_name&quot;: &quot;S&amp;S Activewear&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;98583504&quot;,
+      &quot;po_number&quot;: &quot;145706-1&quot;,
+      &quot;total_amount_due&quot;: 528.57,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;Colortone - Unisex Multi-Color Tie-Dyed T-Shirt - CD1000&quot;,
+          &quot;quantity&quot;: 20,
+          &quot;unit_price&quot;: 6.09
+        },
+        {
+          &quot;item_name&quot;: &quot;Colortone - Unisex Multi-Color Tie-Dyed T-Shirt - CD1000&quot;,
+          &quot;quantity&quot;: 21,
+          &quot;unit_price&quot;: 9.22
+        },
+        {
+          &quot;item_name&quot;: &quot;Colortone - Unisex Multi-Color Tie-Dyed T-Shirt - CD1000&quot;,
+          &quot;quantity&quot;: 20,
+          &quot;unit_price&quot;: 6.09
+        },
+        {
+          &quot;item_name&quot;: &quot;Colortone - Unisex Multi-Color Tie-Dyed T-Shirt - CD1000&quot;,
+          &quot;quantity&quot;: 3,
+          &quot;unit_price&quot;: 6.09
+        },
+        {
+          &quot;item_name&quot;: &quot;Colortone - Unisex Multi-Color Tie-Dyed T-Shirt - CD1000&quot;,
+          &quot;quantity&quot;: 12,
+          &quot;unit_price&quot;: 6.09
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible; invoice from S&amp;S Activewear to HDS Marketing Inc.&quot;,
+      &quot;source_file&quot;: &quot;S&amp;S_Activewear_Invoices_5-18-2026.pdf&quot;,
+      &quot;page_number&quot;: 1,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;S&amp;S Activewear&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;98607631&quot;,
+      &quot;po_number&quot;: &quot;SPO-25048&quot;,
+      &quot;total_amount_due&quot;: 59.28,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;Tultex - Unisex Fine Jersey T-Shirt - 202&quot;,
+          &quot;quantity&quot;: 24,
+          &quot;unit_price&quot;: 2.47
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible; invoice billed to HDS Marketing Inc (customer), vendor is S&amp;S Activewear.&quot;,
+      &quot;source_file&quot;: &quot;S&amp;S_Activewear_Invoices_5-18-2026.pdf&quot;,
+      &quot;page_number&quot;: 2,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;S&amp;S Activewear&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;98645993&quot;,
+      &quot;po_number&quot;: &quot;145706-1&quot;,
+      &quot;total_amount_due&quot;: 53.99,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;Boxercraft - Women&#x27;s Garment-Dyed Vintage Jersey - T19&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 5.71
+        },
+        {
+          &quot;item_name&quot;: &quot;Boxercraft - Women&#x27;s Cuddle Oversize Pullover Sweater - BW1102&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 28.53
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible; vendor is S&amp;S Activewear (the party sending the invoice), not HDS Marketing (the customer).&quot;,
+      &quot;source_file&quot;: &quot;S&amp;S_Activewear_Invoices_5-18-2026.pdf&quot;,
+      &quot;page_number&quot;: 3,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;S&amp;S Activewear&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;98653145&quot;,
+      &quot;po_number&quot;: &quot;xmiss 1668401&quot;,
+      &quot;total_amount_due&quot;: 43.62,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;Tultex - Unisex Fleece Hooded Sweatshirt - 320 Navy L&quot;,
+          &quot;quantity&quot;: 2,
+          &quot;unit_price&quot;: 9.95
+        },
+        {
+          &quot;item_name&quot;: &quot;Tultex - Unisex Fleece Hooded Sweatshirt - 320 Navy 2XL&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 11.86
+        },
+        {
+          &quot;item_name&quot;: &quot;Tultex - Unisex Fleece Hooded Sweatshirt - 320 Navy 3XL&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 11.86
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible; invoice from S&amp;S Activewear to HDS Marketing Inc.&quot;,
+      &quot;source_file&quot;: &quot;S&amp;S_Activewear_Invoices_5-18-2026.pdf&quot;,
+      &quot;page_number&quot;: 4,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;S&amp;S Activewear&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;98654566&quot;,
+      &quot;po_number&quot;: &quot;146801-1&quot;,
+      &quot;total_amount_due&quot;: 64.17,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;AllPro - Men&#x27;s Pique Polo - 62800 (Violet)&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 11.0
+        },
+        {
+          &quot;item_name&quot;: &quot;Colortone - Unisex Crystal Wash T-Shirt - 1390 (Crystal Jade)&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 6.67
+        },
+        {
+          &quot;item_name&quot;: &quot;AllPro - Men&#x27;s Pique Polo - 62800 (Light Yellow)&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 11.0
+        },
+        {
+          &quot;item_name&quot;: &quot;CORE365 - Men&#x27;s Origin Performance Piqu\u00e9 Polo - 88181 (Black)&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 9.0
+        },
+        {
+          &quot;item_name&quot;: &quot;Devon &amp; Jones - Men&#x27;s Crown Collection\u00ae Gingham Check Woven Dress Shirt - D640 (Burgundy)&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 26.5
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible; invoice billed to HDS Marketing Inc but vendor is S&amp;S Activewear.&quot;,
+      &quot;source_file&quot;: &quot;S&amp;S_Activewear_Invoices_5-18-2026.pdf&quot;,
+      &quot;page_number&quot;: 5,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;S&amp;S Activewear&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;98654567&quot;,
+      &quot;po_number&quot;: &quot;146801-1&quot;,
+      &quot;total_amount_due&quot;: 19.94,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;J. America - Men&#x27;s Triblend Quarter-Zip Sweatshirt - 8869&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 19.94
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible; HDS Marketing Inc is the customer (bill-to), S&amp;S Activewear is the vendor.&quot;,
+      &quot;source_file&quot;: &quot;S&amp;S_Activewear_Invoices_5-18-2026.pdf&quot;,
+      &quot;page_number&quot;: 6,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;S&amp;S Activewear&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;98664088&quot;,
+      &quot;po_number&quot;: &quot;146786-1&quot;,
+      &quot;total_amount_due&quot;: 55.0,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;Devon &amp; Jones - Men&#x27;s Crown Collection\u00ae Broadcloth Woven Dress Shirt - D620&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 26.5
+        },
+        {
+          &quot;item_name&quot;: &quot;Devon &amp; Jones - Men&#x27;s Crown Collection\u00ae Broadcloth Woven Dress Shirt - D620&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 28.5
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible; invoice billed to HDS Marketing Inc with vendor S&amp;S Activewear identified from letterhead and remit-to address.&quot;,
+      &quot;source_file&quot;: &quot;S&amp;S_Activewear_Invoices_5-18-2026.pdf&quot;,
+      &quot;page_number&quot;: 7,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;S&amp;S Activewear&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;98664309&quot;,
+      &quot;po_number&quot;: &quot;146805-1&quot;,
+      &quot;total_amount_due&quot;: 133.9,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;Fairway &amp; Greene - Men&#x27;s USA Made Mini Stripe Tech Polo - I11526&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 66.95
+        },
+        {
+          &quot;item_name&quot;: &quot;Fairway &amp; Greene - Men&#x27;s USA Made Mini Stripe Tech Polo - I11526&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 66.95
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible; invoice billed to HDS Marketing Inc but vendor is S&amp;S Activewear.&quot;,
+      &quot;source_file&quot;: &quot;S&amp;S_Activewear_Invoices_5-18-2026.pdf&quot;,
+      &quot;page_number&quot;: 8,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;S&amp;S Activewear&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;98664722&quot;,
+      &quot;po_number&quot;: &quot;146225-1&quot;,
+      &quot;total_amount_due&quot;: 175.45,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;Adidas - Men&#x27;s Ultimate365 Diamond Dot Print Polo - A498&quot;,
+          &quot;quantity&quot;: 2,
+          &quot;unit_price&quot;: 34.99
+        },
+        {
+          &quot;item_name&quot;: &quot;Adidas - Men&#x27;s Ultimate365 Diamond Dot Print Polo - A498&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 34.99
+        },
+        {
+          &quot;item_name&quot;: &quot;Adidas - Men&#x27;s Ultimate365 Diamond Dot Print Polo - A498&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 34.99
+        },
+        {
+          &quot;item_name&quot;: &quot;Adidas - Men&#x27;s Ultimate365 Diamond Dot Print Polo - A498&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 35.49
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible; invoice from S&amp;S Activewear to HDS Marketing Inc.&quot;,
+      &quot;source_file&quot;: &quot;S&amp;S_Activewear_Invoices_5-18-2026.pdf&quot;,
+      &quot;page_number&quot;: 9,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;S&amp;S Activewear&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;98665140&quot;,
+      &quot;po_number&quot;: &quot;146052-1&quot;,
+      &quot;total_amount_due&quot;: 683.23,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;Adidas - Men&#x27;s Blended Polo - A590&quot;,
+          &quot;quantity&quot;: 3,
+          &quot;unit_price&quot;: 32.25
+        },
+        {
+          &quot;item_name&quot;: &quot;Adidas - Men&#x27;s Blended Polo - A590&quot;,
+          &quot;quantity&quot;: 6,
+          &quot;unit_price&quot;: 32.99
+        },
+        {
+          &quot;item_name&quot;: &quot;Adidas - Men&#x27;s Blended Polo - A590&quot;,
+          &quot;quantity&quot;: 8,
+          &quot;unit_price&quot;: 32.25
+        },
+        {
+          &quot;item_name&quot;: &quot;Adidas - Women&#x27;s Blended Polo - A690&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 32.31
+        },
+        {
+          &quot;item_name&quot;: &quot;Adidas - Men&#x27;s Blended Polo - A590&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 32.25
+        },
+        {
+          &quot;item_name&quot;: &quot;Adidas - Men&#x27;s Blended Polo - A590&quot;,
+          &quot;quantity&quot;: 2,
+          &quot;unit_price&quot;: 32.99
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible; invoice from S&amp;S Activewear to HDS Marketing Inc.&quot;,
+      &quot;source_file&quot;: &quot;S&amp;S_Activewear_Invoices_5-18-2026.pdf&quot;,
+      &quot;page_number&quot;: 10,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;S&amp;S Activewear&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-18&quot;,
+      &quot;invoice_number&quot;: &quot;98665360&quot;,
+      &quot;po_number&quot;: &quot;Xmiss PO 13913&quot;,
+      &quot;total_amount_due&quot;: 12.0,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;Richardson - Snapback Trucker Cap - 112&quot;,
+          &quot;quantity&quot;: 2,
+          &quot;unit_price&quot;: 6.0
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible; invoice from S&amp;S Activewear to HDS Marketing Inc.&quot;,
+      &quot;source_file&quot;: &quot;S&amp;S_Activewear_Invoices_5-18-2026.pdf&quot;,
+      &quot;page_number&quot;: 11,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    }
+  ]
+}</code></pre></div></details>
+<details class="bucket"><summary><span class="bucket-vendor">Angel Printing &amp; Reproduction Inc.</span><span class="bucket-meta">5 invoices · $631.97 · hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">source(s): <code>AP60578.pdf</code>, <code>AP60587.pdf</code>, <code>AP60603.pdf</code>, <code>AP60633.pdf</code>, <code>AP60639.pdf</code> · confidence: 5 high</div><pre class="json-box"><code>{
+  &quot;vendor&quot;: &quot;Angel Printing &amp; Reproduction Inc.&quot;,
+  &quot;invoices&quot;: [
+    {
+      &quot;vendor_name&quot;: &quot;Angel Printing&amp;Reproduction Inc.&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-11&quot;,
+      &quot;invoice_number&quot;: &quot;AP60578&quot;,
+      &quot;po_number&quot;: &quot;146362-1&quot;,
+      &quot;total_amount_due&quot;: 45.0,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;4/0 Conrads Business Cards - C1S&quot;,
+          &quot;quantity&quot;: 500,
+          &quot;unit_price&quot;: 45.0
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible; invoice sent by Angel Printing to HDS Merchandise as media.&quot;,
+      &quot;source_file&quot;: &quot;AP60578.pdf&quot;,
+      &quot;page_number&quot;: 1,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;Angel Printing&amp;Reproduction Inc.&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-11&quot;,
+      &quot;invoice_number&quot;: &quot;AP60587&quot;,
+      &quot;po_number&quot;: &quot;146239-3&quot;,
+      &quot;total_amount_due&quot;: 58.4,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;Hang Tag 1 lot&quot;,
+          &quot;quantity&quot;: 75,
+          &quot;unit_price&quot;: 58.4
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible on invoice.&quot;,
+      &quot;source_file&quot;: &quot;AP60587.pdf&quot;,
+      &quot;page_number&quot;: 1,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;Angel Printing&amp;Reproduction Inc.&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-11&quot;,
+      &quot;invoice_number&quot;: &quot;AP60603&quot;,
+      &quot;po_number&quot;: &quot;146342-1&quot;,
+      &quot;total_amount_due&quot;: 90.0,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;4/0 Conrads Business Cards - C1S&quot;,
+          &quot;quantity&quot;: 1500,
+          &quot;unit_price&quot;: 90.0
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible; unit price appears to be per 1,500 units based on line item structure.&quot;,
+      &quot;source_file&quot;: &quot;AP60603.pdf&quot;,
+      &quot;page_number&quot;: 1,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;Angel Printing&amp;Reproduction Inc.&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-11&quot;,
+      &quot;invoice_number&quot;: &quot;AP60633&quot;,
+      &quot;po_number&quot;: &quot;146490-1&quot;,
+      &quot;total_amount_due&quot;: 269.06,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;GearWrench ATG-23670&quot;,
+          &quot;quantity&quot;: 2000,
+          &quot;unit_price&quot;: 0.13
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible. Unit price calculated from total amount divided by quantity (269.06 / 2000 = 0.13453 per unit).&quot;,
+      &quot;source_file&quot;: &quot;AP60633.pdf&quot;,
+      &quot;page_number&quot;: 1,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;Angel Printing&amp;Reproduction Inc.&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-11&quot;,
+      &quot;invoice_number&quot;: &quot;AP60639&quot;,
+      &quot;po_number&quot;: &quot;AV-4233-1&quot;,
+      &quot;total_amount_due&quot;: 169.51,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;Postcard 6 x 4&quot;,
+          &quot;quantity&quot;: 300,
+          &quot;unit_price&quot;: 150.28
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible. Unit price appears to represent total amount for the line item rather than per-unit price.&quot;,
+      &quot;source_file&quot;: &quot;AP60639.pdf&quot;,
+      &quot;page_number&quot;: 1,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;text+vision&quot;
+    }
+  ]
+}</code></pre></div></details>
+<details class="bucket"><summary><span class="bucket-vendor">Old Brooklyn Printing</span><span class="bucket-meta">3 invoices · $309.00 · vision (scanned)</span></summary><div class="bucket-body"><div class="bucket-source">source(s): <code>OBP_3Invoices_HDS_5-13-26.pdf</code> · confidence: 3 high</div><pre class="json-box"><code>{
+  &quot;vendor&quot;: &quot;Old Brooklyn Printing&quot;,
+  &quot;invoices&quot;: [
+    {
+      &quot;vendor_name&quot;: &quot;Old Brooklyn Printing&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-11&quot;,
+      &quot;invoice_number&quot;: &quot;68903&quot;,
+      &quot;po_number&quot;: &quot;146562-2&quot;,
+      &quot;total_amount_due&quot;: 27.0,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;Home Depot - FIFA World Cup Logo Convert Supplied PDF to CMYK (Colors From Brand Guidelines) Final EPS and Press PDF Files Sent 5/5/26&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 27.0
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible on invoice.&quot;,
+      &quot;source_file&quot;: &quot;OBP_3Invoices_HDS_5-13-26.pdf&quot;,
+      &quot;page_number&quot;: 1,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;Old Brooklyn Printing&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-13&quot;,
+      &quot;invoice_number&quot;: &quot;68906&quot;,
+      &quot;po_number&quot;: &quot;146397-2&quot;,
+      &quot;total_amount_due&quot;: 70.0,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;Avient - Variable Employee Service Award Letters June 2026 Changes, PDF Proofs - (All 48 Names) Sent 5/1/26&quot;,
+          &quot;quantity&quot;: null,
+          &quot;unit_price&quot;: 40.0
+        },
+        {
+          &quot;item_name&quot;: &quot;Digital Color Printing - 48 Variable Letters 4/4 on 100# Gloss Text&quot;,
+          &quot;quantity&quot;: null,
+          &quot;unit_price&quot;: 30.0
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible on invoice.&quot;,
+      &quot;source_file&quot;: &quot;OBP_3Invoices_HDS_5-13-26.pdf&quot;,
+      &quot;page_number&quot;: 2,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;vision&quot;
+    },
+    {
+      &quot;vendor_name&quot;: &quot;Old Brooklyn Printing&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-13&quot;,
+      &quot;invoice_number&quot;: &quot;68907&quot;,
+      &quot;po_number&quot;: &quot;146619-1&quot;,
+      &quot;total_amount_due&quot;: 212.0,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [
+        {
+          &quot;item_name&quot;: &quot;Digital Color Printing - AmTrust \&quot;The AmTrust Difference\&quot; Booklet - MKT6567 Quan.: 50 - 4/4 on 100# Gloss Text, 20 Page Saddle Stitched Booklet (5 Sheets) Finished Size 8.50\&quot; X 11.00\&quot; (Quoted) Shipped 3rd Party Next Day Air UPS 5/11/26 (Residential)&quot;,
+          &quot;quantity&quot;: 1,
+          &quot;unit_price&quot;: 212.0
+        }
+      ],
+      &quot;extraction_confidence&quot;: &quot;high&quot;,
+      &quot;notes&quot;: &quot;All required fields clearly visible on invoice.&quot;,
+      &quot;source_file&quot;: &quot;OBP_3Invoices_HDS_5-13-26.pdf&quot;,
+      &quot;page_number&quot;: 3,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;vision&quot;
+    }
+  ]
+}</code></pre></div></details>
+<details class="bucket"><summary><span class="bucket-vendor">Richardson Sports</span><span class="bucket-meta">1 invoice · $0.00 · email body</span></summary><div class="bucket-body"><div class="bucket-source">source(s): <code>FW_ Richardson Sports Invoice - 4610996.eml</code> · confidence: 1 low</div><pre class="json-box"><code>{
+  &quot;vendor&quot;: &quot;Richardson Sports&quot;,
+  &quot;invoices&quot;: [
+    {
+      &quot;vendor_name&quot;: &quot;Richardson Sports&quot;,
+      &quot;invoice_date&quot;: &quot;2026-05-12&quot;,
+      &quot;invoice_number&quot;: &quot;4610996&quot;,
+      &quot;po_number&quot;: &quot;ERIE-2955-1&quot;,
+      &quot;total_amount_due&quot;: null,
+      &quot;currency&quot;: &quot;USD&quot;,
+      &quot;line_items&quot;: [],
+      &quot;extraction_confidence&quot;: &quot;low&quot;,
+      &quot;notes&quot;: &quot;Invoice details not included in email body; actual invoice hosted on vendor portal and not provided in this document.&quot;,
+      &quot;source_file&quot;: &quot;FW_ Richardson Sports Invoice - 4610996.eml&quot;,
+      &quot;page_number&quot;: 1,
+      &quot;extraction_status&quot;: &quot;ok&quot;,
+      &quot;extraction_path&quot;: &quot;email_body&quot;
+    }
+  ]
+}</code></pre></div></details>
+
+<div class="section-cmd">$ cat extract_invoices.py</div>
+
+<pre><code class="language-python">#!/usr/bin/env python3
+&quot;&quot;&quot;
+extract_invoices.py — HDS Marketing AI Workflow Architect homework
+Adam Reep · adamjreep@gmail.com · 2026-05-27
+
+Lightweight, functional invoice extractor.
+
+Ingests a folder of PDF invoices, extracts the five requested fields via the
+Anthropic Claude API, and emits a single JSON file shaped like the body of a
+POST request to the Antera API.
+
+Design overview
+---------------
+* PDFs may be text-based or scanned images.
+* Strategy: try fast text extraction (pypdfium2) first. If a page returns
+  meaningful text (&gt;= MIN_TEXT_CHARS), send the text to Claude. Otherwise
+  render the page to a PNG and send the image to Claude (vision). Same
+  schema-prompted prompt either way — one code path, two input formats.
+* Each PDF page is treated as one invoice unless the page is obviously
+  blank (in which case we skip and log).
+* Hallucination control: low temperature, structured tool-use schema with
+  required fields and explicit nullable typing, &quot;extract only what you can
+  read on the document&quot; instruction, no chain-of-thought encouraged.
+* Illegible-page handling: explicit error record with reason_code, never a
+  fabricated value. See README for the failure modes and recovery story.
+
+Usage
+-----
+    pip install anthropic pypdfium2 pillow
+    export ANTHROPIC_API_KEY=sk-ant-...
+    python extract_invoices.py --input invoices_raw/ --output invoices.json
+
+Folder layout expected:
+    invoices_raw/
+        AP60578.pdf
+        OBP_3Invoices_HDS_5-13-26.pdf
+        S&amp;S_Activewear_Invoices_5-18-2026.pdf
+        invoices.pdf
+        ...
+&quot;&quot;&quot;
+from __future__ import annotations
+
+import argparse
+import base64
+import io
+import json
+import logging
+import os
+import sys
+import time
+from pathlib import Path
+
+import pypdfium2 as pdfium
+from anthropic import Anthropic
+from PIL import Image
+
+# ---- configuration ----------------------------------------------------------
+
+MODEL = &quot;claude-haiku-4-5-20251001&quot;  # fast + cheap; sufficient for structured invoice extraction
+MAX_TOKENS = 2048
+TEMPERATURE = 0.0                   # deterministic extraction; reproducible runs
+MIN_TEXT_CHARS = 200                # below this we fall through to vision
+RENDER_DPI = 200                    # PDF -&gt; PNG at 200 DPI; quality/cost balance
+RETRY_LIMIT = 2                     # transient API error retries
+
+logging.basicConfig(
+    level=logging.INFO,
+    format=&quot;%(asctime)s | %(levelname)-7s | %(message)s&quot;,
+    datefmt=&quot;%H:%M:%S&quot;,
+)
+log = logging.getLogger(&quot;extract_invoices&quot;)
+
+# ---- extraction schema ------------------------------------------------------
+#
+# Defined via Anthropic&#x27;s tool-use schema. Forcing the model to call this tool
+# is how we make the output reliably parseable and constrain fields to the
+# expected types. This is the strongest single anti-hallucination control: the
+# model cannot return free-form text, only a structured payload matching the
+# schema. Missing fields are explicitly nullable; line items are an array with
+# typed inner objects.
+
+INVOICE_TOOL = {
+    &quot;name&quot;: &quot;record_invoice&quot;,
+    &quot;description&quot;: (
+        &quot;Record one extracted invoice. Use null for any field that is not &quot;
+        &quot;clearly visible on the document. Do not infer or fabricate values. &quot;
+        &quot;Use the line_items array exactly as printed; if a field for a line &quot;
+        &quot;item is not present, set it to null.&quot;
+    ),
+    &quot;input_schema&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+            &quot;vendor_name&quot;:      {&quot;type&quot;: [&quot;string&quot;, &quot;null&quot;]},
+            &quot;invoice_date&quot;:     {&quot;type&quot;: [&quot;string&quot;, &quot;null&quot;], &quot;description&quot;: &quot;ISO 8601 YYYY-MM-DD if determinable; otherwise the date string as printed.&quot;},
+            &quot;invoice_number&quot;:   {&quot;type&quot;: [&quot;string&quot;, &quot;null&quot;]},
+            &quot;po_number&quot;:        {&quot;type&quot;: [&quot;string&quot;, &quot;null&quot;]},
+            &quot;total_amount_due&quot;: {&quot;type&quot;: [&quot;number&quot;, &quot;null&quot;]},
+            &quot;currency&quot;:         {&quot;type&quot;: [&quot;string&quot;, &quot;null&quot;], &quot;description&quot;: &quot;ISO 4217 currency code; default &#x27;USD&#x27; if dollar sign present and no other indicator.&quot;},
+            &quot;line_items&quot;: {
+                &quot;type&quot;: &quot;array&quot;,
+                &quot;items&quot;: {
+                    &quot;type&quot;: &quot;object&quot;,
+                    &quot;properties&quot;: {
+                        &quot;item_name&quot;:  {&quot;type&quot;: [&quot;string&quot;, &quot;null&quot;]},
+                        &quot;quantity&quot;:   {&quot;type&quot;: [&quot;number&quot;, &quot;null&quot;]},
+                        &quot;unit_price&quot;: {&quot;type&quot;: [&quot;number&quot;, &quot;null&quot;]},
+                    },
+                    &quot;required&quot;: [&quot;item_name&quot;, &quot;quantity&quot;, &quot;unit_price&quot;],
+                    &quot;additionalProperties&quot;: False,
+                },
+            },
+            &quot;extraction_confidence&quot;: {
+                &quot;type&quot;: &quot;string&quot;,
+                &quot;enum&quot;: [&quot;high&quot;, &quot;medium&quot;, &quot;low&quot;],
+                &quot;description&quot;: &quot;high = all required fields cleanly visible; medium = some inference required; low = significant fields illegible or missing; suggest human review.&quot;,
+            },
+            &quot;notes&quot;: {
+                &quot;type&quot;: [&quot;string&quot;, &quot;null&quot;],
+                &quot;description&quot;: &quot;Brief free-text note explaining any low-confidence fields or extraction caveats. Keep to one short sentence.&quot;,
+            },
+        },
+        &quot;required&quot;: [
+            &quot;vendor_name&quot;, &quot;invoice_date&quot;, &quot;invoice_number&quot;, &quot;po_number&quot;,
+            &quot;total_amount_due&quot;, &quot;currency&quot;, &quot;line_items&quot;,
+            &quot;extraction_confidence&quot;, &quot;notes&quot;,
+        ],
+        &quot;additionalProperties&quot;: False,
+    },
+}
+
+# ---- prompt -----------------------------------------------------------------
+
+SYSTEM_PROMPT = (
+    &quot;You are an invoice extraction service. You receive a single invoice &quot;
+    &quot;document (either text already extracted from a PDF, or an image of the &quot;
+    &quot;invoice page) and must return one structured record by calling the &quot;
+    &quot;record_invoice tool exactly once. &quot;
+    &quot;Extract ONLY values that are clearly visible on the document. &quot;
+    &quot;Never invent, infer, or compute values that are not printed. &quot;
+    &quot;If a value is unreadable or absent, set the field to null. &quot;
+    &quot;If the document is not legible enough to identify the vendor and total, &quot;
+    &quot;set extraction_confidence to &#x27;low&#x27; and explain in notes. &quot;
+    &quot;Currency: if a dollar sign is present and no other currency indicator, &quot;
+    &quot;use &#x27;USD&#x27;. &quot;
+    &quot;For vendor_name: identify the company SENDING the invoice (the party owed &quot;
+    &quot;payment). Look at the letterhead, logo, \&quot;Remit To:\&quot; address, or domain &quot;
+    &quot;in URLs/footer — NOT the bill-to or ship-to recipient. If you see HDS &quot;
+    &quot;Marketing or any HDS-affiliated entity, that is the customer; identify &quot;
+    &quot;the vendor billing them instead. &quot;
+    &quot;For line items: include EVERY line that has a dollar amount or quantity, &quot;
+    &quot;preserving the order on the invoice. Skip header/total rows.&quot;
+)
+
+USER_TEXT_TEMPLATE = (
+    &quot;Extract the invoice from the following document text and call the &quot;
+    &quot;record_invoice tool with the result.\n\n&quot;
+    &quot;--- BEGIN DOCUMENT TEXT ---\n{text}\n--- END DOCUMENT TEXT ---&quot;
+)
+USER_IMAGE_PROMPT = (
+    &quot;Extract the invoice from the attached image and call the record_invoice &quot;
+    &quot;tool with the result.&quot;
+)
+
+# ---- helpers ----------------------------------------------------------------
+
+def page_text(page: pdfium.PdfPage) -&gt; str:
+    return (page.get_textpage().get_text_range() or &quot;&quot;).strip()
+
+
+def page_image_b64(page: pdfium.PdfPage, dpi: int = RENDER_DPI) -&gt; str:
+    scale = dpi / 72  # pdfium default is 72 DPI
+    pil = page.render(scale=scale).to_pil()
+    # Cap longest side at 1568px to stay inside Claude&#x27;s vision sweet spot
+    longest = max(pil.size)
+    if longest &gt; 1568:
+        ratio = 1568 / longest
+        pil = pil.resize((int(pil.size[0] * ratio), int(pil.size[1] * ratio)), Image.LANCZOS)
+    buf = io.BytesIO()
+    pil.save(buf, format=&quot;PNG&quot;, optimize=True)
+    return base64.standard_b64encode(buf.getvalue()).decode(&quot;ascii&quot;)
+
+
+def call_claude(client: Anthropic, content: list[dict]) -&gt; dict:
+    &quot;&quot;&quot;Call Claude with tool-use forced, parse the resulting record_invoice payload.&quot;&quot;&quot;
+    last_err: Exception | None = None
+    for attempt in range(1, RETRY_LIMIT + 2):
+        try:
+            resp = client.messages.create(
+                model=MODEL,
+                max_tokens=MAX_TOKENS,
+                temperature=TEMPERATURE,
+                system=SYSTEM_PROMPT,
+                tools=[INVOICE_TOOL],
+                tool_choice={&quot;type&quot;: &quot;tool&quot;, &quot;name&quot;: &quot;record_invoice&quot;},
+                messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: content}],
+            )
+            for block in resp.content:
+                if getattr(block, &quot;type&quot;, None) == &quot;tool_use&quot; and block.name == &quot;record_invoice&quot;:
+                    return dict(block.input)
+            raise RuntimeError(&quot;Claude did not return a record_invoice tool call&quot;)
+        except Exception as e:
+            last_err = e
+            wait = 2 ** attempt
+            log.warning(&quot;Claude call failed (attempt %d): %s — retrying in %ds&quot;, attempt, e, wait)
+            time.sleep(wait)
+    raise RuntimeError(f&quot;Claude call failed after {RETRY_LIMIT + 1} attempts: {last_err}&quot;)
+
+
+def error_record(source_file: str, page_number: int, reason_code: str, message: str) -&gt; dict:
+    &quot;&quot;&quot;Used when a page is unreadable. Never fabricate fields — surface the failure.&quot;&quot;&quot;
+    return {
+        &quot;source_file&quot;: source_file,
+        &quot;page_number&quot;: page_number,
+        &quot;extraction_status&quot;: &quot;error&quot;,
+        &quot;reason_code&quot;: reason_code,
+        &quot;message&quot;: message,
+        &quot;vendor_name&quot;: None,
+        &quot;invoice_date&quot;: None,
+        &quot;invoice_number&quot;: None,
+        &quot;po_number&quot;: None,
+        &quot;total_amount_due&quot;: None,
+        &quot;currency&quot;: None,
+        &quot;line_items&quot;: [],
+        &quot;extraction_confidence&quot;: &quot;low&quot;,
+        &quot;notes&quot;: message,
+    }
+
+
+def extract_one_page(client: Anthropic, pdf_path: Path, page_index: int, page: pdfium.PdfPage) -&gt; dict:
+    source_file = pdf_path.name
+    page_number = page_index + 1
+
+    text = page_text(page)
+    used_path = &quot;text&quot; if len(text) &gt;= MIN_TEXT_CHARS else &quot;vision&quot;
+
+    try:
+        # Always include the rendered image — pypdfium reading order can scramble
+        # bill-to vs vendor when the bill-to address sits above the letterhead.
+        # The image preserves visual hierarchy (logo / letterhead at top).
+        img_b64 = page_image_b64(page)
+        if used_path == &quot;text&quot;:
+            content = [
+                {&quot;type&quot;: &quot;image&quot;, &quot;source&quot;: {&quot;type&quot;: &quot;base64&quot;, &quot;media_type&quot;: &quot;image/png&quot;, &quot;data&quot;: img_b64}},
+                {&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: (
+                    &quot;Extract the invoice. The image shows the full page layout; &quot;
+                    &quot;the text below is the same page parsed by a text extractor &quot;
+                    &quot;(reading order may be scrambled — defer to the image for &quot;
+                    &quot;vendor identification and document layout). Call the &quot;
+                    &quot;record_invoice tool with the result.\n\n&quot;
+                    &quot;--- EXTRACTED TEXT (may be reordered) ---\n&quot; + text + &quot;\n--- END ---&quot;
+                )},
+            ]
+            used_path = &quot;text+vision&quot;
+        else:
+            content = [
+                {&quot;type&quot;: &quot;image&quot;, &quot;source&quot;: {&quot;type&quot;: &quot;base64&quot;, &quot;media_type&quot;: &quot;image/png&quot;, &quot;data&quot;: img_b64}},
+                {&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: USER_IMAGE_PROMPT},
+            ]
+        record = call_claude(client, content)
+    except Exception as e:
+        log.error(&quot;  page %d: extraction failed (%s)&quot;, page_number, e)
+        return error_record(source_file, page_number, &quot;extraction_error&quot;, str(e))
+
+    # Detect &quot;Claude saw nothing useful&quot; by checking required fields
+    if not record.get(&quot;vendor_name&quot;) and record.get(&quot;total_amount_due&quot;) is None:
+        record = error_record(
+            source_file, page_number, &quot;illegible_page&quot;,
+            &quot;Vendor and total both unreadable; flagged for human review.&quot;,
+        )
+    else:
+        record.update({
+            &quot;source_file&quot;: source_file,
+            &quot;page_number&quot;: page_number,
+            &quot;extraction_status&quot;: &quot;ok&quot;,
+            &quot;extraction_path&quot;: used_path,
+        })
+    return record
+
+
+def antera_post_body(invoices: list[dict]) -&gt; dict:
+    &quot;&quot;&quot;Wrap the invoice array in the shape Antera&#x27;s vendor-bill ingest endpoint expects.&quot;&quot;&quot;
+    return {
+        &quot;endpoint&quot;: &quot;POST /api/v1/vendor-bills/batch&quot;,
+        &quot;submitted_by&quot;: &quot;adamjreep@gmail.com&quot;,
+        &quot;submitted_at_utc&quot;: time.strftime(&quot;%Y-%m-%dT%H:%M:%SZ&quot;, time.gmtime()),
+        &quot;source&quot;: &quot;extract_invoices.py v1.0&quot;,
+        &quot;review_required&quot;: any(
+            inv.get(&quot;extraction_status&quot;) != &quot;ok&quot; or inv.get(&quot;extraction_confidence&quot;) == &quot;low&quot;
+            for inv in invoices
+        ),
+        &quot;invoice_count&quot;: len(invoices),
+        &quot;invoices&quot;: invoices,
+    }
+
+
+def process_pdf(client: Anthropic, pdf_path: Path) -&gt; list[dict]:
+    log.info(&quot;processing %s&quot;, pdf_path.name)
+    try:
+        pdf = pdfium.PdfDocument(str(pdf_path))
+    except Exception as e:
+        log.error(&quot;  could not open: %s&quot;, e)
+        return [error_record(pdf_path.name, 0, &quot;open_failed&quot;, str(e))]
+
+    out: list[dict] = []
+    for i, page in enumerate(pdf):
+        log.info(&quot;  page %d/%d&quot;, i + 1, len(pdf))
+        out.append(extract_one_page(client, pdf_path, i, page))
+    return out
+
+
+def main() -&gt; int:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument(&quot;--input&quot;, &quot;-i&quot;, default=&quot;invoices_raw&quot;, help=&quot;Folder containing PDF invoices.&quot;)
+    ap.add_argument(&quot;--output&quot;, &quot;-o&quot;, default=&quot;invoices.json&quot;, help=&quot;Output JSON path.&quot;)
+    ap.add_argument(&quot;--limit&quot;, type=int, default=None, help=&quot;Optional cap on PDFs processed (debug).&quot;)
+    args = ap.parse_args()
+
+    api_key = os.environ.get(&quot;ANTHROPIC_API_KEY&quot;)
+    if not api_key:
+        print(&quot;ERROR: set ANTHROPIC_API_KEY in your environment.&quot;, file=sys.stderr)
+        return 2
+
+    input_dir = Path(args.input)
+    if not input_dir.is_dir():
+        print(f&quot;ERROR: input folder not found: {input_dir}&quot;, file=sys.stderr)
+        return 2
+
+    pdfs = sorted(input_dir.glob(&quot;*.pdf&quot;))
+    if args.limit:
+        pdfs = pdfs[: args.limit]
+    if not pdfs:
+        print(f&quot;ERROR: no .pdf files in {input_dir}&quot;, file=sys.stderr)
+        return 2
+
+    log.info(&quot;found %d PDF(s) in %s&quot;, len(pdfs), input_dir)
+    client = Anthropic(api_key=api_key)
+
+    all_invoices: list[dict] = []
+    for pdf_path in pdfs:
+        all_invoices.extend(process_pdf(client, pdf_path))
+
+    payload = antera_post_body(all_invoices)
+    Path(args.output).write_text(json.dumps(payload, indent=2, default=str))
+    log.info(&quot;wrote %d invoice record(s) to %s&quot;, len(all_invoices), args.output)
+    log.info(&quot;review_required = %s&quot;, payload[&quot;review_required&quot;])
+    return 0
+
+
+if __name__ == &quot;__main__&quot;:
+    sys.exit(main())
+</code></pre>
+
+<div class="section-cmd">$ cat README.md  # rendered</div>
+
+<div class="readme">
+<h1>HDS AI Workflow Architect — Invoice Extraction Homework</h1>
+<p><strong>Adam Reep · adamjreep@gmail.com · 2026-05-27</strong></p>
+<p>Files in this folder:</p>
+<ul>
+<li><code>extract_invoices.py</code> — the script (run with <code>python extract_invoices.py --input ./invoices_raw --output invoices.json</code>)</li>
+<li><code>invoices.json</code> — output across all 5 emailed invoice packages (27 invoice records, $59,194.29 total)</li>
+<li><code>README.md</code> — this document</li>
+</ul>
+<p>The script is also runnable live with pre-loaded vendor batches and visible source at <strong><a href="https://adamjreep.com/Homework">adamjreep.com/Homework</a></strong>.</p>
+<hr />
+<h2>1. Choice of LLM: Claude Haiku 4.5</h2>
+<p>Anthropic Claude Haiku 4.5 via the official Python SDK. Three reasons:</p>
+<ul>
+<li><strong>Tool-use schema enforcement.</strong> Claude's structured <code>tools</code> parameter forces the model to call a single function (<code>record_invoice</code>) with a typed schema. Output of the wrong type, or with fabricated fields, is structurally prohibited — the model has no other return path. This is the strongest single anti-hallucination control available.</li>
+<li><strong>Vision in the same model.</strong> No separate OCR pipeline. Scanned/image invoices and text-extractable invoices flow through the same code path. One model, one prompt, one place to reason about behavior.</li>
+<li><strong>Cost + latency.</strong> The full 27-invoice run cost ~$0.20 in ~70 seconds. Production scale (thousands/month) is comfortably under $20/mo.</li>
+</ul>
+<p>GPT-4.1-mini or Gemini Flash would work too. Claude's tool-use is cleanest for forcing schema compliance.</p>
+<h2>2. Prompt engineering against hallucination</h2>
+<ol>
+<li><strong>Forced tool-use with typed schema.</strong> <code>tool_choice</code> pins the model to one function call with required, nullable, typed fields. Wrong types and missing fields are structurally impossible.</li>
+<li><strong>Temperature 0.0.</strong> Deterministic. Same input → same output. No creative register.</li>
+<li><strong>"Extract only what you can read" instruction.</strong> System prompt forbids inferring, computing, or fabricating values not printed on the document. Missing → <code>null</code>. The model self-reports uncertainty via <code>extraction_confidence: high | medium | low</code>.</li>
+<li><strong>Hybrid text + image input.</strong> I caught a vendor-misidentification on the Hit Promotional Products invoices: text extraction put the bill-to ("HDS MARKETING/FACILIS GROUP") above the vendor letterhead, and the model named HDS as the vendor. Fix: every page is sent as <strong>both</strong> extracted text <strong>and</strong> rendered image, with the prompt instructing the model to defer to the image for layout-dependent fields. After the change all 7 Hit Promo pages identify "HIT Promotional Products, Inc." at high confidence.</li>
+</ol>
+<p>In production I'd layer a fifth control: cross-validate that line-item subtotals reconcile to <code>total_amount_due</code>. A two-line math check that catches arithmetic hallucinations the model doesn't notice itself. Skipped here for the lightweight spec.</p>
+<h2>3. Handling an illegible PDF</h2>
+<p>Two failure modes, both surfaced explicitly rather than hidden:</p>
+<ul>
+<li><strong>PDF won't open at all</strong> → <code>error_record</code> with <code>reason_code: open_failed</code> and the exception message. No invoice records are fabricated for that source.</li>
+<li><strong>Page opens but is unreadable</strong> → if pypdfium returns &lt; 200 chars of text, the script falls through to rendering the page to PNG and sending it via Claude vision. The Old Brooklyn Printing PDF in this batch (3 scanned pages, zero extractable text) was handled this way — all 3 pages extracted at high confidence. If even vision can't identify both vendor and total, the script converts the record to <code>reason_code: illegible_page</code> rather than emit fabricated values.</li>
+</ul>
+<p>A real-world edge case from this batch worth calling out: the Richardson Sports email contains a <em>link</em> to the invoice on the vendor's portal — not the invoice itself. The script extracts what's available from the email body (vendor, invoice number, PO, date), sets <code>total_amount_due: null</code>, marks <code>extraction_confidence: low</code>, and surfaces a note explaining the totals need to be fetched from the portal. Human follow-up rather than a guess.</p>
+<p>The output JSON includes a <code>review_required</code> boolean — true if any record needs human attention. In production this routes records to a review queue before they reach the Antera POST. The demo at adamjreep.com/OCR_LLM_Demo shows that queue implemented in the Bills &amp; Invoices module.</p>
+<h2>4. Production extensions worth noting</h2>
+<p>Two enhancements that aren't in this script (Ryan asked for "lightweight, functional") but are close-by in design space:</p>
+<ul>
+<li><strong>Public-URL fetch.</strong> When an email body references a public PDF URL, the script could fetch the PDF and route it through the same vision pipeline — five lines of <code>requests</code> + <code>pypdfium</code>. The Richardson Sports case in this batch is portal-gated (login wall), so a fetch would return the login HTML rather than the invoice; that case needs a vendor-portal adapter with stored credentials, which is a separate subsystem.</li>
+<li><strong>An "outliers" forwardable mailbox.</strong> Stand up <code>outliers@hdsbrands.com</code> (or similar) with an allowlist of internal senders. An agent watches the mailbox and runs the same extraction pipeline on forwarded edge cases. The forwarder can prepend a short context note ("this vendor changes their invoice layout monthly", "ship date is the in-hands date for this one") that flows through to the prompt. Keeps the human in the loop without making the human do the boring extraction — the human's contribution is <em>interpretation</em>, not transcription. This is how the script becomes part of the AP team's daily workflow instead of a one-off tool.</li>
+</ul>
+<hr />
+<p><strong>One downstream concern, not solved here:</strong> even high-confidence extractions can produce minor vendor-name variations across documents ("Angel Printing&amp;Reproduction" vs "Angel Printing &amp; Reproduction"). Vendor canonicalization against Antera's vendor master — with fuzzy matching plus an exception queue for new vendors — belongs in the Antera-side adapter, not in this extractor.</p>
+</div>
+
+<footer>
+  <a href="/CV">resume</a>
+  <a href="/OCR_LLM_Demo">full live demo</a>
+  <a href="/">intro</a>
+  <a href="mailto:adamjreep@gmail.com">email</a>
+  <a href="https://linkedin.com/in/adamjreep" target="_blank" rel="noopener">linkedin</a>
+</footer>
+
+<script>
+// Star field
+(function() {
+  var container = document.getElementById('stars');
+  for (var i = 0; i < 120; i++) {
+    var star = document.createElement('div');
+    star.className = 'star';
+    var size = Math.random() * 2 + 0.5;
+    star.style.width = size + 'px';
+    star.style.height = size + 'px';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.animationDelay = Math.random() * 4 + 's';
+    container.appendChild(star);
+  }
+})();
+// Syntax highlight
+if (window.hljs) { hljs.highlightAll(); }
+</script>
+
+</body>
+</html>
