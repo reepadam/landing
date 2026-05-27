@@ -81,7 +81,7 @@ VENDOR_MASTER = [
         "canonical": "A#### P####### & R########### Inc.",
         "aliases": ["a#### p#######"],
         "parsing_notes": (
-            "ANGEL PRINTING INVOICES use a non-standard line format: the 'Unit Price' "
+            "A#### P####### INVOICES use a non-standard line format: the 'Unit Price' "
             "column on multi-quantity rows shows the LINE TOTAL for the entire quantity, "
             "not the per-unit price. The 'Amount' column matches the 'Unit Price' column. "
             "When you see A#### P####### as the vendor and a row where Unit Price * Quantity "
