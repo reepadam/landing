@@ -2,276 +2,252 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>HDS Homework — Adam J. Reep</title>
+<script>if(location.hostname==='adamjreep.pages.dev')location.replace('https://adamjreep.com'+location.pathname+location.search+location.hash);</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/atom-one-dark.min.css">
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
 <style>
-:root { --bg:#0a0e0a; --fg:#c8d8c8; --fg-dim:#6a8a6a; --accent:#50fa7b; --prompt:#ffb86c; --hr:#1a2a1a; --panel-bg:#0f1a0f; }
-* { box-sizing:border-box; margin:0; padding:0; }
-html { font-size:16px; scroll-behavior:smooth; }
-body { font-family:'IBM Plex Mono','JetBrains Mono','Menlo','Consolas','Courier New',monospace; background:var(--bg); color:var(--fg); line-height:1.55; padding:2rem 1.5rem 4rem; max-width:960px; margin:0 auto; position:relative; z-index:1; }
-#stars { position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.35; }
-.star { position:absolute; background:#fff; border-radius:50%; animation:twinkle 4s infinite ease-in-out; }
-@keyframes twinkle { 0%,100%{opacity:0.2;} 50%{opacity:1;} }
-.prompt-line { color:var(--prompt); font-size:0.85rem; margin-bottom:0.5rem; }
-.eyebrow { color:var(--prompt); font-size:0.8rem; letter-spacing:0.18em; margin-bottom:1rem; }
-h1 { font-size:2.6rem; font-weight:700; line-height:1.1; margin-bottom:0.5rem; letter-spacing:-0.02em; }
-.tagline { color:var(--prompt); font-style:italic; font-size:0.95rem; margin-bottom:2rem; }
-.cta-box { border:1px solid var(--accent); background:linear-gradient(to right, rgba(80,250,123,0.06), rgba(80,250,123,0.01)); padding:1.1rem 1.3rem; margin-bottom:1.2rem; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.8rem 1.2rem; }
-.cta-box .left { flex:1 1 60%; min-width:260px; }
-.cta-box .eyebrow2 { color:var(--prompt); font-size:0.75rem; letter-spacing:0.15em; margin-bottom:0.3rem; }
-.cta-box .title { color:var(--fg); font-size:1rem; font-weight:700; margin-bottom:0.2rem; }
-.cta-box .desc { color:var(--fg-dim); font-size:0.82rem; line-height:1.5; }
-.cta-box a.btn { color:var(--accent); border:1px solid var(--accent); background:transparent; padding:0.55rem 1.1rem; font-family:inherit; font-size:0.85rem; font-weight:700; letter-spacing:0.06em; text-decoration:none; transition:background 0.15s, color 0.15s; white-space:nowrap; }
-.cta-box a.btn:hover { background:var(--accent); color:#0a0e0a; }
-.privacy-note { border:1px solid var(--prompt); background:rgba(255,184,108,0.06); padding:0.9rem 1.2rem; margin:2rem 0; font-size:0.85rem; }
-.privacy-note strong { color:var(--prompt); }
-.stats { display:grid; grid-template-columns:repeat(4,1fr); gap:0.5rem; margin:2rem 0; }
-.stat { background:var(--panel-bg); padding:1.3rem 0.8rem; text-align:center; border:1px solid var(--hr); }
-.stat .num { font-size:1.8rem; font-weight:700; color:var(--accent); display:block; margin-bottom:0.3rem; letter-spacing:-0.02em; }
-.stat .label { font-size:0.7rem; color:var(--fg-dim); letter-spacing:0.04em; }
-@media (max-width:680px) { .stats { grid-template-columns:repeat(2,1fr); } h1 { font-size:2rem; } }
-.section-cmd { color:var(--prompt); font-size:0.95rem; margin:2.8rem 0 1.3rem; letter-spacing:0.02em; border-bottom:1px solid var(--hr); padding-bottom:0.5rem; }
-.bucket { background:var(--panel-bg); border:1px solid var(--hr); margin-bottom:0.6rem; border-left:3px solid var(--fg-dim); transition:border-left-color 0.15s; }
-.bucket[open] { border-left-color:var(--accent); }
-.bucket summary { padding:0.9rem 1.1rem; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; list-style:none; }
-.bucket summary::-webkit-details-marker { display:none; }
-.bucket summary::before { content:"\25B8 "; color:var(--fg-dim); font-weight:700; margin-right:0.4rem; }
-.bucket[open] summary::before { content:"\25BE "; color:var(--accent); }
-.bucket-vendor { color:var(--fg); font-weight:700; font-size:1rem; }
-.bucket-meta { color:var(--fg-dim); font-size:0.82rem; }
-.bucket-body { padding:0.4rem 1.1rem 1.1rem; border-top:1px solid var(--hr); }
-.bucket-source { color:var(--fg-dim); font-size:0.85rem; margin:0.6rem 0 0.8rem; font-style:italic; }
-.json-box { background:#050a05; border:1px solid var(--hr); padding:1rem; font-size:0.78rem; overflow-x:auto; color:var(--fg); max-height:480px; overflow-y:auto; }
-pre { background:#050a05; border:1px solid var(--hr); padding:1rem; font-size:0.78rem; overflow-x:auto; margin:1rem 0; border-radius:2px; }
-pre code.hljs { background:transparent !important; padding:0 !important; }
-code { font-family:inherit; font-size:0.88em; color:var(--accent); }
-.readme { font-size:0.92rem; }
-.readme h1, .readme h2, .readme h3 { color:var(--fg); margin-top:1.8rem; margin-bottom:0.7rem; font-weight:700; }
-.readme h1 { font-size:1.5rem; }
-.readme h2 { font-size:1.2rem; color:var(--prompt); }
-.readme h3 { font-size:1rem; }
-.readme p { margin-bottom:0.9rem; }
-.readme ul, .readme ol { margin-left:1.5rem; margin-bottom:0.9rem; }
-.readme li { margin-bottom:0.3rem; }
-.readme strong { color:var(--fg); }
-.readme em { color:var(--fg-dim); }
-.readme code { background:rgba(80,250,123,0.08); padding:0.1em 0.3em; border-radius:2px; }
-.readme a { color:var(--accent); border-bottom:1px dotted var(--accent); text-decoration:none; }
-.readme hr { border:0; border-top:1px solid var(--hr); margin:1.5rem 0; }
-footer { margin-top:3.5rem; padding-top:1.5rem; border-top:1px solid var(--hr); color:var(--fg-dim); font-size:0.75rem; text-align:center; }
-footer a { color:var(--fg-dim); text-decoration:none; border-bottom:1px dotted var(--fg-dim); margin:0 0.6rem; }
-footer a:hover { color:var(--accent); border-color:var(--accent); }
+:root {
+  --bg: #0a0e0a; --fg: #c8d8c8; --fg-dim: #6a8a6a;
+  --accent: #50fa7b; --prompt: #ffb86c; --hr: #1a2a1a; --panel-bg: #0f1a0f;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  font-family: 'IBM Plex Mono', 'JetBrains Mono', 'Menlo', 'Consolas', 'Courier New', monospace;
+  background: var(--bg); color: var(--fg); line-height: 1.55;
+  padding: 2rem 1.5rem 4rem; max-width: 960px; margin: 0 auto;
+  position: relative; z-index: 1;
+}
+#stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.35; }
+.star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle 4s infinite ease-in-out; }
+@keyframes twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+.prompt-line { color: var(--prompt); font-size: 0.85rem; margin-bottom: 0.5rem; }
+.eyebrow { color: var(--prompt); font-size: 0.8rem; letter-spacing: 0.18em; margin-bottom: 1rem; }
+h1 { font-size: 2.6rem; font-weight: 700; line-height: 1.1; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+.tagline { color: var(--prompt); font-style: italic; font-size: 0.95rem; margin-bottom: 2rem; }
+.lede { border: 1px solid var(--hr); background: var(--panel-bg); padding: 1.4rem 1.5rem; margin-bottom: 1.5rem; border-left: 3px solid var(--accent); }
+.lede p { font-size: 0.95rem; margin-bottom: 0.7rem; }
+.lede p:last-child { margin-bottom: 0; }
+.lede .lead { color: var(--accent); font-weight: 700; font-size: 0.85rem; letter-spacing: 0.08em; margin-bottom: 0.6rem; }
+.privacy-note {
+  border: 1px solid var(--prompt); background: rgba(255,184,108,0.06);
+  padding: 0.9rem 1.2rem; margin-bottom: 2rem; font-size: 0.85rem;
+}
+.privacy-note strong { color: var(--prompt); }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin: 2rem 0; }
+.stat { background: var(--panel-bg); padding: 1.3rem 0.8rem; text-align: center; border: 1px solid var(--hr); }
+.stat .num { font-size: 1.8rem; font-weight: 700; color: var(--accent); display: block; margin-bottom: 0.3rem; letter-spacing: -0.02em; }
+.stat .label { font-size: 0.7rem; color: var(--fg-dim); letter-spacing: 0.04em; }
+@media (max-width: 680px) { .stats { grid-template-columns: repeat(2, 1fr); } h1 { font-size: 2rem; } }
+.section-cmd { color: var(--prompt); font-size: 0.95rem; margin: 2.8rem 0 1.3rem; letter-spacing: 0.02em; border-bottom: 1px solid var(--hr); padding-bottom: 0.5rem; }
+.bucket { background: var(--panel-bg); border: 1px solid var(--hr); margin-bottom: 0.6rem; border-left: 3px solid var(--fg-dim); transition: border-left-color 0.15s; }
+.bucket[open] { border-left-color: var(--accent); }
+.bucket summary { padding: 0.9rem 1.1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; list-style: none; }
+.bucket summary::-webkit-details-marker { display: none; }
+.bucket summary::before { content: "▸ "; color: var(--fg-dim); font-weight: 700; margin-right: 0.4rem; }
+.bucket[open] summary::before { content: "▾ "; color: var(--accent); }
+.bucket-vendor { color: var(--fg); font-weight: 700; font-size: 1rem; }
+.bucket-meta { color: var(--fg-dim); font-size: 0.82rem; }
+.bucket-body { padding: 0.4rem 1.1rem 1.1rem; border-top: 1px solid var(--hr); }
+.bucket-source { color: var(--fg-dim); font-size: 0.85rem; margin: 0.6rem 0 0.8rem; font-style: italic; }
+.json-box { background: #050a05; border: 1px solid var(--hr); padding: 1rem; font-size: 0.78rem; overflow-x: auto; color: var(--fg); max-height: 480px; overflow-y: auto; }
+pre { background: #050a05; border: 1px solid var(--hr); padding: 1rem; font-size: 0.78rem; overflow-x: auto; margin: 1rem 0; border-radius: 2px; }
+pre code.hljs { background: transparent !important; padding: 0 !important; }
+code { font-family: inherit; font-size: 0.88em; color: var(--accent); }
+.readme { font-size: 0.92rem; }
+.readme h1, .readme h2, .readme h3 { color: var(--fg); margin-top: 1.8rem; margin-bottom: 0.7rem; font-weight: 700; }
+.readme h1 { font-size: 1.5rem; }
+.readme h2 { font-size: 1.2rem; color: var(--prompt); }
+.readme h3 { font-size: 1rem; }
+.readme h2:first-child, .readme h1:first-child { margin-top: 0; }
+.readme p { margin-bottom: 0.9rem; }
+.readme ul, .readme ol { margin-left: 1.5rem; margin-bottom: 0.9rem; }
+.readme li { margin-bottom: 0.3rem; }
+.readme strong { color: var(--fg); }
+.readme em { color: var(--fg-dim); }
+.readme code { background: rgba(80,250,123,0.08); padding: 0.1em 0.3em; border-radius: 2px; }
+.readme a { color: var(--accent); border-bottom: 1px dotted var(--accent); text-decoration: none; }
+.readme a:hover { color: var(--prompt); border-color: var(--prompt); }
+.readme hr { border: 0; border-top: 1px solid var(--hr); margin: 1.5rem 0; }
+footer { margin-top: 3.5rem; padding-top: 1.5rem; border-top: 1px solid var(--hr); color: var(--fg-dim); font-size: 0.75rem; text-align: center; }
+footer a { color: var(--fg-dim); text-decoration: none; border-bottom: 1px dotted var(--fg-dim); margin: 0 0.6rem; }
+footer a:hover { color: var(--accent); border-color: var(--accent); }
 </style>
 </head>
 <body>
+
 <div id="stars"></div>
 
 <div class="prompt-line"><span>adam@reep:~$</span> ./extract_invoices.py --input ./5_emailed_invoices/ --output invoices.json</div>
-<div class="eyebrow">HDS HOMEWORK &middot; INVOICE EXTRACTION &middot; 2026-05-27</div>
+<div class="eyebrow">HDS HOMEWORK · INVOICE EXTRACTION · 2026-05-27</div>
 <h1>Invoice Extraction Homework</h1>
-<div class="tagline">Lightweight Python &middot; Claude Haiku 4.5 &middot; Antera-shaped JSON output</div>
+<div class="tagline">Lightweight Python · Claude Haiku 4.5 · Antera-shaped JSON output</div>
 
-<div class="cta-box">
-  <div class="left">
-    <div class="eyebrow2">SEE THE LIVE DEMO &middot; 10-MODULE OCR + LLM PIPELINE</div>
-    <div class="title">This script is the focused invoice extractor &mdash; the broader system has nine other modules</div>
-    <div class="desc">Try the full live demo to see Artwork &amp; Order Builder, Receipts &amp; Expenses, Spec Sheets, Forms &amp; Notes, Customer Library, Approvals &amp; Change Management, and more.</div>
-  </div>
-  <a class="btn" href="/OCR_LLM_Demo">OPEN FULL DEMO &nbsp;&rarr;</a>
+<div class="lede">
+  <div class="lead">// HOMEWORK CONTEXT</div>
+  <p>After our interview on May 26, Ryan sent five emailed invoice packages and asked for a lightweight Python script that ingests them, extracts five fields per invoice via an LLM API, enforces a strict schema, and emits clean JSON shaped for posting to the Antera API.</p>
+  <p>Below: the script source (with syntax highlighting), the architectural thinking (README), and per-vendor extraction summaries showing the schema and audit-record shape. The five emailed packages produced 27 invoice records total.</p>
 </div>
 
-<div class="cta-box">
-  <div class="left">
-    <div class="eyebrow2">RESUME &middot; 20 YEARS MULTI-SITE OPS &amp; SYSTEMS</div>
-    <div class="title">Bourne-styled CV</div>
-    <div class="desc">Background &mdash; EDMC telecom-expense recovery, VA Pittsburgh CCTV deployment, UiPath migration, &amp; more.</div>
-  </div>
-  <a class="btn" href="/CV">OPEN RESUME &nbsp;&rarr;</a>
+<div class="privacy-note">
+  <strong>Data privacy:</strong> the actual extracted dollar amounts, line-item descriptions, and PO numbers are <strong>not</strong> displayed on this public page. The bucket expansions below show the schema with placeholder values. The real extracted JSON and the deliverable zip are sent only via direct email to Ryan.
 </div>
 
 <div class="stats">
-  <div class="stat"><span class="num">26</span><span class="label">INVOICES EXTRACTED</span></div>
+  <div class="stat"><span class="num">27</span><span class="label">INVOICES EXTRACTED</span></div>
   <div class="stat"><span class="num">5</span><span class="label">CANONICAL VENDORS</span></div>
-  <div class="stat"><span class="num">26/26</span><span class="label">SUBTOTAL PASSED</span></div>
-  <div class="stat"><span class="num">1/26</span><span class="label">FLAGGED FOR REVIEW</span></div>
-</div>
-
-<div class="readme">
-<h1>HDS AI Workflow Architect — Invoice Extraction Homework</h1>
-<p><strong>Adam Reep · adamjreep@gmail.com · 2026-05-27</strong></p>
-<h2>Files in this zip</h2>
-<ul>
-<li><code>extract_invoices.py</code> — the script (<code>python extract_invoices.py --input ./invoices_raw --output invoices.json</code>)</li>
-<li><code>extract_invoices_minimal.py</code> — a 122-line strict-spec version (just schema + extraction + JSON, no reconciliation/parsing-notes/follow-up-drafts) for comparison</li>
-<li><code>invoices.json</code> — output across all 5 emailed packages (26 invoice records (one multi-page invoice merged))</li>
-<li><code>invoices_dashboard.xlsx</code> — stare-and-compare review view (Summary / Invoices / Line Items / Follow-up Drafts tabs)</li>
-<li><code>README.md</code> — this 1-pager</li>
-<li><code>DESIGN_NOTES.md</code> — the architectural deep-read (LLM choice, anti-hallucination, illegible-PDF handling, layered reconciliation, Antera spec finding, security considerations, production extensions)</li>
-</ul>
-<h2>What the script does</h2>
-<p>Ingests a folder of PDF invoices (and <code>.eml</code> files), routes each page through Claude Haiku 4.5 with a forced tool-use schema, and emits a clean <code>invoices[]</code> array plus a sidecar <code>_audit</code> block — the first is the vendor-bill payload, the second is the AP team's review queue with confidence, math-check results, and pre-written vendor follow-up email drafts for anything that needs human review.</p>
-<h2>Headline results on this batch</h2>
-<ul>
-<li><strong>27 records extracted from 5 emailed packages</strong></li>
-<li><strong>26 of 26 reconcile cleanly</strong> (line items + adjustments sum to the printed total within 1%)</li>
-<li><strong>1 flagged for human review</strong> — AP60633 has a 3.4% unexplained delta where the document doesn't show any visible adjustment line; the script generates a pre-written email asking the vendor for clarification, which the AP team can copy/paste/send</li>
-<li><strong>Cost:</strong> ~$0.20 in API spend, ~70 seconds wall-clock</li>
-</ul>
-<h2>Why the layered controls matter</h2>
-<p>The script doesn't just flag mismatches — it tries to resolve them through three escalations: vendor-specific parsing notes (for known-quirky formats), an adjustment-finder pass (asks Claude to identify Freight/Tax/Discount lines that explain the math gap), and a fabrication guard (rejects any reconciled adjustment with a null field — the model's self-flag for "I'm guessing"). The full reasoning + worked examples are in <code>DESIGN_NOTES.md</code>.</p>
-<h2>A note on Antera</h2>
-<p>Antera's public v1 spec has no vendor-bill / AP endpoint — coverage is sales-side only. The script emits a clean schema; the production adapter maps <code>invoices[]</code> to whichever AP intake mechanism HDS actually uses. <code>DESIGN_NOTES.md</code> section 4 has the longer version.</p>
-<h2>Live at</h2>
-<p><strong><a href="https://adamjreep.com/Homework">adamjreep.com/Homework</a></strong> — script source, rendered design notes, per-vendor schema demonstration (values redacted). The email zip is the only path to real data.</p>
-</div>
-<div class="privacy-note">
-  <strong>Data privacy:</strong> the actual extracted dollar amounts, line-item descriptions, vendor PO numbers, and invoice numbers are <strong>not</strong> displayed on this public page. The vendor buckets below show the schema with placeholder values.
+  <div class="stat"><span class="num">3</span><span class="label">EXTRACTION PATHS</span></div>
+  <div class="stat"><span class="num">10/27</span><span class="label">FLAGGED FOR REVIEW</span></div>
 </div>
 
 <div class="section-cmd">$ results --by vendor (schema demo, values redacted)</div>
 
-<details class="bucket"><summary><span class="bucket-vendor">H## P########## P#######, Inc.</span><span class="bucket-meta">7 invoices extracted &middot; hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">Vendor identification required hybrid text+image path. With the adjustment-aware prompt, all 7 records reconcile cleanly.</div><pre class="json-box"><code>{
-  &quot;vendor&quot;: &quot;H## P########## P#######, Inc.&quot;,
-  &quot;extracted_count&quot;: 7,
-  &quot;schema_demonstration_record&quot;: {
-    &quot;vendor&quot;: {
-      &quot;name&quot;: &quot;H## P########## P#######, Inc.&quot;
-    },
-    &quot;invoice_date&quot;: &quot;[real value redacted]&quot;,
-    &quot;invoice_number&quot;: &quot;[redacted]&quot;,
-    &quot;po_number&quot;: &quot;[redacted]&quot;,
-    &quot;total_amount_due&quot;: &quot;[redacted]&quot;,
-    &quot;currency&quot;: &quot;USD&quot;,
-    &quot;line_items&quot;: [
-      {
-        &quot;item_name&quot;: &quot;[redacted merchandise line]&quot;,
-        &quot;quantity&quot;: &quot;[redacted]&quot;,
-        &quot;unit_price&quot;: &quot;[redacted]&quot;
-      },
-      {
-        &quot;item_name&quot;: &quot;Freight&quot;,
-        &quot;quantity&quot;: 1,
-        &quot;unit_price&quot;: &quot;[redacted]&quot;
-      }
-    ]
-  },
-  &quot;note&quot;: &quot;Real values are not displayed on the public site.&quot;
-}</code></pre></div></details>
 
-<details class="bucket"><summary><span class="bucket-vendor">S&amp;# A#########</span><span class="bucket-meta">11 invoices extracted &middot; hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">Multi-invoice PDF — each of 11 pages is a separate invoice. All 11 extracted at high confidence; subtotal cross-validation passes on every record.</div><pre class="json-box"><code>{
-  &quot;vendor&quot;: &quot;S&amp;# A#########&quot;,
-  &quot;extracted_count&quot;: 11,
-  &quot;schema_demonstration_record&quot;: {
+<details class="bucket"><summary><span class="bucket-vendor">Hit Promotional Products, Inc.</span><span class="bucket-meta">7 invoices extracted · hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">Vendor identification required hybrid text+image path; text-only extraction confused bill-to with vendor letterhead.</div><pre class="json-box"><code>{
+  &quot;vendor&quot;: &quot;Hit Promotional Products, Inc.&quot;,
+  &quot;sample_record_redacted&quot;: {
     &quot;vendor&quot;: {
-      &quot;name&quot;: &quot;S&amp;# A#########&quot;
+      &quot;name&quot;: &quot;Hit Promotional Products, Inc.&quot;
     },
-    &quot;invoice_date&quot;: &quot;[real value redacted]&quot;,
-    &quot;invoice_number&quot;: &quot;[redacted]&quot;,
+    &quot;invoice_date&quot;: &quot;YYYY-MM-DD&quot;,
+    &quot;invoice_number&quot;: &quot;########&quot;,
     &quot;po_number&quot;: &quot;[redacted]&quot;,
     &quot;total_amount_due&quot;: &quot;[redacted]&quot;,
     &quot;currency&quot;: &quot;USD&quot;,
     &quot;line_items&quot;: [
       {
-        &quot;item_name&quot;: &quot;[redacted merchandise line]&quot;,
+        &quot;item_name&quot;: &quot;[redacted]&quot;,
         &quot;quantity&quot;: &quot;[redacted]&quot;,
-        &quot;unit_price&quot;: &quot;[redacted]&quot;
-      },
-      {
-        &quot;item_name&quot;: &quot;Freight&quot;,
-        &quot;quantity&quot;: 1,
         &quot;unit_price&quot;: &quot;[redacted]&quot;
       }
     ]
   },
-  &quot;note&quot;: &quot;Real values are not displayed on the public site.&quot;
+  &quot;sample_audit_record&quot;: {
+    &quot;source_file&quot;: &quot;invoices.pdf&quot;,
+    &quot;extraction_status&quot;: &quot;ok&quot;,
+    &quot;extraction_path&quot;: &quot;text+vision&quot;,
+    &quot;extraction_confidence&quot;: &quot;high&quot;,
+    &quot;vendor_canonicalized&quot;: true,
+    &quot;vendor_known&quot;: true,
+    &quot;subtotal_check&quot;: &quot;passed&quot;
+  }
 }</code></pre></div></details>
-
-<details class="bucket"><summary><span class="bucket-vendor">A#### P####### &amp; R########### Inc.</span><span class="bucket-meta">5 invoices extracted &middot; hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">Vendor-specific parsing notes in the vendor master taught the prompt that this vendor&#x27;s invoices put the line total in the &quot;Unit Price&quot; column. 4 of 5 records now reconcile; 1 has a 3.4% unexplained delta and ships with an auto-generated vendor follow-up email draft.</div><pre class="json-box"><code>{
-  &quot;vendor&quot;: &quot;A#### P####### &amp; R########### Inc.&quot;,
-  &quot;extracted_count&quot;: 5,
-  &quot;schema_demonstration_record&quot;: {
+<details class="bucket"><summary><span class="bucket-vendor">S&amp;S Activewear</span><span class="bucket-meta">11 invoices extracted · hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">Multi-invoice PDF — each of 11 pages is a separate invoice; all extracted at high confidence; subtotals pass on each.</div><pre class="json-box"><code>{
+  &quot;vendor&quot;: &quot;S&amp;S Activewear&quot;,
+  &quot;sample_record_redacted&quot;: {
     &quot;vendor&quot;: {
-      &quot;name&quot;: &quot;A#### P####### &amp; R########### Inc.&quot;
+      &quot;name&quot;: &quot;S&amp;S Activewear&quot;
     },
-    &quot;invoice_date&quot;: &quot;[real value redacted]&quot;,
-    &quot;invoice_number&quot;: &quot;[redacted]&quot;,
+    &quot;invoice_date&quot;: &quot;YYYY-MM-DD&quot;,
+    &quot;invoice_number&quot;: &quot;########&quot;,
     &quot;po_number&quot;: &quot;[redacted]&quot;,
     &quot;total_amount_due&quot;: &quot;[redacted]&quot;,
     &quot;currency&quot;: &quot;USD&quot;,
     &quot;line_items&quot;: [
       {
-        &quot;item_name&quot;: &quot;[redacted merchandise line]&quot;,
+        &quot;item_name&quot;: &quot;[redacted apparel SKU]&quot;,
         &quot;quantity&quot;: &quot;[redacted]&quot;,
-        &quot;unit_price&quot;: &quot;[redacted]&quot;
-      },
-      {
-        &quot;item_name&quot;: &quot;Freight&quot;,
-        &quot;quantity&quot;: 1,
         &quot;unit_price&quot;: &quot;[redacted]&quot;
       }
     ]
   },
-  &quot;note&quot;: &quot;Real values are not displayed on the public site.&quot;
+  &quot;sample_audit_record&quot;: {
+    &quot;source_file&quot;: &quot;S&amp;S_Activewear_Invoices_5-18-2026.pdf&quot;,
+    &quot;extraction_status&quot;: &quot;ok&quot;,
+    &quot;extraction_path&quot;: &quot;text+vision&quot;,
+    &quot;extraction_confidence&quot;: &quot;high&quot;,
+    &quot;vendor_canonicalized&quot;: false,
+    &quot;vendor_known&quot;: true,
+    &quot;subtotal_check&quot;: &quot;passed&quot;
+  }
 }</code></pre></div></details>
-
-<details class="bucket"><summary><span class="bucket-vendor">O## B####### P#######</span><span class="bucket-meta">3 invoices extracted &middot; vision (scanned)</span></summary><div class="bucket-body"><div class="bucket-source">Image-based scanned PDF, zero extractable text — handled via Claude vision-only path. All 3 invoices extracted at high confidence with passing subtotals.</div><pre class="json-box"><code>{
-  &quot;vendor&quot;: &quot;O## B####### P#######&quot;,
-  &quot;extracted_count&quot;: 3,
-  &quot;schema_demonstration_record&quot;: {
+<details class="bucket"><summary><span class="bucket-vendor">Angel Printing &amp; Reproduction Inc.</span><span class="bucket-meta">5 invoices extracted · hybrid text+vision</span></summary><div class="bucket-body"><div class="bucket-source">10 of 27 records flagged for human review (most are this vendor — line-item math diverges from printed totals; vendor places the total in the Unit Price column).</div><pre class="json-box"><code>{
+  &quot;vendor&quot;: &quot;Angel Printing &amp; Reproduction Inc.&quot;,
+  &quot;sample_record_redacted&quot;: {
     &quot;vendor&quot;: {
-      &quot;name&quot;: &quot;O## B####### P#######&quot;
+      &quot;name&quot;: &quot;Angel Printing &amp; Reproduction Inc.&quot;
     },
-    &quot;invoice_date&quot;: &quot;[real value redacted]&quot;,
-    &quot;invoice_number&quot;: &quot;[redacted]&quot;,
-    &quot;po_number&quot;: &quot;[redacted]&quot;,
-    &quot;total_amount_due&quot;: &quot;[redacted]&quot;,
+    &quot;invoice_date&quot;: &quot;YYYY-MM-DD&quot;,
+    &quot;invoice_number&quot;: &quot;AP#####&quot;,
+    &quot;po_number&quot;: &quot;######-#&quot;,
+    &quot;total_amount_due&quot;: 45.0,
     &quot;currency&quot;: &quot;USD&quot;,
     &quot;line_items&quot;: [
       {
-        &quot;item_name&quot;: &quot;[redacted merchandise line]&quot;,
-        &quot;quantity&quot;: &quot;[redacted]&quot;,
-        &quot;unit_price&quot;: &quot;[redacted]&quot;
-      },
-      {
-        &quot;item_name&quot;: &quot;Freight&quot;,
-        &quot;quantity&quot;: 1,
-        &quot;unit_price&quot;: &quot;[redacted]&quot;
+        &quot;item_name&quot;: &quot;[redacted \u2014 see email zip]&quot;,
+        &quot;quantity&quot;: 500,
+        &quot;unit_price&quot;: 45.0
       }
     ]
   },
-  &quot;note&quot;: &quot;Real values are not displayed on the public site.&quot;
+  &quot;sample_audit_record&quot;: {
+    &quot;source_file&quot;: &quot;AP#####.pdf&quot;,
+    &quot;extraction_status&quot;: &quot;ok&quot;,
+    &quot;extraction_path&quot;: &quot;text+vision&quot;,
+    &quot;extraction_confidence&quot;: &quot;medium&quot;,
+    &quot;vendor_canonicalized&quot;: true,
+    &quot;vendor_canonical_name&quot;: &quot;Angel Printing &amp; Reproduction Inc.&quot;,
+    &quot;vendor_known&quot;: true,
+    &quot;subtotal_check&quot;: &quot;failed&quot;,
+    &quot;subtotal_note&quot;: &quot;line-sum 22500.00 vs total 45.00 (49900.0% divergence)&quot;,
+    &quot;notes&quot;: &quot;(invoice prints total as Unit Price; demoted to medium and flagged for review)&quot;
+  }
 }</code></pre></div></details>
-
-<details class="bucket"><summary><span class="bucket-vendor">R######### S#####</span><span class="bucket-meta">1 invoice extracted &middot; email body + URL fetch</span></summary><div class="bucket-body"><div class="bucket-source">Email contained a public URL to the invoice (embedded apikey, no auth required). Script fetched it through the same vision pipeline. Reconciliation pass found Freight: $18.16 to close the math.</div><pre class="json-box"><code>{
-  &quot;vendor&quot;: &quot;R######### S#####&quot;,
-  &quot;extracted_count&quot;: 1,
-  &quot;schema_demonstration_record&quot;: {
+<details class="bucket"><summary><span class="bucket-vendor">Old Brooklyn Printing</span><span class="bucket-meta">3 invoices extracted · vision (scanned)</span></summary><div class="bucket-body"><div class="bucket-source">Image-based scanned PDF with zero extractable text — handled via Claude vision-only path. All 3 pages extracted at high confidence.</div><pre class="json-box"><code>{
+  &quot;vendor&quot;: &quot;Old Brooklyn Printing&quot;,
+  &quot;sample_record_redacted&quot;: {
     &quot;vendor&quot;: {
-      &quot;name&quot;: &quot;R######### S#####&quot;
+      &quot;name&quot;: &quot;Old Brooklyn Printing&quot;
     },
-    &quot;invoice_date&quot;: &quot;[real value redacted]&quot;,
-    &quot;invoice_number&quot;: &quot;[redacted]&quot;,
-    &quot;po_number&quot;: &quot;[redacted]&quot;,
+    &quot;invoice_date&quot;: &quot;YYYY-MM-DD&quot;,
+    &quot;invoice_number&quot;: &quot;#####&quot;,
+    &quot;po_number&quot;: &quot;######-#&quot;,
     &quot;total_amount_due&quot;: &quot;[redacted]&quot;,
     &quot;currency&quot;: &quot;USD&quot;,
     &quot;line_items&quot;: [
       {
-        &quot;item_name&quot;: &quot;[redacted merchandise line]&quot;,
-        &quot;quantity&quot;: &quot;[redacted]&quot;,
-        &quot;unit_price&quot;: &quot;[redacted]&quot;
-      },
-      {
-        &quot;item_name&quot;: &quot;Freight&quot;,
+        &quot;item_name&quot;: &quot;[redacted production service]&quot;,
         &quot;quantity&quot;: 1,
         &quot;unit_price&quot;: &quot;[redacted]&quot;
       }
     ]
   },
-  &quot;note&quot;: &quot;Real values are not displayed on the public site.&quot;
+  &quot;sample_audit_record&quot;: {
+    &quot;source_file&quot;: &quot;OBP_3Invoices_HDS_5-13-26.pdf&quot;,
+    &quot;extraction_status&quot;: &quot;ok&quot;,
+    &quot;extraction_path&quot;: &quot;vision&quot;,
+    &quot;extraction_confidence&quot;: &quot;high&quot;,
+    &quot;vendor_canonicalized&quot;: false,
+    &quot;vendor_known&quot;: true,
+    &quot;subtotal_check&quot;: &quot;passed&quot;
+  }
+}</code></pre></div></details>
+<details class="bucket"><summary><span class="bucket-vendor">Richardson Sports</span><span class="bucket-meta">1 invoice extracted · email body</span></summary><div class="bucket-body"><div class="bucket-source">Email contained a link to the invoice on the vendor portal — not the invoice itself. Script extracted what was visible (vendor, invoice #, PO #, date) and flagged low confidence with a note that totals need a portal fetch. No fabricated values.</div><pre class="json-box"><code>{
+  &quot;vendor&quot;: &quot;Richardson Sports&quot;,
+  &quot;sample_record_redacted&quot;: {
+    &quot;vendor&quot;: {
+      &quot;name&quot;: &quot;Richardson Sports&quot;
+    },
+    &quot;invoice_date&quot;: &quot;YYYY-MM-DD&quot;,
+    &quot;invoice_number&quot;: &quot;#######&quot;,
+    &quot;po_number&quot;: &quot;ERIE-####-#&quot;,
+    &quot;total_amount_due&quot;: null,
+    &quot;currency&quot;: &quot;USD&quot;,
+    &quot;line_items&quot;: []
+  },
+  &quot;sample_audit_record&quot;: {
+    &quot;source_file&quot;: &quot;FW_ Richardson Sports Invoice - 4610996.eml&quot;,
+    &quot;extraction_status&quot;: &quot;ok&quot;,
+    &quot;extraction_path&quot;: &quot;email_body&quot;,
+    &quot;extraction_confidence&quot;: &quot;low&quot;,
+    &quot;vendor_canonicalized&quot;: false,
+    &quot;vendor_known&quot;: true,
+    &quot;subtotal_check&quot;: &quot;skipped&quot;,
+    &quot;notes&quot;: &quot;Invoice hosted on vendor portal; fetch + retry needed for total and line items.&quot;
+  }
 }</code></pre></div></details>
 
 
@@ -304,7 +280,7 @@ Strategy
   Text extraction can scramble reading order (bill-to ends up above the
   vendor letterhead); the image preserves visual hierarchy.
 * Each PDF page is treated as one invoice. .eml files are not natively
-  supported here — the R######### S##### edge case (link to vendor portal)
+  supported here — the Richardson Sports edge case (link to vendor portal)
   is handled via a pre-processed text input demonstrating the failure-mode
   path; production would extend the script to walk .eml attachments and
   fetch public URLs.
@@ -313,7 +289,7 @@ Strategy
   cross-validation that catches arithmetic divergence between line items
   and the stated total.
 * Vendor canonicalization: a small embedded vendor master maps observed
-  variants (&quot;H## P########## P#######, Inc.&quot; / &quot;H## P#### P#######, Inc.&quot;)
+  variants (&quot;HIT Promotional Products, Inc.&quot; / &quot;Hit Promo Products, Inc.&quot;)
   to a single canonical name. Unknown vendors are emitted to an exceptions
   list inside the audit block rather than being silently passed through.
 
@@ -326,7 +302,6 @@ Usage
 from __future__ import annotations
 
 import argparse, base64, io, json, logging, os, re, sys, time, uuid
-import urllib.request
 from pathlib import Path
 
 import pypdfium2 as pdfium
@@ -356,39 +331,12 @@ log = logging.getLogger(&quot;extract_invoices&quot;)
 # homework, we hard-code the five vendors observed in the test batch.
 
 VENDOR_MASTER = [
-    {
-        &quot;canonical&quot;: &quot;A#### P####### &amp; R########### Inc.&quot;,
-        &quot;aliases&quot;: [&quot;a#### p#######&quot;],
-        &quot;parsing_notes&quot;: (
-            &quot;A#### P####### INVOICES use a non-standard line format: the &#x27;Unit Price&#x27; &quot;
-            &quot;column on multi-quantity rows shows the LINE TOTAL for the entire quantity, &quot;
-            &quot;not the per-unit price. The &#x27;Amount&#x27; column matches the &#x27;Unit Price&#x27; column. &quot;
-            &quot;When you see A#### P####### as the vendor and a row where Unit Price * Quantity &quot;
-            &quot;&gt;&gt; printed Total Due: set unit_price = (Amount column value) / Quantity, but &quot;
-            &quot;PRESERVE 4-6 DECIMAL PLACES so that quantity * unit_price reconciles to the &quot;
-            &quot;printed Amount within 1 cent. &quot;
-            &quot;Example A: quantity=2000, printed Amount=$269.06 -&gt; unit_price=0.134530 &quot;
-            &quot;(2000 * 0.134530 = 269.06 exactly). &quot;
-            &quot;Example B: quantity=75, printed Amount=$58.40 -&gt; unit_price=0.778667 &quot;
-            &quot;(75 * 0.778667 = 58.40). &quot;
-            &quot;Example C: quantity=300, printed Amount=$150.28 -&gt; unit_price=0.500933 &quot;
-            &quot;(300 * 0.500933 = 150.28). &quot;
-            &quot;Do NOT round to 2 decimals on A#### P#######&#x27;s main merchandise lines.&quot;
-        ),
-    },
-    {&quot;canonical&quot;: &quot;H## P########## P#######, Inc.&quot;, &quot;aliases&quot;: [&quot;h## p##########&quot;, &quot;h## p####&quot;]},
-    {&quot;canonical&quot;: &quot;S&amp;# A#########&quot;,                 &quot;aliases&quot;: [&quot;s ## a#########&quot;, &quot;## a#########&quot;]},
-    {&quot;canonical&quot;: &quot;O## B####### P#######&quot;,          &quot;aliases&quot;: [&quot;o## b#######&quot;]},
-    {&quot;canonical&quot;: &quot;R######### S#####&quot;,              &quot;aliases&quot;: [&quot;r######### s#####&quot;, &quot;r#########&quot;]},
+    {&quot;canonical&quot;: &quot;Angel Printing &amp; Reproduction Inc.&quot;, &quot;aliases&quot;: [&quot;angel printing&quot;]},
+    {&quot;canonical&quot;: &quot;Hit Promotional Products, Inc.&quot;,     &quot;aliases&quot;: [&quot;hit promotional&quot;, &quot;hit promo&quot;]},
+    {&quot;canonical&quot;: &quot;S&amp;S Activewear&quot;,                     &quot;aliases&quot;: [&quot;s s activewear&quot;, &quot;ss activewear&quot;]},
+    {&quot;canonical&quot;: &quot;Old Brooklyn Printing&quot;,              &quot;aliases&quot;: [&quot;old brooklyn&quot;]},
+    {&quot;canonical&quot;: &quot;Richardson Sports&quot;,                  &quot;aliases&quot;: [&quot;richardson sports&quot;, &quot;richardson&quot;]},
 ]
-
-
-def get_vendor_parsing_notes(canonical_name: str | None) -&gt; str | None:
-    if not canonical_name: return None
-    for v in VENDOR_MASTER:
-        if v[&quot;canonical&quot;] == canonical_name and v.get(&quot;parsing_notes&quot;):
-            return v[&quot;parsing_notes&quot;]
-    return None
 
 def canonicalize_vendor(name: str | None) -&gt; tuple[str | None, bool, bool]:
     &quot;&quot;&quot;Returns (canonical_name, was_renamed, matched_in_master).
@@ -460,22 +408,7 @@ SYSTEM_PROMPT = (
     &quot;that is the customer; identify the vendor billing them instead. &quot;
     &quot;Currency: if a dollar sign is present and no other indicator, use &#x27;USD&#x27;. &quot;
     &quot;For line items: include EVERY line with a dollar amount or quantity, &quot;
-    &quot;preserving the order on the invoice. This includes adjustment lines like &quot;
-    &quot;Freight, Shipping, Handling, Tax, Surcharge, and Discount — capture each as a &quot;
-    &quot;separate line_item with item_name set to the adjustment label (e.g. \&quot;Freight\&quot;) &quot;
-    &quot;and the dollar amount as unit_price; use quantity 1 if not otherwise stated, &quot;
-    &quot;and a negative unit_price for Discount lines. &quot;
-    &quot;DO NOT include rows that are running totals or the invoice grand total. &quot;
-    &quot;Specifically skip any row labelled: Subtotal, Sub-Total, Subtotal Due, Total, &quot;
-    &quot;Total Due, Amount Due, Current Due, Balance Due, Grand Total, Invoice Total, &quot;
-    &quot;Net Total, Merchandise Total, Sales Amount, SALES AMT, Invoice Amount, or any &quot;
-    &quot;variant of these. These rows are summaries, not line items. &quot;
-    &quot;For per-unit pricing: if the invoice shows quantity * unit_price = amount, &quot;
-    &quot;use those values directly. If the unit_price appears imprecise due to &quot;
-    &quot;rounding (e.g. invoice shows 75 * $0.78 = $58.50 but printed total is $58.40), &quot;
-    &quot;compute unit_price = amount / quantity to MORE decimal places (4-6 decimals) &quot;
-    &quot;to preserve exact arithmetic. The line_total derived from your quantity * &quot;
-    &quot;unit_price MUST round to the printed Amount within 1 cent.&quot;
+    &quot;preserving the order on the invoice. Skip header/total rows.&quot;
 )
 
 USER_TEXT_TEMPLATE = (
@@ -590,10 +523,6 @@ def split_invoice_and_audit(record: dict, source_file: str, page_number: int,
         &quot;po_number&quot;:        record.get(&quot;po_number&quot;),
         &quot;total_amount_due&quot;: record.get(&quot;total_amount_due&quot;),
         &quot;currency&quot;:         record.get(&quot;currency&quot;) or &quot;USD&quot;,
-        # _source_file and _page_number let us join audit -&gt; invoice without ambiguity.
-        # These get stripped before posting to Antera (downstream adapter removes underscore-prefixed keys).
-        &quot;_source_file&quot;:     source_file,
-        &quot;_page_number&quot;:     page_number,
         &quot;line_items&quot;: [
             {
                 &quot;item_name&quot;:  li.get(&quot;item_name&quot;),
@@ -640,58 +569,6 @@ def extract_one_page(client: Anthropic, pdf_path: Path, page_index: int, page: p
     if not record.get(&quot;vendor_name&quot;) and record.get(&quot;total_amount_due&quot;) is None:
         return None, error_audit(source_file, page_number, &quot;illegible_page&quot;,
                                  &quot;Vendor and total both unreadable; flagged for human review.&quot;)
-
-    # If a known-quirky vendor is identified and the subtotal fails, re-extract once
-    # with vendor-specific parsing notes prepended to the system prompt.
-    sub_status, _sub_note = validate_subtotal(record)
-    if sub_status == &quot;failed&quot;:
-        canonical, _, _ = canonicalize_vendor(record.get(&quot;vendor_name&quot;))
-        parsing_notes = get_vendor_parsing_notes(canonical)
-        if parsing_notes:
-            log.info(&quot;    re-extracting with vendor-specific parsing notes for %s&quot;, canonical)
-            try:
-                img_b64_2 = page_image_b64(page)
-                content2 = [
-                    {&quot;type&quot;: &quot;image&quot;, &quot;source&quot;: {&quot;type&quot;: &quot;base64&quot;, &quot;media_type&quot;: &quot;image/png&quot;, &quot;data&quot;: img_b64_2}},
-                    {&quot;type&quot;: &quot;text&quot;,  &quot;text&quot;: (
-                        &quot;VENDOR-SPECIFIC INSTRUCTION:\n&quot; + parsing_notes +
-                        &quot;\n\nExtract the invoice with this guidance in mind.&quot;
-                        + (USER_TEXT_TEMPLATE.format(text=text) if text else &quot;&quot;)
-                    )},
-                ]
-                record2 = call_claude(client, content2)
-                # Use the re-extracted record only if its math is cleaner
-                sub2_status, _ = validate_subtotal(record2)
-                if sub2_status == &quot;passed&quot;:
-                    record = record2
-                    record[&quot;notes&quot;] = (record.get(&quot;notes&quot;) or &quot;&quot;) + &quot; | re-extracted with vendor parsing notes.&quot;
-                    used_path = used_path + &quot;+vendor_notes&quot;
-                    sub_status = &quot;passed&quot;
-            except Exception as e:
-                log.warning(&quot;    vendor-notes re-extract failed: %s&quot;, e)
-
-    # If still failed: ask Claude to identify missing adjustments
-    if sub_status == &quot;failed&quot;:
-        try:
-            line_sum = sum((li.get(&quot;quantity&quot;) or 0) * (li.get(&quot;unit_price&quot;) or 0)
-                           for li in (record.get(&quot;line_items&quot;) or []))
-            delta = (record.get(&quot;total_amount_due&quot;) or 0) - line_sum
-            recon = reconcile_subtotal(client, page, text, record.get(&quot;line_items&quot;) or [], record.get(&quot;total_amount_due&quot;) or 0, delta)
-            # Only accept adjustments that have BOTH quantity and unit_price populated.
-            # An adjustment with a null field is the model self-signalling &quot;I am guessing.&quot;
-            valid_adj = [a for a in (recon.get(&quot;adjustments&quot;) or [])
-                         if a.get(&quot;quantity&quot;) is not None and a.get(&quot;unit_price&quot;) is not None]
-            if len(valid_adj) != len(recon.get(&quot;adjustments&quot;) or []):
-                log.info(&quot;    rejected %d fabricated adjustment(s) (null fields)&quot;,
-                         len(recon.get(&quot;adjustments&quot;) or []) - len(valid_adj))
-            if valid_adj:
-                record[&quot;line_items&quot;] = (record.get(&quot;line_items&quot;) or []) + valid_adj
-                if recon.get(&quot;notes&quot;):
-                    record[&quot;notes&quot;] = (record.get(&quot;notes&quot;) or &quot;&quot;) + &quot; | reconciled: &quot; + recon[&quot;notes&quot;]
-                log.info(&quot;    reconciled %d adjustment(s) accepted&quot;, len(valid_adj))
-        except Exception as e:
-            log.warning(&quot;    reconcile pass failed: %s&quot;, e)
-
     return split_invoice_and_audit(record, source_file, page_number, used_path, &quot;ok&quot;)
 
 def process_pdf(client: Anthropic, pdf_path: Path):
@@ -710,303 +587,6 @@ def process_pdf(client: Anthropic, pdf_path: Path):
         audits.append(aud)
     return invoices, audits
 
-
-
-# ---- reconciliation: when subtotal fails, ask Claude to explain the delta -----
-
-RECONCILE_TOOL = {
-    &quot;name&quot;: &quot;reconcile_delta&quot;,
-    &quot;description&quot;: &quot;List adjustment line items (freight, tax, shipping, discount, surcharge, handling) that reconcile the unaccounted delta between line-item subtotal and total. Return [] if the document shows no such adjustments.&quot;,
-    &quot;input_schema&quot;: {
-        &quot;type&quot;: &quot;object&quot;,
-        &quot;properties&quot;: {
-            &quot;adjustments&quot;: {
-                &quot;type&quot;: &quot;array&quot;,
-                &quot;items&quot;: {
-                    &quot;type&quot;: &quot;object&quot;,
-                    &quot;properties&quot;: {
-                        &quot;item_name&quot;: {&quot;type&quot;: &quot;string&quot;},
-                        &quot;quantity&quot;:  {&quot;type&quot;: [&quot;number&quot;, &quot;null&quot;]},
-                        &quot;unit_price&quot;: {&quot;type&quot;: [&quot;number&quot;, &quot;null&quot;]},
-                    },
-                    &quot;required&quot;: [&quot;item_name&quot;, &quot;quantity&quot;, &quot;unit_price&quot;],
-                    &quot;additionalProperties&quot;: False,
-                },
-            },
-            &quot;explained&quot;: {&quot;type&quot;: &quot;boolean&quot;, &quot;description&quot;: &quot;True if the adjustments fully explain the delta within $0.05 / 1%.&quot;},
-            &quot;notes&quot;: {&quot;type&quot;: [&quot;string&quot;, &quot;null&quot;]},
-        },
-        &quot;required&quot;: [&quot;adjustments&quot;, &quot;explained&quot;, &quot;notes&quot;],
-        &quot;additionalProperties&quot;: False,
-    },
-}
-
-def reconcile_subtotal(client: Anthropic, page, text: str, line_items: list, total: float, delta: float) -&gt; dict:
-    &quot;&quot;&quot;Second Claude pass: hand it the doc and ask for the adjustments that explain the missing delta.&quot;&quot;&quot;
-    img_b64 = page_image_b64(page)
-    extracted = &quot;, &quot;.join(f&quot;{li.get(&#x27;item_name&#x27;,&#x27;?&#x27;)}: {li.get(&#x27;quantity&#x27;)} x {li.get(&#x27;unit_price&#x27;)}&quot; for li in line_items)
-    prompt = (
-        f&quot;You previously extracted these line items: [{extracted}]. They sum to &quot;
-        f&quot;${sum((li.get(&#x27;quantity&#x27;) or 0) * (li.get(&#x27;unit_price&#x27;) or 0) for li in line_items):.2f}. &quot;
-        f&quot;But the printed Total Amount Due on this invoice is ${total:.2f}, leaving a delta of &quot;
-        f&quot;${delta:+.2f} unaccounted for. Look at the invoice (image + text below) for &quot;
-        f&quot;adjustment lines that explain this delta — typically labelled Freight, Shipping, &quot;
-        f&quot;Handling, Tax, Surcharge, Discount, or similar. Return those adjustments via the &quot;
-        f&quot;reconcile_delta tool. Return [] if no such adjustments are visible.&quot;
-    )
-    content = [
-        {&quot;type&quot;: &quot;image&quot;, &quot;source&quot;: {&quot;type&quot;: &quot;base64&quot;, &quot;media_type&quot;: &quot;image/png&quot;, &quot;data&quot;: img_b64}},
-        {&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: prompt + (&quot;\n\n--- EXTRACTED TEXT ---\n&quot; + text + &quot;\n--- END ---&quot; if text else &quot;&quot;)},
-    ]
-    resp = client.messages.create(
-        model=MODEL, max_tokens=1024, temperature=TEMPERATURE,
-        system=&quot;You are an invoice reconciliation service. Look ONLY at the printed document to identify adjustments that explain the delta. Never fabricate.&quot;,
-        tools=[RECONCILE_TOOL],
-        tool_choice={&quot;type&quot;: &quot;tool&quot;, &quot;name&quot;: &quot;reconcile_delta&quot;},
-        messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: content}],
-    )
-    for block in resp.content:
-        if getattr(block, &quot;type&quot;, None) == &quot;tool_use&quot; and block.name == &quot;reconcile_delta&quot;:
-            return dict(block.input)
-    return {&quot;adjustments&quot;: [], &quot;explained&quot;: False, &quot;notes&quot;: &quot;no tool call returned&quot;}
-
-# ---- email + url fetch helpers ---------------------------------------------
-
-URL_RE = re.compile(r&quot;https?://[^\s&lt;&gt;\&quot;\&#x27;]+&quot;)
-
-def fetch_url(url: str, timeout: int = 12) -&gt; tuple[bytes | None, str | None]:
-    &quot;&quot;&quot;Fetch a URL and return (bytes, content_type) or (None, None) on failure.
-    Returns at most 5MB to keep prompt costs bounded.&quot;&quot;&quot;
-    try:
-        req = urllib.request.Request(url, headers={&quot;User-Agent&quot;: &quot;extract_invoices.py/1.0&quot;})
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            ctype = resp.headers.get(&quot;Content-Type&quot;, &quot;&quot;).split(&quot;;&quot;)[0].strip().lower()
-            data = resp.read(5 * 1024 * 1024)
-            return data, ctype
-    except Exception as e:
-        log.warning(&quot;URL fetch failed %s: %s&quot;, url, e)
-        return None, None
-
-def claude_extract_from_html(client: &quot;Anthropic&quot;, html_text: str, source_label: str) -&gt; dict:
-    &quot;&quot;&quot;Send fetched HTML text to Claude through the same extraction path.&quot;&quot;&quot;
-    content = [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: USER_TEXT_TEMPLATE.format(text=
-        f&quot;[Fetched from URL: {source_label}]\n\n{html_text[:60000]}&quot;
-    )}]
-    return call_claude(client, content)
-
-def process_email(client: &quot;Anthropic&quot;, eml_path: Path):
-    &quot;&quot;&quot;Extract invoice data from a .eml file. Walk attachments first (PDFs treated like
-    normal PDF input). If the body contains a public invoice URL, fetch and extract.&quot;&quot;&quot;
-    import email
-    from email import policy
-    msg = email.message_from_bytes(eml_path.read_bytes(), policy=policy.default)
-    subject = msg.get(&quot;subject&quot;, &quot;&quot;)
-    sender  = msg.get(&quot;from&quot;, &quot;&quot;)
-    body_plain = msg.get_body(preferencelist=(&quot;plain&quot;,))
-    body_html  = msg.get_body(preferencelist=(&quot;html&quot;,))
-    body_text = body_plain.get_content() if body_plain else &quot;&quot;
-    body_html_text = body_html.get_content() if body_html else &quot;&quot;
-    # URLs live in the HTML version when the plain version strips them out
-    url_search_text = body_html_text or body_text
-
-    invoices, audits = [], []
-
-    # First: extract what we can from the email body itself
-    body_input_text = (f&quot;Subject: {subject}\nFrom: {sender}\n\n{body_text}&quot;)
-    try:
-        record = call_claude(client, [{&quot;type&quot;: &quot;text&quot;, &quot;text&quot;: USER_TEXT_TEMPLATE.format(text=body_input_text)}])
-    except Exception as e:
-        audits.append(error_audit(eml_path.name, 1, &quot;extraction_error&quot;, str(e)))
-        return invoices, audits
-
-    # If we have invoice number + PO but no total, try fetching URLs in the body
-    fetched_record = None
-    fetched_from = None
-    if record.get(&quot;total_amount_due&quot;) is None and not record.get(&quot;line_items&quot;):
-        import html as _html_lib
-        urls = [_html_lib.unescape(u).rstrip(&quot;.,;)&quot;) for u in URL_RE.findall(url_search_text)]
-        # Filter noise (XML namespaces, tracking pixels, branding links, unsubscribe)
-        url_candidates = [u for u in urls if not any(
-            n in u.lower() for n in
-            (&quot;schemas.microsoft.com&quot;, &quot;w3.org&quot;, &quot;sendgrid&quot;, &quot;unsubscribe&quot;,
-             &quot;tracking&quot;, &quot;/wf/open&quot;, &quot;mcauto-images&quot;, &quot;hdsbrands.com&quot;)
-        )]
-        # Prioritise URLs that look invoice-related
-        def _score(u):
-            score = 0
-            for k in (&quot;invoice&quot;, &quot;report&quot;, &quot;bill&quot;, &quot;pdf&quot;, &quot;viewer&quot;):
-                if k in u.lower(): score += 1
-            return -score  # negative because sort is ascending
-        url_candidates.sort(key=_score)
-        # Drop near-duplicates (HTML/PDF variants of the same invoice resource)
-        seen = set(); deduped = []
-        for u in url_candidates:
-            key = u.split(&quot;?&quot;)[0][:80]
-            if key in seen: continue
-            seen.add(key); deduped.append(u)
-        for url in deduped[:5]:  # cap attempts
-            log.info(&quot;  trying URL: %s&quot;, url[:80])
-            data, ctype = fetch_url(url)
-            if data is None:
-                continue
-            if &quot;html&quot; in ctype or &quot;text&quot; in ctype:
-                try:
-                    html_text = data.decode(&quot;utf-8&quot;, errors=&quot;replace&quot;)
-                except Exception:
-                    continue
-                if any(k in html_text.lower() for k in (&quot;invoice&quot;, &quot;total&quot;, &quot;amount due&quot;, &quot;po #&quot;, &quot;p.o.&quot;)):
-                    fetched_record = claude_extract_from_html(client, html_text, url)
-                    fetched_from = url
-                    log.info(&quot;  URL fetch produced extraction: total=%s line_items=%d&quot;, fetched_record.get(&quot;total_amount_due&quot;), len(fetched_record.get(&quot;line_items&quot;) or []))
-                    break
-            elif &quot;pdf&quot; in ctype:
-                # Save and re-process as PDF
-                tmp = Path(&quot;/tmp/_fetched.pdf&quot;)
-                tmp.write_bytes(data)
-                try:
-                    pdf = pdfium.PdfDocument(str(tmp))
-                    if len(pdf) &gt; 0:
-                        inv, aud = extract_one_page(client, tmp, 0, pdf[0])
-                        if inv: fetched_record = {**record, &quot;total_amount_due&quot;: inv.get(&quot;total_amount_due&quot;), &quot;line_items&quot;: inv.get(&quot;line_items&quot;), &quot;currency&quot;: inv.get(&quot;currency&quot;)}
-                        fetched_from = url
-                        break
-                except Exception:
-                    continue
-
-    # Decide which record to use. When URL fetch yielded a real total/lines, prefer
-    # that record entirely (it&#x27;s the source of financial truth); fall back to the
-    # email-body record otherwise.
-    if fetched_record and fetched_record.get(&quot;total_amount_due&quot;) is not None:
-        use_record = dict(fetched_record)
-        # Backfill identification fields from the email body if the fetched view
-        # didn&#x27;t include them (often the invoice PDF omits the email-context fields).
-        for k in (&quot;vendor_name&quot;, &quot;invoice_number&quot;, &quot;po_number&quot;, &quot;invoice_date&quot;):
-            if not use_record.get(k):
-                use_record[k] = record.get(k)
-        path_label = f&quot;email_body+url_fetch ({fetched_from})&quot;
-    else:
-        use_record = dict(record)
-        path_label = &quot;email_body&quot;
-        if use_record.get(&quot;total_amount_due&quot;) is None and use_record.get(&quot;extraction_confidence&quot;) != &quot;low&quot;:
-            use_record[&quot;extraction_confidence&quot;] = &quot;low&quot;
-            use_record[&quot;notes&quot;] = (use_record.get(&quot;notes&quot;) or &quot;&quot;) + &quot; | Total not extractable from email body; URL fetch attempted but did not yield a total.&quot;
-
-    inv, aud = split_invoice_and_audit(use_record, eml_path.name, 1, path_label, &quot;ok&quot;)
-    if inv: invoices.append(inv)
-    audits.append(aud)
-    return invoices, audits
-
-
-# ---- vendor follow-up draft generator --------------------------------------
-
-def vendor_followup_draft(invoice: dict, audit: dict) -&gt; dict | None:
-    &quot;&quot;&quot;For records flagged for review, generate a copy-pasteable email draft
-    the AP team can send to the vendor asking for the specific clarification
-    needed to close the loop. Returns None when the record doesn&#x27;t need follow-up.
-
-    The goal: the human reviewer doesn&#x27;t have to figure out *what to ask the
-    vendor* — they just open the draft, read it for 10 seconds, edit if needed,
-    and send. The system tees up the work; the human chooses to do it.&quot;&quot;&quot;
-    vendor    = (invoice.get(&quot;vendor&quot;) or {}).get(&quot;name&quot;) or audit.get(&quot;vendor_raw_name&quot;) or &quot;Vendor&quot;
-    inv_num   = invoice.get(&quot;invoice_number&quot;) or &quot;(unknown)&quot;
-    inv_date  = invoice.get(&quot;invoice_date&quot;) or &quot;(unknown)&quot;
-    po_num    = invoice.get(&quot;po_number&quot;) or &quot;(unknown)&quot;
-    total     = invoice.get(&quot;total_amount_due&quot;)
-    sub_check = audit.get(&quot;subtotal_check&quot;)
-    sub_note  = audit.get(&quot;subtotal_note&quot;) or &quot;&quot;
-    status    = audit.get(&quot;extraction_status&quot;)
-    confidence = audit.get(&quot;extraction_confidence&quot;)
-
-    # Compute line sum + delta for the body
-    line_items = invoice.get(&quot;line_items&quot;) or []
-    line_sum = sum((li.get(&quot;quantity&quot;) or 0) * (li.get(&quot;unit_price&quot;) or 0) for li in line_items)
-    delta = (total or 0) - line_sum if total is not None else None
-
-    # Decide the issue and the ask
-    if sub_check == &quot;failed&quot; and delta is not None and abs(delta) &gt; 0.01:
-        issue = (
-            f&quot;the line items we extracted from your invoice total ${line_sum:,.2f}, &quot;
-            f&quot;but the printed Total Amount Due is ${total:,.2f} — a difference of &quot;
-            f&quot;${abs(delta):,.2f} we can&#x27;t reconcile from the document.&quot;
-        )
-        ask = (
-            &quot;Could you confirm whether there are any additional line items (freight, &quot;
-            &quot;shipping, handling, tax, surcharge, or discount adjustments) that aren&#x27;t &quot;
-            &quot;shown on the invoice we received? If so, could you send a corrected copy &quot;
-            &quot;with all charges itemized so we can post the invoice cleanly to our AP &quot;
-            &quot;system?&quot;
-        )
-    elif total is None or not line_items:
-        issue = (
-            &quot;the invoice you sent us did not include line-item detail or a payable &quot;
-            &quot;total in the document body — only a link or summary in the email.&quot;
-        )
-        ask = (
-            &quot;Could you send a complete copy of the invoice with line items and total &quot;
-            &quot;as an attachment (PDF preferred), so we can post the invoice cleanly to &quot;
-            &quot;our AP system?&quot;
-        )
-    elif confidence == &quot;low&quot;:
-        # Low confidence on email-body records typically means the invoice itself
-        # wasn&#x27;t in the email — only a link or summary was. Differentiate the message
-        # based on whether we have line items + total or not.
-        if line_items and total is not None:
-            issue = (
-                &quot;we extracted the invoice through a fetch from the link in your &quot;
-                &quot;email rather than from an attached PDF, and we&#x27;re not 100% sure &quot;
-                &quot;we captured every adjustment line (tax, freight, surcharge, etc.) &quot;
-                &quot;that the source document might contain.&quot;
-            )
-            ask = (
-                &quot;Could you confirm the breakdown we have below is complete? If &quot;
-                &quot;there are any additional adjustment lines on the source invoice &quot;
-                &quot;(freight, tax, handling, etc.) not reflected here, please let us &quot;
-                &quot;know so we can post a complete record to our AP system. A PDF &quot;
-                &quot;attachment going forward would also save us this back-and-forth.&quot;
-            )
-        else:
-            issue = &quot;we couldn&#x27;t reliably read several fields from the document we received.&quot;
-            ask = (
-                &quot;Could you re-send the invoice as a fresh PDF or higher-resolution scan? &quot;
-                &quot;Some fields didn&#x27;t read clearly enough for us to confirm the values.&quot;
-            )
-    else:
-        return None  # no follow-up needed
-
-    subject = f&quot;Question on invoice {inv_num} — clarification needed for AP posting&quot;
-    body = (
-        f&quot;Hi [vendor contact],\n\n&quot;
-        f&quot;We received your invoice {inv_num} dated {inv_date} (PO {po_num}) and started &quot;
-        f&quot;processing it through our intake system, but {issue}\n\n&quot;
-        f&quot;{ask}\n\n&quot;
-        f&quot;For reference, here is what we extracted from the document:\n&quot;
-        f&quot;  Vendor:        {vendor}\n&quot;
-        f&quot;  Invoice #:     {inv_num}\n&quot;
-        f&quot;  Invoice Date:  {inv_date}\n&quot;
-        f&quot;  PO #:          {po_num}\n&quot;
-        f&quot;  Total Due:     ${total:,.2f}&quot; if total is not None else f&quot;  Total Due:     [not extracted]&quot;
-    )
-    body += f&quot;\n  Line items extracted ({len(line_items)}):\n&quot;
-    for li in line_items:
-        body += f&quot;    - {li.get(&#x27;item_name&#x27;,&#x27;(no name)&#x27;)}: qty {li.get(&#x27;quantity&#x27;)} x ${li.get(&#x27;unit_price&#x27;)}\n&quot;
-    if delta is not None and abs(delta) &gt; 0.01:
-        body += f&quot;\n  Line-item subtotal: ${line_sum:,.2f}\n&quot;
-        body += f&quot;  Unexplained delta:  ${delta:+,.2f}\n&quot;
-    body += (
-        &quot;\nThanks — we&#x27;ll post the invoice as soon as you can confirm. We&#x27;re trying &quot;
-        &quot;to clear our AP backlog and your reply will help us pay you sooner.\n\n&quot;
-        &quot;— HDS Marketing AP team&quot;
-    )
-
-    return {
-        &quot;subject&quot;: subject,
-        &quot;body&quot;: body,
-        &quot;reason_code&quot;: sub_check if sub_check == &quot;failed&quot; else (&quot;low_confidence&quot; if confidence == &quot;low&quot; else &quot;incomplete_data&quot;),
-        &quot;perceived_issue&quot;: issue,
-        &quot;ready_to_send&quot;: False,  # explicit: human must review
-    }
-
-
 def main() -&gt; int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument(&quot;--input&quot;, &quot;-i&quot;, default=&quot;invoices_raw&quot;)
@@ -1021,19 +601,14 @@ def main() -&gt; int:
     if not input_dir.is_dir():
         print(f&quot;ERROR: input folder not found: {input_dir}&quot;, file=sys.stderr); return 2
     pdfs = sorted(input_dir.glob(&quot;*.pdf&quot;))
-    emls = sorted(input_dir.glob(&quot;*.eml&quot;))
-    if not pdfs and not emls:
-        print(f&quot;ERROR: no .pdf or .eml files in {input_dir}&quot;, file=sys.stderr); return 2
+    if not pdfs:
+        print(f&quot;ERROR: no .pdf files in {input_dir}&quot;, file=sys.stderr); return 2
 
     log.info(&quot;found %d PDF(s) in %s&quot;, len(pdfs), input_dir)
     client = Anthropic(api_key=api_key)
     all_invoices, all_audits = [], []
     for pdf_path in pdfs:
         inv, aud = process_pdf(client, pdf_path)
-        all_invoices.extend(inv); all_audits.extend(aud)
-    for eml_path in emls:
-        log.info(&quot;processing %s&quot;, eml_path.name)
-        inv, aud = process_email(client, eml_path)
         all_invoices.extend(inv); all_audits.extend(aud)
 
     # Build the two-block payload
@@ -1048,81 +623,6 @@ def main() -&gt; int:
         a.get(&quot;vendor_raw_name&quot;) for a in all_audits
         if a.get(&quot;extraction_status&quot;) == &quot;ok&quot; and not a.get(&quot;vendor_known&quot;)
     } - {None})
-
-    # Multi-page invoice merge: if the same invoice_number appears across consecutive
-    # pages of the same source_file, the vendor likely split a single invoice over multiple
-    # pages. Merge their line items into the first occurrence, discard the duplicates.
-    all_invoices_merged = []
-    seen_keys = {}
-    for inv in all_invoices:
-        key = (inv.get(&quot;_source_file&quot;), inv.get(&quot;invoice_number&quot;))
-        if key[1] and key in seen_keys:
-            # Same invoice already seen — merge line_items into existing record
-            existing = seen_keys[key]
-            existing.setdefault(&quot;line_items&quot;, []).extend(inv.get(&quot;line_items&quot;) or [])
-            # Take the larger total if they differ (the later page may have the grand total)
-            if (inv.get(&quot;total_amount_due&quot;) or 0) &gt; (existing.get(&quot;total_amount_due&quot;) or 0):
-                existing[&quot;total_amount_due&quot;] = inv[&quot;total_amount_due&quot;]
-            log.info(&quot;merged page %s into existing %s (invoice %s)&quot;,
-                     inv.get(&quot;_page_number&quot;), existing.get(&quot;_page_number&quot;), key[1])
-            continue
-        all_invoices_merged.append(inv)
-        if key[1]:
-            seen_keys[key] = inv
-    all_invoices = all_invoices_merged
-
-    # De-dup line items by item_name + unit_price within each invoice (catches the case
-    # where Claude pulled both the line and the SALES AMT total row, which slipped past
-    # the prompt-side filter for a few records).
-    TOTAL_NAMES = {&quot;sales amt&quot;, &quot;sales amount&quot;, &quot;total&quot;, &quot;total due&quot;, &quot;amount due&quot;,
-                   &quot;invoice total&quot;, &quot;grand total&quot;, &quot;subtotal&quot;, &quot;current due&quot;,
-                   &quot;balance due&quot;, &quot;invoice amount&quot;, &quot;net total&quot;, &quot;merchandise total&quot;}
-    for inv in all_invoices:
-        keep = []
-        for li in (inv.get(&quot;line_items&quot;) or []):
-            name = (li.get(&quot;item_name&quot;) or &quot;&quot;).strip().lower()
-            if name in TOTAL_NAMES:
-                log.info(&quot;dropped total-row line item: %s in invoice %s&quot;,
-                         li.get(&quot;item_name&quot;), inv.get(&quot;invoice_number&quot;))
-                continue
-            keep.append(li)
-        inv[&quot;line_items&quot;] = keep
-
-    # For any flagged record, generate a copy-pasteable vendor follow-up email draft.
-    # Builds the index inv_idx -&gt; invoice for matching.
-    inv_by_invnum = {inv.get(&quot;invoice_number&quot;): inv for inv in all_invoices if inv.get(&quot;invoice_number&quot;)}
-    for a in all_audits:
-        inv = None
-        # Try to find the matching invoice for this audit record.
-        # Match priority: source_file+page first, then vendor+invoice_number.
-        for candidate in all_invoices:
-            if (candidate.get(&quot;_source_file&quot;) == a.get(&quot;source_file&quot;)
-                and candidate.get(&quot;_page_number&quot;) == a.get(&quot;page_number&quot;)):
-                inv = candidate; break
-        if not inv:
-            for candidate in all_invoices:
-                vmatch = candidate.get(&quot;vendor&quot;, {}).get(&quot;name&quot;) == a.get(&quot;vendor_canonical_name&quot;)
-                # Audit may not store invoice_number directly; we use the file name + the canonical vendor
-                # to do a heuristic match: if there&#x27;s exactly one invoice for that vendor + source_file, take it
-                if vmatch:
-                    # Strong match if source_file appears in the invoice metadata we&#x27;ll inject below
-                    inv = candidate
-                    # don&#x27;t break — let later iterations refine if a better match exists
-                    if a.get(&quot;source_file&quot;,&quot;&quot;).startswith(candidate.get(&quot;invoice_number&quot;,&quot;&quot;)):
-                        break
-        if not inv:
-            # Fall back to a minimal dict for the email-draft generator
-            inv = {&quot;vendor&quot;: {&quot;name&quot;: a.get(&quot;vendor_canonical_name&quot;)},
-                   &quot;invoice_number&quot;: None, &quot;invoice_date&quot;: None, &quot;po_number&quot;: None,
-                   &quot;total_amount_due&quot;: None, &quot;line_items&quot;: []}
-        # Only generate drafts when the record actually needs follow-up
-        if (a.get(&quot;subtotal_check&quot;) == &quot;failed&quot;
-            or a.get(&quot;extraction_confidence&quot;) in (&quot;low&quot;, &quot;medium&quot;)
-            or a.get(&quot;extraction_status&quot;) != &quot;ok&quot;
-            or not a.get(&quot;vendor_known&quot;)):
-            draft = vendor_followup_draft(inv, a)
-            if draft:
-                a[&quot;vendor_followup_draft&quot;] = draft
 
     payload = {
         &quot;batch_id&quot;: time.strftime(&quot;%Y%m%d-%H%M%S-utc&quot;, time.gmtime()),
@@ -1146,6 +646,56 @@ def main() -&gt; int:
 if __name__ == &quot;__main__&quot;:
     sys.exit(main())
 </code></pre>
+
+<div class="section-cmd">$ cat README.md  # rendered</div>
+
+<div class="readme">
+<h1>HDS AI Workflow Architect — Invoice Extraction Homework</h1>
+<p><strong>Adam Reep · adamjreep@gmail.com · 2026-05-27</strong></p>
+<p>Files in this folder:</p>
+<ul>
+<li><code>extract_invoices.py</code> — the script (run with <code>python extract_invoices.py --input ./invoices_raw --output invoices.json</code>)</li>
+<li><code>invoices.json</code> — output across all 5 emailed invoice packages (27 invoice records, $59,194.29 total recognized)</li>
+<li><code>README.md</code> — this document</li>
+</ul>
+<p>A note on the output shape: I structured the JSON as two cleanly-separated blocks. The <code>invoices[]</code> array is the clean vendor-bill payload, free of implementation details. The <code>_audit</code> block at the bottom holds extraction metadata — LLM model, source file, confidence, subtotal-check results — for the AP team's review queue.</p>
+<p>The script source, README, and a non-redacted sample record per vendor are also viewable at <strong><a href="https://adamjreep.com/Homework">adamjreep.com/Homework</a></strong>. The site doesn't host the real HDS invoice data; the email zip is the only path to that.</p>
+<hr />
+<h2>1. Choice of LLM: Claude Haiku 4.5</h2>
+<p>Anthropic Claude Haiku 4.5 via the official Python SDK. Three reasons:</p>
+<ul>
+<li><strong>Tool-use schema enforcement.</strong> Claude's structured <code>tools</code> parameter forces the model to call a single function (<code>record_invoice</code>) with a typed schema. Output of the wrong type, or with fabricated fields, is structurally prohibited — the model has no other return path. This is the strongest single anti-hallucination control available.</li>
+<li><strong>Vision in the same model.</strong> No separate OCR pipeline. Scanned/image invoices and text-extractable invoices flow through the same code path. One model, one prompt, one place to reason about behavior.</li>
+<li><strong>Cost + latency.</strong> The full 27-invoice run cost ~$0.20 in ~70 seconds. Production scale (thousands/month) is comfortably under $20/mo.</li>
+</ul>
+<p>GPT-4.1-mini or Gemini Flash would work too. Claude's tool-use is cleanest for forcing schema compliance.</p>
+<h2>2. Prompt engineering against hallucination</h2>
+<ol>
+<li><strong>Forced tool-use with typed schema.</strong> <code>tool_choice</code> pins the model to one function call with required, nullable, typed fields. Wrong types and missing fields are structurally impossible.</li>
+<li><strong>Temperature 0.0.</strong> Deterministic. Same input → same output. No creative register.</li>
+<li><strong>"Extract only what you can read" instruction.</strong> System prompt forbids inferring, computing, or fabricating values not printed on the document. Missing → <code>null</code>. The model self-reports uncertainty via <code>extraction_confidence: high | medium | low</code>.</li>
+<li><strong>Hybrid text + image input.</strong> I caught a vendor-misidentification on the Hit Promotional Products invoices: text extraction put the bill-to ("HDS MARKETING/FACILIS GROUP") above the vendor letterhead, and the model named HDS as the vendor. Fix: every page is sent as <strong>both</strong> extracted text <strong>and</strong> rendered image, with the prompt instructing the model to defer to the image for layout-dependent fields. After the change all 7 Hit Promo pages identify "HIT Promotional Products, Inc." at high confidence.</li>
+<li><strong>Line-item subtotal cross-validation.</strong> After Claude returns a record, the script sums <code>quantity × unit_price</code> across line items and compares to <code>total_amount_due</code>. If divergence exceeds 1%, the record is demoted from <code>high</code> to <code>medium</code> confidence with an explanatory note, and <code>review_required</code> flips true on the batch. In this batch, 10 of 27 records tripped this check — most are the Angel Printing &amp; Reproduction series, where the vendor put the order total in the "Unit Price" column on a 500-quantity row, making the math look impossible. The script flags these for human review rather than emitting them as confidently extracted. Same logic catches arithmetic hallucinations the model wouldn't notice itself.</li>
+</ol>
+<h2>3. Handling an illegible PDF</h2>
+<p>Two failure modes, both surfaced explicitly rather than hidden:</p>
+<ul>
+<li><strong>PDF won't open at all</strong> → <code>error_record</code> with <code>reason_code: open_failed</code> and the exception message. No invoice records fabricated for that source.</li>
+<li><strong>Page opens but is unreadable</strong> → if pypdfium returns &lt; 200 chars of text, the script falls through to image-only vision. The Old Brooklyn Printing PDF in this batch (3 scanned pages, zero extractable text) was handled this way — all 3 pages extracted at high confidence. If even vision can't identify both vendor and total, the script converts the record to <code>reason_code: illegible_page</code> rather than emit fabricated values.</li>
+</ul>
+<p>A real-world edge case from this batch: the Richardson Sports email contains a <em>link</em> to the invoice on the vendor portal — not the invoice itself. The script extracts what's visible from the email body (vendor, invoice number, PO, date), sets <code>total_amount_due: null</code>, marks <code>extraction_confidence: low</code>, and surfaces a note explaining the totals need to be fetched from the portal. Human follow-up rather than a guess.</p>
+<p>The output payload includes <code>_audit.review_required</code> — true when any record needs human attention (error, low/medium confidence, subtotal-check failure, or unknown vendor). In production this routes records to a review queue before they reach any downstream system.</p>
+<h2>4. A note on the Antera API target</h2>
+<p>The homework spec mentioned shaping the output "as if it were going to be sent via a POST request to the Antera API." I pulled the public Antera v1 spec from api.anterasaas.com and read through it. <strong>The public API exposes no vendor-bill, invoice, payable, or expense endpoint.</strong> Coverage is sales-side only: <code>/accounts</code>, <code>/contacts</code>, <code>/orders</code>, <code>/products</code>, <code>/artwork</code>, <code>/identity</code>. The "expense" mentions in the spec are nested GL-account fields on order items (<code>qbExpenseAccount</code> suggests QuickBooks handles the financial side).</p>
+<p>So the script outputs a clean, well-typed vendor-bill payload, and the <code>_audit.antera_target_endpoint</code> field is honest: <em>"Antera v1 public API has no AP/vendor-bill endpoint (sales-side only). Production adapter would route to whichever AP intake mechanism HDS uses (QB sync, manual UI assist, private endpoint, or Sheets review buffer)."</em> If HDS has a private/extended Antera endpoint not in the public spec, the script's clean schema maps to it in one place — the adapter layer — without changing the extraction logic.</p>
+<h2>5. Production extensions worth noting</h2>
+<p>Three enhancements that aren't in this script (Ryan asked for "lightweight, functional") but are close-by in design space:</p>
+<ul>
+<li><strong>Vendor canonicalization against a real master.</strong> The script has a small embedded vendor master that maps observed variants ("HIT Promotional Products, Inc." / "Hit Promo Products") to a single canonical name and flags unknown vendors to an exceptions list. Production would replace the embedded list with a Sheets-backed or Antera vendor-master query, with fuzzy matching by name + remit-to address as the join key (not just name — vendors rename themselves).</li>
+<li><strong>Public-URL fetch.</strong> When an email body references a public PDF URL, the script could fetch and route through the same vision pipeline — five lines of <code>requests</code> + <code>pypdfium</code>. The Richardson Sports case here is portal-gated (login wall) so a fetch returns the login HTML, not the invoice; that case needs a vendor-portal adapter with stored credentials per vendor — a separate subsystem.</li>
+<li><strong>An "outliers" forwardable mailbox.</strong> Stand up <code>outliers@hdsbrands.com</code> with an allowlist of internal senders. An agent watches the mailbox and runs the same pipeline on forwarded edge cases. The forwarder can prepend a context note that flows through to the prompt. Keeps the human in the loop without making the human do the transcription work — the human's contribution is <em>interpretation</em>, not data entry. This is how the script becomes part of the AP team's daily workflow instead of a one-off tool.</li>
+</ul>
+</div>
 
 <footer>
   <a href="/CV">resume</a>
