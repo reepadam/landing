@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HDS Document Pipeline — Adam J. Reep</title>
+<title>OCR + LLM Document Pipeline — Adam J. Reep</title>
 <style>
 :root {
   --bg: #0a0e0a;
@@ -227,21 +227,21 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 <div id="stars"></div>
 
 <div class="prompt-line">
-  <span>adam@reep:~$</span> ./hds_document_pipeline --launch
+  <span>adam@reep:~$</span> ./document_pipeline --launch
 </div>
 
 <div class="eyebrow">PROOF OF CONCEPT &middot; LIVE DEMO</div>
 
-<h1>HDS Document Pipeline</h1>
+<h1>OCR + LLM Document Pipeline</h1>
 <div class="tagline">Making the complex, easy.</div>
 
 <div class="thanks">
-  <div class="lead">// THANKS FOR CLICKING THROUGH</div>
-  <p>What follows is the ten-module OCR + LLM document pipeline I built &mdash; the system I wanted to walk you through.</p>
+  <div class="lead">// QUICK CONTEXT</div>
+  <p>What follows is a ten-module OCR + LLM document pipeline I built in four days as a portfolio piece &mdash; originally for an interview at a branded-merchandise / decoration company, but the architecture and patterns generalize to any document-heavy operation.</p>
   <p>Click the button below to open the live demo. Each module ingests one document or artwork type and produces structured output ready for downstream systems. Demo data is pre-loaded so you can explore every module without uploading anything yourself, though uploads work too.</p>
 </div>
 
-<p class="pitch">A modular OCR + LLM pipeline that <strong>augments your existing ERP &mdash; it does not replace it.</strong> Each module ingests one document or artwork type and hands structured data off to the system of record (or to a Sheets review buffer your team approves before ingest).</p>
+<p class="pitch">A modular OCR + LLM pipeline that <strong>augments your existing system of record &mdash; it does not replace it.</strong> Each module ingests one document or artwork type and hands structured data off to the ERP, MRP, or operational platform of choice (or to a Sheets review buffer the team approves before ingest).</p>
 
 <span class="badge">PROOF OF CONCEPT</span>
 
@@ -326,4 +326,3 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 
 </body>
 </html>
-                                                                                                               
