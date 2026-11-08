@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="description" content="Weekly food specials, trivia nights and food trucks near you in Pittsburgh.">
+<meta name="theme-color" content="#c2410c">
+<title>Weekly Specials · Pittsburgh</title>
+<script>if(location.hostname==='adamjreep.pages.dev')location.replace('https://adamjreep.com'+location.pathname+location.search+location.hash);</script>
+<style>
+:root {
+  --bg: #faf7f2; --card: #ffffff; --ink: #1c1917; --muted: #78716c; --line: #e7e5e4;
+  --accent: #c2410c; --accent-ink: #ffffff; --chip: #f5f5f4;
+  --ok-bg: #dcfce7; --ok-ink: #166534; --warn-bg: #fef3c7; --warn-ink: #92400e; --info-bg: #f5f5f4; --info-ink: #57534e;
+  --now-bg: #fff7ed; --now-ink: #c2410c;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #161412; --card: #211e1b; --ink: #f5f5f4; --muted: #a8a29e; --line: #3a3531;
+    --accent: #fb923c; --accent-ink: #1c1917; --chip: #2a2623;
+    --ok-bg: #14532d; --ok-ink: #bbf7d0; --warn-bg: #4a3410; --warn-ink: #fde68a; --info-bg: #2a2623; --info-ink: #d6d3d1;
+    --now-bg: #3b2414; --now-ink: #fdba74;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); padding: 12px 16px 10px; }
+.top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+h1 { font-size: 1.35rem; margin: 0; letter-spacing: -0.01em; }
+.where { font-size: 0.85rem; color: var(--muted); margin-top: 2px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--accent); font: inherit; font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.row { display: flex; gap: 6px; overflow-x: auto; padding: 8px 0 2px; scrollbar-width: none; }
+.row::-webkit-scrollbar { display: none; }
+.chip { flex: 0 0 auto; border: 1px solid var(--line); background: var(--chip); color: var(--ink); border-radius: 999px; padding: 7px 12px; font: inherit; font-size: 0.9rem; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.toggle { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted); padding-top: 6px; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--accent); }
+main { padding: 12px 16px 40px; max-width: 720px; margin: 0 auto; }
+.count { font-size: 0.85rem; color: var(--muted); margin: 0 0 10px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+.card-head { display: flex; justify-content: space-between; gap: 10px; }
+.card h2 { font-size: 1.05rem; margin: 0; line-height: 1.25; }
+.dist { font-size: 0.9rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hood { font-size: 0.85rem; color: var(--muted); margin-top: 2px; }
+.special { border-top: 1px solid var(--line); margin-top: 10px; padding-top: 10px; }
+.special-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.when { font-size: 0.85rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+.when.now { color: var(--now-ink); background: var(--now-bg); border-radius: 6px; padding: 1px 6px; }
+.deal { font-weight: 650; }
+.kind { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.detail { font-size: 0.9rem; color: var(--muted); margin-top: 3px; }
+.badge { display: inline-block; font-size: 0.72rem; font-weight: 600; border-radius: 999px; padding: 2px 8px; margin-top: 6px; }
+.badge.ok { background: var(--ok-bg); color: var(--ok-ink); }
+.badge.warn { background: var(--warn-bg); color: var(--warn-ink); }
+.badge.info { background: var(--info-bg); color: var(--info-ink); }
+.badge a { color: inherit; }
+.actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.actions a { text-decoration: none; color: var(--ink); background: var(--chip); border: 1px solid var(--line); border-radius: 8px; padding: 7px 11px; font-size: 0.85rem; font-weight: 600; }
+.actions a.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.empty { text-align: center; color: var(--muted); padding: 40px 12px; }
+footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 16px 32px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1>Weekly specials</h1>
+  </div>
+  <div class="where"><span id="where">Near Millvale</span><button class="linkbtn" id="locate" type="button">Use my location</button></div>
+  <div class="row" id="days" aria-label="Day"></div>
+  <div class="row" id="cats" aria-label="Type"></div>
+  <label class="toggle"><input type="checkbox" id="leads"> Include unconfirmed leads</label>
+</header>
+<main>
+  <p class="count" id="count">Loading…</p>
+  <div id="list"></div>
+</main>
+<footer id="foot">Specials change. Call ahead before you go.</footer>
+<script>
+(() => {
+  const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const MILLVALE = { lat: 40.4801, lng: -79.9784, label: "Near Millvale" };
+  const CATS = [["all", "Everything"], ["Food special", "Food"], ["Trivia night", "Trivia"], ["Food truck", "Food trucks"]];
+  const store = {
+    get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  };
+  const state = { data: null, where: MILLVALE, day: "now", cat: "all", leads: !!store.get("leads") };
+  const $ = (id) => document.getElementById(id);
+
+  function el(tag, attrs, ...kids) {
+    const node = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs || {})) {
+      if (v == null || v === false) continue;
+      if (k === "class") node.className = v; else node.setAttribute(k, v);
+    }
+    for (const kid of kids.flat()) if (kid != null && kid !== false) node.append(kid);
+    return node;
+  }
+  const safeUrl = (u) => (typeof u === "string" && /^https?:\/\//i.test(u) ? u : null);
+
+  function miles(a, b) {
+    const r = (x) => (x * Math.PI) / 180, R = 3958.8;
+    const h = Math.sin(r(b.lat - a.lat) / 2) ** 2 + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.sin(r(b.lng - a.lng) / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+  const toMin = (t) => { if (!t || !/^\d{1,2}:\d{2}$/.test(t)) return null; const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+  function fmt(t) {
+    const m = toMin(t); if (m == null) return "";
+    let h = Math.floor(m / 60) % 24; const mm = m % 60; const ap = h >= 12 ? "pm" : "am"; h = h % 12 || 12;
+    return mm ? `${h}:${String(mm).padStart(2, "0")}${ap}` : `${h}${ap}`;
+  }
+  function when(s) {
+    if (s.start && s.end) return `${fmt(s.start)}–${fmt(s.end)}`;
+    if (s.start) return `from ${fmt(s.start)}`;
+    if (s.end) return `until ${fmt(s.end)}`;
+    return "";
+  }
+  // Is the special running at `now`? Handles late-night windows that cross midnight.
+  function isOn(s, now) {
+    const today = DAYS[now.getDay()], yesterday = DAYS[(now.getDay() + 6) % 7];
+    const t = now.getHours() * 60 + now.getMinutes();
+    const a = toMin(s.start), b = toMin(s.end);
+    if (s.days.includes(today)) {
+      if (a == null && b == null) return true;
+      if (a != null && b != null) return b > a ? t >= a && t < b : t >= a;
+      if (a != null) return t >= a && t < a + 240;
+      return t < b;
+    }
+    return s.days.includes(yesterday) && a != null && b != null && b < a && t < b;
+  }
+  const isLead = (s) => s.status === "Needs manual check" || s.conf === "Low";
+
+  function badge(s) {
+    const checked = s.checked ? ` · checked ${s.checked}` : "";
+    if (s.by === "Restaurant") return el("span", { class: "badge ok" }, "Confirmed by the restaurant" + checked);
+    if (isLead(s)) return el("span", { class: "badge warn" }, "Unconfirmed lead" + checked);
+    const src = safeUrl(s.src);
+    return el("span", { class: "badge info" }, src ? el("a", { href: src, target: "_blank", rel: "noopener" }, "Found online") : "Found online", checked);
+  }
+
+  function matches(s, now) {
+    if (state.cat !== "all" && s.cat !== state.cat) return false;
+    if (!state.leads && isLead(s)) return false;
+    if (state.day === "now") return isOn(s, now);
+    return s.days.includes(state.day);
+  }
+
+  function render() {
+    if (!state.data) return;
+    const now = new Date();
+    const groups = [];
+    for (const r of state.data.restaurants) {
+      const specials = r.specials.filter((s) => matches(s, now)).sort((x, y) => (toMin(x.start) ?? -1) - (toMin(y.start) ?? -1));
+      if (!specials.length) continue;
+      const d = r.lat != null && r.lng != null ? miles(state.where, r) : null;
+      groups.push({ r, specials, d });
+    }
+    groups.sort((a, b) => (a.d ?? 1e9) - (b.d ?? 1e9));
+    const n = groups.reduce((sum, g) => sum + g.specials.length, 0);
+    const label = state.day === "now" ? "on right now" : state.day === DAYS[now.getDay()] ? "today" : `on ${state.day}`;
+    $("count").textContent = `${n} ${n === 1 ? "special" : "specials"} ${label} at ${groups.length} ${groups.length === 1 ? "place" : "places"}, closest first`;
+    const list = $("list"); list.replaceChildren();
+    if (!groups.length) {
+      list.append(el("div", { class: "empty" }, state.day === "now" ? "Nothing listed for right now. Try Today or another day." : "Nothing listed for this day yet."));
+      return;
+    }
+    for (const { r, specials, d } of groups) {
+      const dest = encodeURIComponent([r.name, r.address].filter(Boolean).join(", "));
+      const tel = r.phone ? r.phone.replace(/[^\d+]/g, "") : null;
+      list.append(el("article", { class: "card" },
+        el("div", { class: "card-head" },
+          el("div", {}, el("h2", {}, r.name), el("div", { class: "hood" }, [r.hood, r.chain ? "chain" : null].filter(Boolean).join(" · "))),
+          d != null ? el("div", { class: "dist" }, d < 0.1 ? "nearby" : `${d.toFixed(1)} mi`) : null),
+        specials.map((s) => {
+          const t = when(s), on = isOn(s, now);
+          const details = [s.item && s.item !== s.deal ? s.item : null, s.cond, s.drinks ? `Drinks: ${s.drinks}` : null].filter(Boolean);
+          return el("div", { class: "special" },
+            el("div", { class: "special-top" },
+              t || on ? el("span", { class: "when" + (on ? " now" : "") }, on ? (t ? `Now · ${t}` : "Today") : t) : null,
+              el("span", { class: "deal" }, s.deal || s.item || "Special"),
+              s.cat !== "Food special" ? el("span", { class: "kind" }, s.cat === "Trivia night" ? "Trivia" : "Food truck") : null),
+            details.length ? el("div", { class: "detail" }, details.join(" · ")) : null,
+            s.days.length > 1 && s.days.length < 7 ? el("div", { class: "detail" }, s.days.join(", ")) : null,
+            badge(s));
+        }),
+        el("div", { class: "actions" },
+          el("a", { class: "primary", href: `https://www.google.com/maps/dir/?api=1&destination=${dest}`, target: "_blank", rel: "noopener" }, "Directions"),
+          tel ? el("a", { href: `tel:${tel}` }, "Call") : null,
+          safeUrl(r.web) ? el("a", { href: r.web, target: "_blank", rel: "noopener" }, "Website") : null,
+          safeUrl(r.fb) ? el("a", { href: r.fb, target: "_blank", rel: "noopener" }, "Facebook") : null,
+          safeUrl(r.ig) ? el("a", { href: r.ig, target: "_blank", rel: "noopener" }, "Instagram") : null)));
+    }
+  }
+
+  function chips(container, items, current, onPick) {
+    container.replaceChildren(...items.map(([value, text]) => {
+      const b = el("button", { class: "chip", type: "button", "aria-pressed": String(value === current) }, text);
+      b.addEventListener("click", () => onPick(value));
+      return b;
+    }));
+  }
+  function drawControls() {
+    const today = DAYS[new Date().getDay()];
+    const order = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    chips($("days"), [["now", "Right now"], [today, `Today`], ...order.filter((d) => d !== today).map((d) => [d, d])], state.day, (v) => { state.day = v; drawControls(); render(); });
+    chips($("cats"), CATS, state.cat, (v) => { state.cat = v; drawControls(); render(); });
+  }
+
+  function setWhere(lat, lng, label) {
+    state.where = { lat, lng, label };
+    $("where").textContent = label;
+    render();
+  }
+  function locate() {
+    if (!navigator.geolocation) { $("where").textContent = "Location isn't available here · near Millvale"; return; }
+    $("where").textContent = "Finding you…";
+    navigator.geolocation.getCurrentPosition(
+      (p) => { store.set("where", { lat: p.coords.latitude, lng: p.coords.longitude }); setWhere(p.coords.latitude, p.coords.longitude, "Near you"); },
+      () => setWhere(MILLVALE.lat, MILLVALE.lng, "Couldn't get your location · near Millvale"),
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 });
+  }
+  $("locate").addEventListener("click", locate);
+  $("leads").checked = state.leads;
+  $("leads").addEventListener("change", (e) => { state.leads = e.target.checked; store.set("leads", state.leads); render(); });
+
+  const saved = store.get("where");
+  if (saved && typeof saved.lat === "number") { state.where = { lat: saved.lat, lng: saved.lng, label: "Near your last location" }; $("where").textContent = state.where.label; }
+  if (navigator.permissions && navigator.permissions.query) {
+    navigator.permissions.query({ name: "geolocation" }).then((p) => { if (p.state === "granted") locate(); }).catch(() => {});
+  }
+
+  drawControls();
+  fetch("data.json", { cache: "no-cache" })
+    .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then((data) => {
+      state.data = data;
+      const places = data.restaurants.length, specials = data.restaurants.reduce((n, r) => n + r.specials.length, 0);
+      $("foot").textContent = `Specials change. Call ahead before you go. ${specials} specials at ${places} places, updated ${data.updated}.`;
+      render();
+    })
+    .catch(() => { $("count").textContent = "Couldn't load the specials. Try again in a minute."; });
+})();
+</script>
+</body>
+</html>
