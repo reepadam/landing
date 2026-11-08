@@ -6,3 +6,5 @@
 .assetsignore
 wrangler.jsonc
 node_modules/
+# Worker source (runs on Cloudflare, not served as a page)
+worker/
