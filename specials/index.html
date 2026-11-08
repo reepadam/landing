@@ -64,6 +64,8 @@ main { padding: 12px 16px 40px; max-width: 720px; margin: 0 auto; }
 .actions a.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .empty { text-align: center; color: var(--muted); padding: 40px 12px; }
 footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 16px 32px; }
+.tip { display: block; max-width: 720px; margin: 4px auto 18px; padding: 0 16px; text-align: center; }
+.tip a { display: inline-block; color: var(--accent); font-weight: 700; text-decoration: none; border: 1px solid var(--accent); border-radius: 999px; padding: 10px 18px; }
 </style>
 </head>
 <body>
@@ -80,6 +82,7 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
   <p class="count" id="count">Loading…</p>
   <div id="list"></div>
 </main>
+<div class="tip"><a href="/specials/add/">Know a deal we're missing? Send it in →</a></div>
 <footer id="foot">Specials change. Call ahead before you go.</footer>
 <script>
 (() => {
@@ -149,6 +152,7 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
   function badge(s) {
     const checked = s.checked ? ` · checked ${s.checked}` : "";
     if (s.by === "Restaurant") return el("span", { class: "badge ok" }, "Confirmed by the restaurant" + checked);
+    if (s.by === "Crowd") return el("span", { class: "badge info" }, "Sent in by a reader" + checked);
     if (!hasPrice(s)) return el("span", { class: "badge warn" }, "Price not listed" + checked);
     const src = safeUrl(s.src);
     return el("span", { class: "badge info" }, src ? el("a", { href: src, target: "_blank", rel: "noopener" }, "Found online") : "Found online", checked);
