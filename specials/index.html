@@ -49,6 +49,8 @@ main { padding: 12px 16px 40px; max-width: 720px; margin: 0 auto; }
 .when { font-size: 0.85rem; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
 .when.now { color: var(--now-ink); background: var(--now-bg); border-radius: 6px; padding: 1px 6px; }
 .deal { font-weight: 650; }
+.price { margin-left: auto; font-weight: 750; font-size: 1.05rem; color: var(--accent); white-space: nowrap; }
+.says { font-size: 0.92rem; margin-top: 3px; }
 .kind { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
 .detail { font-size: 0.9rem; color: var(--muted); margin-top: 3px; }
 .badge { display: inline-block; font-size: 0.72rem; font-weight: 600; border-radius: 999px; padding: 2px 8px; margin-top: 6px; }
@@ -71,7 +73,7 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
   <div class="where"><span id="where">Near Millvale</span><button class="linkbtn" id="locate" type="button">Use my location</button></div>
   <div class="row" id="days" aria-label="Day"></div>
   <div class="row" id="cats" aria-label="Type"></div>
-  <label class="toggle"><input type="checkbox" id="leads"> Include unconfirmed leads</label>
+  <label class="toggle"><input type="checkbox" id="leads"> Include specials without a listed price or confirmation</label>
 </header>
 <main>
   <p class="count" id="count">Loading…</p>
@@ -82,7 +84,7 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
 (() => {
   const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const MILLVALE = { lat: 40.4801, lng: -79.9784, label: "Near Millvale" };
-  const CATS = [["all", "Everything"], ["Food special", "Food"], ["Trivia night", "Trivia"], ["Food truck", "Food trucks"]];
+  const CATS = [["all", "Everything"], ["Food special", "Food deals"], ["Trivia night", "Trivia"]];
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
@@ -132,10 +134,21 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
     return s.days.includes(yesterday) && a != null && b != null && b < a && t < b;
   }
   const isLead = (s) => s.status === "Needs manual check" || s.conf === "Low";
+  // A food special counts as a deal only if it states a price or a specific discount.
+  const DEAL_WORDS = /\$\s?\d|\d\s?%|\d\s?¢|\bcents?\b|half[- ]?(price|off)|\bbogo\b|buy one|\bfree\b|\boff\b/i;
+  const hasPrice = (s) => s.cat !== "Food special" || s.price != null || DEAL_WORDS.test([s.deal, s.text, s.item].filter(Boolean).join(" "));
+  const hiddenByDefault = (s) => isLead(s) || !hasPrice(s);
+  function priceLabel(s) {
+    if (s.price == null || (s.type && s.type !== "Fixed price")) return null;
+    const v = Number(s.price);
+    if (v < 1) return `${Math.round(v * 100)}¢`;
+    return Number.isInteger(v) ? `$${v}` : `$${v.toFixed(2)}`;
+  }
 
   function badge(s) {
     const checked = s.checked ? ` · checked ${s.checked}` : "";
     if (s.by === "Restaurant") return el("span", { class: "badge ok" }, "Confirmed by the restaurant" + checked);
+    if (!hasPrice(s)) return el("span", { class: "badge warn" }, "Price not listed" + checked);
     if (isLead(s)) return el("span", { class: "badge warn" }, "Unconfirmed lead" + checked);
     const src = safeUrl(s.src);
     return el("span", { class: "badge info" }, src ? el("a", { href: src, target: "_blank", rel: "noopener" }, "Found online") : "Found online", checked);
@@ -143,7 +156,8 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
 
   function matches(s, now) {
     if (state.cat !== "all" && s.cat !== state.cat) return false;
-    if (!state.leads && isLead(s)) return false;
+    if (s.cat === "Food truck") return false;
+    if (!state.leads && hiddenByDefault(s)) return false;
     if (state.day === "now") return isOn(s, now);
     return s.days.includes(state.day);
   }
@@ -175,13 +189,17 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
           el("div", {}, el("h2", {}, r.name), el("div", { class: "hood" }, [r.hood, r.chain ? "chain" : null].filter(Boolean).join(" · "))),
           d != null ? el("div", { class: "dist" }, d < 0.1 ? "nearby" : `${d.toFixed(1)} mi`) : null),
         specials.map((s) => {
-          const t = when(s), on = isOn(s, now);
-          const details = [s.item && s.item !== s.deal ? s.item : null, s.cond, s.drinks ? `Drinks: ${s.drinks}` : null].filter(Boolean);
+          const t = when(s), on = isOn(s, now), price = priceLabel(s);
+          const says = s.text && s.text !== s.deal ? s.text : null;
+          const seen = [s.deal, says].filter(Boolean).join(" ").toLowerCase();
+          const details = [s.item && !seen.includes(s.item.toLowerCase()) ? s.item : null, s.cond, s.drinks ? `Drinks: ${s.drinks}` : null].filter(Boolean);
           return el("div", { class: "special" },
             el("div", { class: "special-top" },
               t || on ? el("span", { class: "when" + (on ? " now" : "") }, on ? (t ? `Now · ${t}` : "Today") : t) : null,
               el("span", { class: "deal" }, s.deal || s.item || "Special"),
-              s.cat !== "Food special" ? el("span", { class: "kind" }, s.cat === "Trivia night" ? "Trivia" : "Food truck") : null),
+              s.cat === "Trivia night" ? el("span", { class: "kind" }, "Trivia") : null,
+              price ? el("span", { class: "price" }, price) : null),
+            says ? el("div", { class: "says" }, says) : null,
             details.length ? el("div", { class: "detail" }, details.join(" · ")) : null,
             s.days.length > 1 && s.days.length < 7 ? el("div", { class: "detail" }, s.days.join(", ")) : null,
             badge(s));
