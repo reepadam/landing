@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#c2410c">
 <title>Weekly Specials · Pittsburgh</title>
 <script>if(location.hostname==='adamjreep.pages.dev')location.replace('https://adamjreep.com'+location.pathname+location.search+location.hash);</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha384-c6Rcwz4e4CITMbu/NBmnNS8yN2sC3cUElMEMfP3vqqKFp7GOYaaBBCqmaWBjmkjb" crossorigin="anonymous">
 <style>
 :root {
   --bg: #faf7f2; --card: #ffffff; --ink: #1c1917; --muted: #78716c; --line: #e7e5e4;
@@ -39,7 +40,19 @@ h1 { font-size: 1.35rem; margin: 0; letter-spacing: -0.01em; }
 .toggle input { width: 18px; height: 18px; accent-color: var(--accent); }
 main { padding: 12px 16px 40px; max-width: 720px; margin: 0 auto; }
 .count { font-size: 0.85rem; color: var(--muted); margin: 0 0 10px; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 12px; scroll-margin-top: 200px; }
+.card.flash { outline: 2px solid var(--accent); }
+#map { position: relative; z-index: 0; height: 290px; border-radius: 14px; border: 1px solid var(--line); margin-bottom: 12px; background: var(--chip); }
+.pin, .num { display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-weight: 750; }
+.pin { width: 28px; height: 28px; font-size: 13px; border: 2px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.num { width: 24px; height: 24px; font-size: 12px; flex: 0 0 auto; margin-right: 8px; }
+.me { width: 16px; height: 16px; border-radius: 50%; background: #2563eb; border: 3px solid #fff; box-shadow: 0 0 0 6px rgba(37,99,235,.25); }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--card); color: var(--ink); }
+.leaflet-popup-content { margin: 10px 12px; font: 14px/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.leaflet-popup-content a { color: var(--accent); font-weight: 600; }
+.leaflet-container a.leaflet-popup-close-button { color: var(--muted); }
+.title-row { display: flex; align-items: flex-start; }
+@media (prefers-color-scheme: dark) { #map .leaflet-tile-pane { filter: invert(100%) hue-rotate(180deg) brightness(90%) contrast(90%); } }
 .card-head { display: flex; justify-content: space-between; gap: 10px; }
 .card h2 { font-size: 1.05rem; margin: 0; line-height: 1.25; }
 .dist { font-size: 0.9rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -79,11 +92,13 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
   <label class="toggle"><input type="checkbox" id="leads"> Include deals without a listed price</label>
 </header>
 <main>
+  <div id="map" role="region" aria-label="Map of places with deals"></div>
   <p class="count" id="count">Loading…</p>
   <div id="list"></div>
 </main>
 <div class="tip"><a href="/specials/add/">Know a deal we're missing? Send it in →</a></div>
-<footer id="foot">Specials change. Call ahead before you go.</footer>
+<footer id="foot">Deals change without notice, so call ahead before you go.</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha384-NElt3Op+9NBMCYaef5HxeJmU4Xeard/Lku8ek6hoPTvYkQPh3zLIrJP7KiRocsxO" crossorigin="anonymous"></script>
 <script>
 (() => {
   const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -201,17 +216,19 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
     const withTrivia = state.cat === "trivia" ? " with trivia" : "";
     $("count").textContent = `${n} ${n === 1 ? "deal" : "deals"}${withTrivia} ${label} at ${groups.length} ${groups.length === 1 ? "place" : "places"}, closest first`;
     const list = $("list"); list.replaceChildren();
+    drawMap(groups);
     if (!groups.length) {
       const what = state.cat === "trivia" ? "No deals with trivia" : "Nothing";
       list.append(el("div", { class: "empty" }, state.day === "now" ? `${what} listed for right now. Try Today or another day.` : `${what} listed for this day yet.`));
       return;
     }
-    for (const { r, specials, d } of groups) {
+    for (const [i, { r, specials, d }] of groups.entries()) {
       const dest = encodeURIComponent([r.name, r.address].filter(Boolean).join(", "));
       const tel = r.phone ? r.phone.replace(/[^\d+]/g, "") : null;
-      list.append(el("article", { class: "card" },
+      list.append(el("article", { class: "card", id: `r-${r.id}` },
         el("div", { class: "card-head" },
-          el("div", {}, el("h2", {}, r.name), el("div", { class: "hood" }, [r.hood, r.chain ? "chain" : null].filter(Boolean).join(" · "))),
+          el("div", { class: "title-row" }, r.lat != null ? el("span", { class: "num" }, String(i + 1)) : null,
+            el("div", {}, el("h2", {}, r.name), el("div", { class: "hood" }, [r.hood, r.chain ? "chain" : null].filter(Boolean).join(" · ")))),
           d != null ? el("div", { class: "dist" }, d < 0.1 ? "nearby" : `${d.toFixed(1)} mi`) : null),
         specials.map(({ s, trivia }) => {
           const t = when(s), on = isOn(s, now), price = priceLabel(s);
@@ -236,6 +253,53 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
           safeUrl(r.fb) ? el("a", { href: r.fb, target: "_blank", rel: "noopener" }, "Facebook") : null,
           safeUrl(r.ig) ? el("a", { href: r.ig, target: "_blank", rel: "noopener" }, "Instagram") : null)));
     }
+  }
+
+  // Map: a blue dot for the viewer and a numbered pin per listed place (numbers match the cards).
+  let map = null, pins = null;
+  const ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
+  function drawMap(groups) {
+    if (!window.L) { $("map").style.display = "none"; return; }
+    if (!map) {
+      map = L.map("map", { scrollWheelZoom: false, tap: true });
+      // OpenStreetMap's own tiles: free, no key; fine for a personal site's traffic. Dark mode darkens them with CSS.
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: ATTRIBUTION }).addTo(map);
+      pins = L.layerGroup().addTo(map);
+    }
+    pins.clearLayers();
+    const me = [state.where.lat, state.where.lng];
+    L.marker(me, { icon: L.divIcon({ className: "", html: '<div class="me"></div>', iconSize: [16, 16], iconAnchor: [8, 8] }), zIndexOffset: 1000, title: "You" })
+      .addTo(pins).bindPopup(el("div", {}, state.where.label));
+    const nearest = [me];
+    groups.forEach((g, i) => {
+      if (g.r.lat == null || g.r.lng == null) return;
+      const at = [g.r.lat, g.r.lng];
+      const pin = L.marker(at, { icon: L.divIcon({ className: "", html: `<div class="pin">${i + 1}</div>`, iconSize: [28, 28], iconAnchor: [14, 14] }), title: g.r.name });
+      pin.bindPopup(() => popup(g, i)).addTo(pins);
+      if (nearest.length < 11) nearest.push(at);
+    });
+    if (nearest.length > 1) map.fitBounds(L.latLngBounds(nearest).pad(0.15), { maxZoom: 15 });
+    else map.setView(me, 13);
+  }
+  function popup(g, i) {
+    const lines = g.specials.slice(0, 3).map(({ s }) => {
+      const price = priceLabel(s), deal = s.deal || s.item || "Special";
+      return price && !deal.includes(price) ? `${price} · ${deal}` : deal;
+    });
+    const details = el("a", { href: `#r-${g.r.id}` }, "See details");
+    details.addEventListener("click", (e) => {
+      e.preventDefault(); map.closePopup();
+      const card = document.getElementById(`r-${g.r.id}`);
+      card.scrollIntoView({ behavior: "smooth", block: "start" });
+      card.classList.add("flash"); setTimeout(() => card.classList.remove("flash"), 1600);
+    });
+    const dest = encodeURIComponent([g.r.name, g.r.address].filter(Boolean).join(", "));
+    return el("div", {},
+      el("strong", {}, `${i + 1}. ${g.r.name}`),
+      lines.map((t) => el("div", {}, t)),
+      g.specials.length > 3 ? el("div", {}, `+ ${g.specials.length - 3} more`) : null,
+      el("div", { style: "margin-top:6px" }, details, " · ",
+        el("a", { href: `https://www.google.com/maps/dir/?api=1&destination=${dest}`, target: "_blank", rel: "noopener" }, "Directions")));
   }
 
   function chips(container, items, current, onPick) {
@@ -282,7 +346,7 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
       state.data = data;
       const food = data.restaurants.map((r) => r.specials.filter((s) => s.cat === "Food special").length);
       const places = food.filter(Boolean).length, deals = food.reduce((a, b) => a + b, 0);
-      $("foot").textContent = `Specials change. Call ahead before you go. ${deals} deals at ${places} places, updated ${data.updated}.`;
+      $("foot").textContent = `Deals change without notice, so call ahead before you go. Listings come from restaurant websites, restaurants themselves and readers' tips; we're not affiliated with any restaurant listed. ${deals} deals at ${places} places, updated ${data.updated}.`;
       render();
     })
     .catch(() => { $("count").textContent = "Couldn't load the specials. Try again in a minute."; });
