@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<meta name="description" content="Weekly food specials, trivia nights and food trucks near you in Pittsburgh.">
+<meta name="description" content="Weekly food specials near you in Pittsburgh, and which ones come with trivia.">
 <meta name="theme-color" content="#c2410c">
 <title>Weekly Specials · Pittsburgh</title>
 <script>if(location.hostname==='adamjreep.pages.dev')location.replace('https://adamjreep.com'+location.pathname+location.search+location.hash);</script>
@@ -51,6 +51,7 @@ main { padding: 12px 16px 40px; max-width: 720px; margin: 0 auto; }
 .deal { font-weight: 650; }
 .price { margin-left: auto; font-weight: 750; font-size: 1.05rem; color: var(--accent); white-space: nowrap; }
 .says { font-size: 0.92rem; margin-top: 3px; }
+.trivia { display: inline-block; margin-top: 5px; font-size: 0.82rem; font-weight: 700; color: var(--now-ink); background: var(--now-bg); border-radius: 6px; padding: 2px 8px; }
 .kind { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
 .detail { font-size: 0.9rem; color: var(--muted); margin-top: 3px; }
 .badge { display: inline-block; font-size: 0.72rem; font-weight: 600; border-radius: 999px; padding: 2px 8px; margin-top: 6px; }
@@ -73,7 +74,7 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
   <div class="where"><span id="where">Near Millvale</span><button class="linkbtn" id="locate" type="button">Use my location</button></div>
   <div class="row" id="days" aria-label="Day"></div>
   <div class="row" id="cats" aria-label="Type"></div>
-  <label class="toggle"><input type="checkbox" id="leads"> Include specials without a listed price or confirmation</label>
+  <label class="toggle"><input type="checkbox" id="leads"> Include deals without a listed price</label>
 </header>
 <main>
   <p class="count" id="count">Loading…</p>
@@ -84,7 +85,7 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
 (() => {
   const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const MILLVALE = { lat: 40.4801, lng: -79.9784, label: "Near Millvale" };
-  const CATS = [["all", "Everything"], ["Food special", "Food deals"], ["Trivia night", "Trivia"]];
+  const CATS = [["all", "All deals"], ["trivia", "Deals + trivia"]];
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
@@ -133,11 +134,11 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
     }
     return s.days.includes(yesterday) && a != null && b != null && b < a && t < b;
   }
-  const isLead = (s) => s.status === "Needs manual check" || s.conf === "Low";
+  // The data file only contains specials from solid sources (export_specials.py drops unconfirmed leads).
   // A food special counts as a deal only if it states a price or a specific discount.
   const DEAL_WORDS = /\$\s?\d|\d\s?%|\d\s?¢|\bcents?\b|half[- ]?(price|off)|\bbogo\b|buy one|\bfree\b|\boff\b/i;
   const hasPrice = (s) => s.cat !== "Food special" || s.price != null || DEAL_WORDS.test([s.deal, s.text, s.item].filter(Boolean).join(" "));
-  const hiddenByDefault = (s) => isLead(s) || !hasPrice(s);
+  const hiddenByDefault = (s) => !hasPrice(s);
   function priceLabel(s) {
     if (s.price == null || (s.type && s.type !== "Fixed price")) return null;
     const v = Number(s.price);
@@ -149,17 +150,32 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
     const checked = s.checked ? ` · checked ${s.checked}` : "";
     if (s.by === "Restaurant") return el("span", { class: "badge ok" }, "Confirmed by the restaurant" + checked);
     if (!hasPrice(s)) return el("span", { class: "badge warn" }, "Price not listed" + checked);
-    if (isLead(s)) return el("span", { class: "badge warn" }, "Unconfirmed lead" + checked);
     const src = safeUrl(s.src);
     return el("span", { class: "badge info" }, src ? el("a", { href: src, target: "_blank", rel: "noopener" }, "Found online") : "Found online", checked);
   }
 
+  // Only food deals are listed. Trivia isn't listed on its own; it's called out on a deal it overlaps.
   function matches(s, now) {
-    if (state.cat !== "all" && s.cat !== state.cat) return false;
-    if (s.cat === "Food truck") return false;
+    if (s.cat !== "Food special") return false;
     if (!state.leads && hiddenByDefault(s)) return false;
     if (state.day === "now") return isOn(s, now);
     return s.days.includes(state.day);
+  }
+  // Minutes window for a special; open-ended starts run 3 hours. Null when no start time is known.
+  function span(s) {
+    const a = toMin(s.start), b = toMin(s.end);
+    if (a == null) return null;
+    return [a, b == null ? a + 180 : b > a ? b : b + 1440];
+  }
+  // Trivia at the same place, on the day being viewed, overlapping the deal's hours (or either has no hours listed).
+  function triviaFor(r, s, now) {
+    const day = state.day === "now" ? DAYS[now.getDay()] : state.day;
+    const deal = span(s);
+    return r.specials.find((t) => {
+      if (t.cat !== "Trivia night" || !t.days.includes(day)) return false;
+      const quiz = span(t);
+      return !deal || !quiz || (quiz[0] < deal[1] && deal[0] < quiz[1]);
+    }) || null;
   }
 
   function render() {
@@ -167,7 +183,10 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
     const now = new Date();
     const groups = [];
     for (const r of state.data.restaurants) {
-      const specials = r.specials.filter((s) => matches(s, now)).sort((x, y) => (toMin(x.start) ?? -1) - (toMin(y.start) ?? -1));
+      let specials = r.specials.filter((s) => matches(s, now))
+        .sort((x, y) => (toMin(x.start) ?? -1) - (toMin(y.start) ?? -1))
+        .map((s) => ({ s, trivia: triviaFor(r, s, now) }));
+      if (state.cat === "trivia") specials = specials.filter((x) => x.trivia);
       if (!specials.length) continue;
       const d = r.lat != null && r.lng != null ? miles(state.where, r) : null;
       groups.push({ r, specials, d });
@@ -175,10 +194,12 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
     groups.sort((a, b) => (a.d ?? 1e9) - (b.d ?? 1e9));
     const n = groups.reduce((sum, g) => sum + g.specials.length, 0);
     const label = state.day === "now" ? "on right now" : state.day === DAYS[now.getDay()] ? "today" : `on ${state.day}`;
-    $("count").textContent = `${n} ${n === 1 ? "special" : "specials"} ${label} at ${groups.length} ${groups.length === 1 ? "place" : "places"}, closest first`;
+    const withTrivia = state.cat === "trivia" ? " with trivia" : "";
+    $("count").textContent = `${n} ${n === 1 ? "deal" : "deals"}${withTrivia} ${label} at ${groups.length} ${groups.length === 1 ? "place" : "places"}, closest first`;
     const list = $("list"); list.replaceChildren();
     if (!groups.length) {
-      list.append(el("div", { class: "empty" }, state.day === "now" ? "Nothing listed for right now. Try Today or another day." : "Nothing listed for this day yet."));
+      const what = state.cat === "trivia" ? "No deals with trivia" : "Nothing";
+      list.append(el("div", { class: "empty" }, state.day === "now" ? `${what} listed for right now. Try Today or another day.` : `${what} listed for this day yet.`));
       return;
     }
     for (const { r, specials, d } of groups) {
@@ -188,7 +209,7 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
         el("div", { class: "card-head" },
           el("div", {}, el("h2", {}, r.name), el("div", { class: "hood" }, [r.hood, r.chain ? "chain" : null].filter(Boolean).join(" · "))),
           d != null ? el("div", { class: "dist" }, d < 0.1 ? "nearby" : `${d.toFixed(1)} mi`) : null),
-        specials.map((s) => {
+        specials.map(({ s, trivia }) => {
           const t = when(s), on = isOn(s, now), price = priceLabel(s);
           const says = s.text && s.text !== s.deal ? s.text : null;
           const seen = [s.deal, says].filter(Boolean).join(" ").toLowerCase();
@@ -197,8 +218,8 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
             el("div", { class: "special-top" },
               t || on ? el("span", { class: "when" + (on ? " now" : "") }, on ? (t ? `Now · ${t}` : "Today") : t) : null,
               el("span", { class: "deal" }, s.deal || s.item || "Special"),
-              s.cat === "Trivia night" ? el("span", { class: "kind" }, "Trivia") : null,
               price ? el("span", { class: "price" }, price) : null),
+            trivia ? el("div", { class: "trivia" }, `+ Trivia${trivia.start ? ` at ${fmt(trivia.start)}` : " night"}`) : null,
             says ? el("div", { class: "says" }, says) : null,
             details.length ? el("div", { class: "detail" }, details.join(" · ")) : null,
             s.days.length > 1 && s.days.length < 7 ? el("div", { class: "detail" }, s.days.join(", ")) : null,
@@ -255,8 +276,9 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
     .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then((data) => {
       state.data = data;
-      const places = data.restaurants.length, specials = data.restaurants.reduce((n, r) => n + r.specials.length, 0);
-      $("foot").textContent = `Specials change. Call ahead before you go. ${specials} specials at ${places} places, updated ${data.updated}.`;
+      const food = data.restaurants.map((r) => r.specials.filter((s) => s.cat === "Food special").length);
+      const places = food.filter(Boolean).length, deals = food.reduce((a, b) => a + b, 0);
+      $("foot").textContent = `Specials change. Call ahead before you go. ${deals} deals at ${places} places, updated ${data.updated}.`;
       render();
     })
     .catch(() => { $("count").textContent = "Couldn't load the specials. Try again in a minute."; });
