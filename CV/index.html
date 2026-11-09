@@ -396,7 +396,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
     <li>Migrated 1,332 Hirsch cardholders to Genetec with UiPath instead of the vendor's paid tool. Zero errors, no new badges.</li>
     <li>Turned two VA hospitals' paper service tickets (about 120 a month) into a searchable Trello board, using OCR and automation. Duplicate dispatches stopped, and the numbers backed a contract renegotiation.</li>
     <li>Built the tracking sheet for a 900-camera install at VA Pittsburgh, with an ID for every camera and a small AppSheet app the techs used in the field.</li>
-    <li>Wrote an Excel macro that splits large quotes into as few purchase orders as possible under the client's $2,500 card limit. It cut weekly quoting time from about 3 hours to 30 minutes.</li>
+    <li>Built an AI-assisted Excel macro that splits large quotes into as few purchase orders as possible under the client's $2,500 card limit. It cut weekly quoting time from about 3 hours to 30 minutes.</li>
     <li>Built a Forms and Sheets timekeeping system, tested against a month of payroll data, that saved finance about 4 hours a week. Also set up credit card spend categorization with outlier flags.</li>
     <li>Wrote PowerShell tools to switch between DHCP and static IPs and to find cameras by ARP, so techs could set up cameras in parallel instead of one at a time.</li>
     <li>Installed, wired, and repaired access control (Genetec, Acre, RS2, Mercury), CCTV (Avigilon, Hanwha, Pelco), intercoms, and network gear, including months as the main field tech at two VA hospital campuses.</li>
@@ -500,14 +500,14 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 <div class="project">
   <div class="title" role="heading" aria-level="3">John Henry Custom Guitars Website</div>
   <div class="meta">2026 · freelance build for a local guitar maker · <a href="https://johnhenrycustomguitars.com/" target="_blank" rel="noopener">live site</a></div>
-  <p>Built and launched a 25-page site on GitHub and Cloudflare, with no hosting cost. Added a user-friendly content editor, modeled on the phone apps he already uses, so the owner can update his own site without paying a web admin. Had Claude write a Python script that sorted years of scattered build photos into a dated portfolio, then checked every result by hand.</p>
+  <p>Built and launched a 25-page site on GitHub and Cloudflare, with no hosting cost. Added a user-friendly content editor, modeled on the phone apps he already uses, so the owner can update his own site without paying a web admin. Used an LLM-built Python script to sort years of scattered build photos into a dated portfolio, then checked every result by hand.</p>
 </div>
 
 <div class="project">
   <div class="title" role="heading" aria-level="3">OCR + LLM Document Pipeline (proof of concept)</div>
   <div class="meta">proof of concept · <a href="/OCR_LLM_Demo/">live demo</a></div>
   <p>A ten-module tool for the paperwork small shops drown in: order and artwork intake, vendor invoices, receipts and expense sorting, spec sheets, handwritten production notes, customer requests, a customer library with order history, and reporting.</p>
-  <p>Stack: Google Cloud Vision for OCR, Claude for structured JSON extraction, Streamlit, python-docx, reportlab, and JSON storage.</p>
+  <p>Stack: Google Cloud Vision for OCR, an LLM for structured JSON extraction, Streamlit, python-docx, reportlab, and JSON storage.</p>
 </div>
 
 <div class="section-cmd" role="heading" aria-level="2">$ education</div>

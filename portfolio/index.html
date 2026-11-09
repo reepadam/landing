@@ -389,7 +389,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
   <div class="meta">Miller Information Systems · 2023–2026 · Google Forms, Sheets, OCR, Zapier, Trello</div>
   <p><span class="lbl">Problem:</span> Two VA hospitals sent paper service tickets, about 120 a month, with no searchable record. Techs were sometimes dispatched to the same issue twice.</p>
   <p><span class="lbl">Built:</span> Techs photographed each ticket. OCR turned the image into text, spreadsheet formulas pulled out the fields, duplicates were dropped by ticket number, and each ticket landed on a Trello board.</p>
-  <p><span class="lbl">Result:</span> Duplicate dispatches stopped, and the workload numbers were used in contract renegotiation. This was my first AI-built tool, put together entirely through chat with ChatGPT before AI coding tools existed.</p>
+  <p><span class="lbl">Result:</span> Duplicate dispatches stopped, and the workload numbers were used in contract renegotiation. This was my first AI-built tool, put together entirely through chat with an AI assistant, before AI coding tools existed.</p>
 </div>
 
 <div class="project">
@@ -402,7 +402,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 
 <div class="project">
   <div class="title" role="heading" aria-level="3">Quote-to-Purchase-Order Splitter</div>
-  <div class="meta">Miller Information Systems · Excel VBA, written with ChatGPT</div>
+  <div class="meta">Miller Information Systems · Excel VBA, AI-assisted</div>
   <p><span class="lbl">Problem:</span> Large quotes had to be broken into purchase orders under a client's $2,500 card limit, by hand, every week.</p>
   <p><span class="lbl">Built:</span> An Excel macro that splits a quote into as few purchase orders as possible under the limit.</p>
   <p><span class="lbl">Result:</span> Weekly quoting time went from about 3 hours to 30 minutes.</p>
@@ -420,34 +420,34 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 
 <div class="project">
   <div class="title" role="heading" aria-level="3">FrameSeam (video cutter)</div>
-  <div class="meta">2026 · Electron, ffmpeg, Claude Code · <a class="inline-link" href="https://github.com/reepadam/frameseam" target="_blank" rel="noopener">GitHub</a></div>
+  <div class="meta">2026 · Electron, ffmpeg, AI coding assistant · <a class="inline-link" href="https://github.com/reepadam/frameseam" target="_blank" rel="noopener">GitHub</a></div>
   <p><span class="lbl">Problem:</span> I cut long recordings down regularly. Clipchamp's layout was right for the job, but its exports top out at 30 fps, it kept pushing projects into OneDrive, and its cache had quietly taken 35 GB of my drive.</p>
   <p><span class="lbl">Built:</span> A Clipchamp-style cutter built around one rule: the export is the original video, 1:1, with only the deleted parts removed. Resolution, frame rate (60 and 120 fps included), orientation and HDR color carry through untouched. Cuts land on the exact frame, clips can be joined, and encoding runs on the GPU (NVIDIA, Intel or AMD, detected automatically) with a picker for PCs that have more than one card. A lossless mode skips re-encoding entirely. Everything runs locally.</p>
-  <p><span class="lbl">Result:</span> The idea, the interface brief and the testing are mine; Claude wrote the code to that brief. It's open source on GitHub.</p>
+  <p><span class="lbl">Result:</span> The idea, the interface brief and the testing are mine; an AI coding assistant wrote the code to that brief. It's open source on GitHub.</p>
 </div>
 
 <div class="project">
   <div class="title" role="heading" aria-level="3">OCR + LLM Document Pipeline (proof of concept)</div>
-  <div class="meta">Google Cloud Vision, Claude, Streamlit · <a class="inline-link" href="/OCR_LLM_Demo/">live demo</a></div>
+  <div class="meta">Google Cloud Vision, LLM extraction, Streamlit · <a class="inline-link" href="/OCR_LLM_Demo/">live demo</a></div>
   <p>A ten-module tool for the paperwork small shops drown in: order and artwork intake, vendor invoices, receipts and expense sorting, spec sheets, handwritten production notes, customer requests, a customer library with order history, and reporting.</p>
 </div>
 
 <div class="project">
   <div class="title" role="heading" aria-level="3">Pittsburgh Food Specials (live proof of concept)</div>
-  <div class="meta">2026 · Claude agents, Airtable, Gmail drafts, Cloudflare · <a class="inline-link" href="/specials/">live site</a></div>
+  <div class="meta">2026 · AI agents, Airtable, Gmail drafts, Cloudflare · <a class="inline-link" href="/specials/">live site</a></div>
   <p>A working app for finding weekly recurring restaurant deals around Pittsburgh, open on deals happening right now near you, closest first. Behind it, a research agent runs every morning: it investigates restaurants ZIP code by ZIP code, records each deal with its source and a confidence level, and drafts friendly emails to restaurants it can't confirm online. I send every email myself. Visitors can send in a screenshot of a chalkboard or menu, and the next run checks it. The site republishes itself from Airtable daily. More than 200 restaurants and about 100 deals so far.</p>
 </div>
 
 <div class="project">
   <div class="title" role="heading" aria-level="3">Daily PC Health System</div>
-  <div class="meta">2026 · PowerShell, scheduled tasks, Claude</div>
+  <div class="meta">2026 · PowerShell, scheduled tasks, AI agent</div>
   <p>My main PC kept shutting off while I was away. The logs pointed to the power button, almost certainly pressed by my cat. I disabled the button, and the fix grew into a daily health system. A monitor logs temperatures, fans and load every 30 seconds and runs a custom fan curve on the main graphics card. Every morning an agent reviews crashes, hardware errors, disk health, updates and remote access, fixes what it can from a fixed list of safe actions, and shows me a green, yellow or red summary on login. Anything that needs a decision stays with me, with a recommendation attached.</p>
 </div>
 
 <div class="project">
   <div class="title" role="heading" aria-level="3">John Henry Custom Guitars Website</div>
-  <div class="meta">2026 · freelance build for a local guitar maker · GitHub, Cloudflare, Python, Claude · <a class="inline-link" href="https://johnhenrycustomguitars.com/" target="_blank" rel="noopener">live site</a></div>
-  <p>Built and launched a 25-page site with no hosting cost. John isn't an IT person; he's comfortable on his phone in social media apps. So I gave him a content editor that works like those apps, letting him update his own site without paying a web admin. I also had Claude write a Python script that sorted years of scattered build photos into a dated portfolio, and I checked every result by hand.</p>
+  <div class="meta">2026 · freelance build for a local guitar maker · GitHub, Cloudflare, Python · <a class="inline-link" href="https://johnhenrycustomguitars.com/" target="_blank" rel="noopener">live site</a></div>
+  <p>Built and launched a 25-page site with no hosting cost. John isn't an IT person; he's comfortable on his phone in social media apps. So I gave him a content editor that works like those apps, letting him update his own site without paying a web admin. I also used an LLM-built Python script to sort years of scattered build photos into a dated portfolio, and I checked every result by hand.</p>
 </div>
 
 
