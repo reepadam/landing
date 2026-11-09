@@ -287,6 +287,8 @@ h1 {
   border-bottom: 1px dotted var(--accent);
 }
 .project a.inline-link:hover { color: var(--prompt); border-color: var(--prompt); }
+.project a, .project .meta a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
+.project a:hover { color: var(--prompt); border-color: var(--prompt); }
 .section-cmd a { color: var(--accent); text-decoration: none; border-bottom: 1px dotted var(--accent); }
 
 .edu, .certs {
@@ -372,6 +374,8 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
   <a href="mailto:adamjreep@gmail.com">adamjreep@gmail.com</a>
   <a href="tel:4124995325">412-499-5325</a>
   <a href="https://linkedin.com/in/adamjreep" target="_blank" rel="noopener">linkedin.com/in/adamjreep</a>
+  <a href="/portfolio/">portfolio</a>
+  <a href="/CV/Adam-Reep-Resume.pdf" download>download PDF</a>
   <span>Pittsburgh, PA</span>
 </div>
 
@@ -382,11 +386,11 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
   <div class="stat"><span class="num">1,332</span><span class="label">CARDHOLDERS MIGRATED, ZERO ERRORS</span></div>
 </div>
 
-<div class="section-cmd">$ experience --list --verbose</div>
+<div class="section-cmd" role="heading" aria-level="2">$ experience --list --verbose</div>
 
 <div class="role">
   <div class="num">01.</div>
-  <div class="title">Field Systems Analyst</div>
+  <div class="title" role="heading" aria-level="3">Field Systems Analyst</div>
   <div class="company-line"><span>Miller Information Systems · Allison Park, PA</span><span class="pipe">|</span><span class="dates">2022.01–2026.04</span></div>
   <ul>
     <li>Moved 1,332 cardholder records from a Hirsch access system to Genetec with a UiPath automation and zero errors. No one needed a new badge and there were no support calls afterward.</li>
@@ -401,7 +405,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 
 <div class="role">
   <div class="num">02.</div>
-  <div class="title">Founder</div>
+  <div class="title" role="heading" aria-level="3">Founder</div>
   <div class="company-line"><span>Adam Makes Stuff · Pittsburgh, PA</span><span class="pipe">|</span><span class="dates">2021.02–Present</span></div>
   <ul>
     <li>Small woodworking and CNC shop: design, CAM toolpaths, milling, finishing, delivery, and bookkeeping.</li>
@@ -410,7 +414,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 
 <div class="role">
   <div class="num">03.</div>
-  <div class="title">Operations and Telecom Analyst</div>
+  <div class="title" role="heading" aria-level="3">Operations and Telecom Analyst</div>
   <div class="company-line"><span>Adhawk Solutions (consultant to Mercy Behavioral Health) · Pittsburgh, PA</span><span class="pipe">|</span><span class="dates">2019.01–2021.01</span></div>
   <ul>
     <li>Audited telecom bills line by line across 80+ sites and found billing errors, unused services, and lines that could be combined. The results fed a study on moving to IP phones.</li>
@@ -423,7 +427,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 
 <div class="role">
   <div class="num">04.</div>
-  <div class="title">Property and Facilities Coordinator</div>
+  <div class="title" role="heading" aria-level="3">Property and Facilities Coordinator</div>
   <div class="company-line"><span>Penn Forest Natural Burial Park · Verona, PA</span><span class="pipe">|</span><span class="dates">2018.08–2019.01</span></div>
   <ul>
     <li>Five-month role after EDMC's national restructuring: grounds and light construction work, burial-service logistics, and land restoration.</li>
@@ -432,7 +436,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 
 <div class="role">
   <div class="num">05.</div>
-  <div class="title">Telecom Analyst IV</div>
+  <div class="title" role="heading" aria-level="3">Telecom Analyst IV</div>
   <div class="company-line"><span>Education Management Corporation · Remote (California)</span><span class="pipe">|</span><span class="dates">2015.01–2018.08</span></div>
   <ul>
     <li>Kept running the telecom cost recovery program across 129 campuses, which reached more than $2.5M in yearly savings, mostly by cancelling unused circuits, PRIs, and phone numbers.</li>
@@ -443,7 +447,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 
 <div class="role">
   <div class="num">06.</div>
-  <div class="title">Network Provisioning Supervisor</div>
+  <div class="title" role="heading" aria-level="3">Network Provisioning Supervisor</div>
   <div class="company-line"><span>Education Management Corporation · Pittsburgh, Los Angeles, Denver</span><span class="pipe">|</span><span class="dates">2012.03–2015.01</span></div>
   <ul>
     <li>Ran the project that moved 84 campuses from older TDM phone systems onto a central Avaya and Siemens VoIP system, with budgets over $1M per site. Trained campus staff and supported each site for two weeks after go-live.</li>
@@ -454,7 +458,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 
 <div class="role">
   <div class="num">07.</div>
-  <div class="title">Senior Telecom Analyst</div>
+  <div class="title" role="heading" aria-level="3">Senior Telecom Analyst</div>
   <div class="company-line"><span>Education Management Corporation · Pittsburgh, PA</span><span class="pipe">|</span><span class="dates">2011.10–2012.03</span></div>
   <ul>
     <li>Coordinated the switch to redundant AT&amp;T and CenturyLink circuits at 129 campuses: 258 circuit orders, building work where the carriers had no lines in place, and cutovers with no campus downtime. It contributed to about $1.5M in lower network costs and led to the supervisor promotion.</li>
@@ -464,7 +468,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 
 <div class="role">
   <div class="num">08.</div>
-  <div class="title">Telecom Analyst</div>
+  <div class="title" role="heading" aria-level="3">Telecom Analyst</div>
   <div class="company-line"><span>Education Management Corporation · Pittsburgh, PA</span><span class="pipe">|</span><span class="dates">2009.03–2011.10</span></div>
   <ul>
     <li>Installed and configured Siemens and Avaya phone systems at 120+ campuses, handling equipment orders and vendor scheduling.</li>
@@ -474,7 +478,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 
 <div class="role">
   <div class="num">09.</div>
-  <div class="title">IT Asset Refresh Lead (contract)</div>
+  <div class="title" role="heading" aria-level="3">IT Asset Refresh Lead (contract)</div>
   <div class="company-line"><span>BNY Mellon, via Robert J. DePaul Consulting · Pittsburgh, Los Angeles, Boston</span><span class="pipe">|</span><span class="dates">2008.04–2009.03</span></div>
   <ul>
     <li>Worked with BNY Mellon IT project managers on PC refreshes: identified end-of-life hardware, staged replacement PCs with user data and custom software, and ran deployments with about 25% travel.</li>
@@ -483,7 +487,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 
 <div class="role">
   <div class="num">10.</div>
-  <div class="title">Desktop Support Analyst, then Telecom and Desktop Support Analyst</div>
+  <div class="title" role="heading" aria-level="3">Desktop Support Analyst, then Telecom and Desktop Support Analyst</div>
   <div class="company-line"><span>The Art Institutes (Education Management Corp.) · Pittsburgh, PA</span><span class="pipe">|</span><span class="dates">2003.10–2007.08</span></div>
   <ul>
     <li>Supported about 1,200 users, including design workstations running Adobe Creative Suite, PCs, phones, accounts, and password resets.</li>
@@ -491,36 +495,36 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
   </ul>
 </div>
 
-<div class="section-cmd">$ projects --personal --digital · <a class="inline-link" href="/portfolio/">full portfolio</a></div>
+<div class="section-cmd" role="heading" aria-level="2">$ projects --personal --digital · <a class="inline-link" href="/portfolio/">full portfolio</a></div>
 
 <div class="project">
-  <div class="title">John Henry Custom Guitars Website</div>
-  <div class="meta">2026 · freelance build for a local guitar maker</div>
+  <div class="title" role="heading" aria-level="3">John Henry Custom Guitars Website</div>
+  <div class="meta">2026 · freelance build for a local guitar maker · <a href="https://johnhenrycustomguitars.com/" target="_blank" rel="noopener">live site</a></div>
   <p>Built and launched a 25-page site on GitHub and Cloudflare, with no hosting cost. Added a simple content editor so the owner can update his own site without paying a web admin, and used Claude to sort years of scattered build photos into a dated portfolio, checking every result by hand.</p>
 </div>
 
 <div class="project">
-  <div class="title">OCR + LLM Document Pipeline (proof of concept)</div>
+  <div class="title" role="heading" aria-level="3">OCR + LLM Document Pipeline (proof of concept)</div>
   <div class="meta">proof of concept · <a href="/OCR_LLM_Demo/">live demo</a></div>
   <p>A ten-module tool for the paperwork small shops drown in: order and artwork intake, vendor invoices, receipts and expense sorting, spec sheets, handwritten production notes, customer requests, a customer library with order history, and reporting.</p>
   <p>Stack: Google Cloud Vision for OCR, Claude for structured JSON extraction, Streamlit, python-docx, reportlab, and JSON storage.</p>
 </div>
 
-<div class="section-cmd">$ education</div>
+<div class="section-cmd" role="heading" aria-level="2">$ education</div>
 
 <div class="edu">
   <div class="degree">Business Management Coursework</div>
   <div class="school">Community College of Allegheny County · 2001–2004</div>
 </div>
 
-<div class="section-cmd">$ certifications</div>
+<div class="section-cmd" role="heading" aria-level="2">$ certifications</div>
 
 <div class="certs">
   <div class="label">Certifications:</div>
   <div class="items">OSHA 10</div>
 </div>
 
-<div class="section-cmd">$ skills --list</div>
+<div class="section-cmd" role="heading" aria-level="2">$ skills --list</div>
 
 <div class="skills-block">
   <span class="label">Spreadsheets and low-code:</span>

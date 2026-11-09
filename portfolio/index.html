@@ -375,17 +375,17 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
   <span>Pittsburgh, PA</span>
 </div>
 
-<div class="section-cmd">$ cat how-i-build.txt</div>
+<div class="section-cmd" role="heading" aria-level="2">$ cat how-i-build.txt</div>
 
 <div class="project">
   <p>I'm a systems person who builds working tools by directing AI coding assistants. I define the problem, describe what the tool must do, test the results against real data, and fix it until it's right. I can explain what each tool does and why, but I don't write code by hand. Twenty years in desktop support, telecom, networking, and security systems taught me what systems can do and how they fit together; AI gave me the way to build the fixes I could always see.</p>
   <p>I can't do the same task more than a few times before I start looking for a way to automate it. Modern tools can take most rote work off a person's plate, so I build those fixes wherever I land. Naturally, my own job search runs on a daily AI agent, a lead board, and resumes generated from one shared library.</p>
 </div>
 
-<div class="section-cmd">$ ls projects/ --work</div>
+<div class="section-cmd" role="heading" aria-level="2">$ ls projects/ --work</div>
 
 <div class="project">
-  <div class="title">VA Service Ticket Tracker</div>
+  <div class="title" role="heading" aria-level="3">VA Service Ticket Tracker</div>
   <div class="meta">Miller Information Systems · 2023–2026 · Google Forms, Sheets, OCR, Zapier, Trello</div>
   <p><span class="lbl">Problem:</span> Two VA hospitals sent paper service tickets, about 120 a month, with no searchable record. Techs were sometimes dispatched to the same issue twice.</p>
   <p><span class="lbl">Built:</span> Techs photographed each ticket. OCR turned the image into text, spreadsheet formulas pulled out the fields, duplicates were dropped by ticket number, and each ticket landed on a Trello board.</p>
@@ -393,7 +393,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 </div>
 
 <div class="project">
-  <div class="title">Hirsch to Genetec Cardholder Migration</div>
+  <div class="title" role="heading" aria-level="3">Hirsch to Genetec Cardholder Migration</div>
   <div class="meta">Miller Information Systems · SQL export, Excel, UiPath, Genetec Security Center</div>
   <p><span class="lbl">Problem:</span> A client moving access control systems had 1,332 cardholders. Reissuing badges or retyping records by hand wasn't an option.</p>
   <p><span class="lbl">Built:</span> Pulled the credential data out of the old system's SQL database, cleaned and mapped it in Excel, and loaded it into Genetec with a UiPath automation, testing on 20 records, then 100, then all.</p>
@@ -401,7 +401,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 </div>
 
 <div class="project">
-  <div class="title">Quote-to-Purchase-Order Splitter</div>
+  <div class="title" role="heading" aria-level="3">Quote-to-Purchase-Order Splitter</div>
   <div class="meta">Miller Information Systems · Excel VBA, written with ChatGPT</div>
   <p><span class="lbl">Problem:</span> Large quotes had to be broken into purchase orders under a client's $2,500 card limit, by hand, every week.</p>
   <p><span class="lbl">Built:</span> An Excel macro that splits a quote into as few purchase orders as possible under the limit.</p>
@@ -409,35 +409,35 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 </div>
 
 <div class="project">
-  <div class="title">Telecom Cost Recovery Program</div>
+  <div class="title" role="heading" aria-level="3">Telecom Cost Recovery Program</div>
   <div class="meta">Education Management Corporation · 2011–2016 · Excel, carrier portals, call reports, SharePoint</div>
   <p><span class="lbl">Problem:</span> As campuses opened and moved, bills kept arriving for phone lines and circuits nobody could explain. Services had been ordered for years with no central record.</p>
   <p><span class="lbl">Built:</span> A process for tracing every billed line, across PDFs, portals, and CSVs in a different format from every vendor, to the number or circuit behind it and where it actually rang. Doubtful lines moved to a central SIP circuit instead of being disconnected, so nothing in use was cut off. A per-campus inventory on SharePoint kept every service documented.</p>
   <p><span class="lbl">Result:</span> More than $2.5M in yearly savings, and I was named the company's sole authorized ordering agent with its telecom and data carriers.</p>
 </div>
 
-<div class="section-cmd">$ ls projects/ --personal</div>
+<div class="section-cmd" role="heading" aria-level="2">$ ls projects/ --personal</div>
 
 <div class="project">
-  <div class="title">OCR + LLM Document Pipeline (proof of concept)</div>
+  <div class="title" role="heading" aria-level="3">OCR + LLM Document Pipeline (proof of concept)</div>
   <div class="meta">Google Cloud Vision, Claude, Streamlit · <a class="inline-link" href="/OCR_LLM_Demo/">live demo</a></div>
   <p>A ten-module tool for the paperwork small shops drown in: order and artwork intake, vendor invoices, receipts and expense sorting, spec sheets, handwritten production notes, customer requests, a customer library with order history, and reporting.</p>
 </div>
 
 <div class="project">
-  <div class="title">Pittsburgh Food Specials (live proof of concept)</div>
+  <div class="title" role="heading" aria-level="3">Pittsburgh Food Specials (live proof of concept)</div>
   <div class="meta">2026 · Claude agents, Airtable, Gmail drafts, Cloudflare · <a class="inline-link" href="/specials/">live site</a></div>
   <p>A working app for finding weekly recurring restaurant deals around Pittsburgh, open on deals happening right now near you, closest first. Behind it, a research agent runs every morning: it investigates restaurants ZIP code by ZIP code, records each deal with its source and a confidence level, and drafts friendly emails to restaurants it can't confirm online. I send every email myself. Visitors can send in a screenshot of a chalkboard or menu, and the next run checks it. The site republishes itself from Airtable daily. More than 200 restaurants and about 100 deals so far.</p>
 </div>
 
 <div class="project">
-  <div class="title">Daily PC Health System</div>
+  <div class="title" role="heading" aria-level="3">Daily PC Health System</div>
   <div class="meta">2026 · PowerShell, scheduled tasks, Claude</div>
   <p>My main PC kept shutting off while I was away. The logs pointed to the power button, almost certainly pressed by my cat. I disabled the button, and the fix grew into a daily health system. A monitor logs temperatures, fans and load every 30 seconds and runs a custom fan curve on the main graphics card. Every morning an agent reviews crashes, hardware errors, disk health, updates and remote access, fixes what it can from a fixed list of safe actions, and shows me a green, yellow or red summary on login. Anything that needs a decision stays with me, with a recommendation attached.</p>
 </div>
 
 <div class="project">
-  <div class="title">John Henry Custom Guitars Website</div>
+  <div class="title" role="heading" aria-level="3">John Henry Custom Guitars Website</div>
   <div class="meta">2026 · freelance build for a local guitar maker · GitHub, Cloudflare, Claude · <a class="inline-link" href="https://johnhenrycustomguitars.com/" target="_blank" rel="noopener">live site</a></div>
   <p>Built and launched a 25-page site with no hosting cost. John isn't an IT person; he's comfortable on his phone in social media apps. So I gave him a content editor that works like those apps, letting him update his own site without paying a web admin. I also used Claude to sort years of scattered build photos into a dated portfolio, checking every result by hand.</p>
 </div>

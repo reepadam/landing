@@ -1,0 +1,46 @@
+name: Keep OCR demo awake
+
+# Streamlit Community Cloud puts apps to sleep after 12 hours without traffic.
+# This opens the demo in a real browser three times a day and clicks the
+# wake-up button if it's asleep, so recruiters never hit the sleep screen.
+on:
+  schedule:
+    - cron: "17 3,11,19 * * *"   # every 8 hours (UTC)
+  workflow_dispatch:
+
+jobs:
+  wake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Playwright
+        run: |
+          pip install playwright==1.47.0
+          python -m playwright install --with-deps chromium
+      - name: Visit the demo and wake it if needed
+        run: |
+          cat > wake.py <<'PY'
+          import re, sys
+          from playwright.sync_api import sync_playwright
+          URL = "https://document-pipeline-demo.streamlit.app/"
+          with sync_playwright() as p:
+              b = p.chromium.launch()
+              pg = b.new_page()
+              pg.goto(URL, wait_until="domcontentloaded", timeout=90000)
+              pg.wait_for_timeout(15000)
+              btn = pg.get_by_role("button", name=re.compile("get this app back up", re.I))
+              if btn.count() > 0:
+                  print("App was asleep - clicking wake button")
+                  btn.first.click()
+                  pg.wait_for_timeout(90000)
+              else:
+                  print("App was awake")
+              still_asleep = pg.get_by_role("button", name=re.compile("get this app back up", re.I)).count() > 0
+              b.close()
+              if still_asleep:
+                  print("App still asleep after wake attempt"); sys.exit(1)
+          PY
+          python wake.py
