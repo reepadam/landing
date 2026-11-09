@@ -419,6 +419,14 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 <div class="section-cmd" role="heading" aria-level="2">$ ls projects/ --personal</div>
 
 <div class="project">
+  <div class="title" role="heading" aria-level="3">FrameSeam (video cutter)</div>
+  <div class="meta">2026 · Electron, ffmpeg, Claude Code · <a class="inline-link" href="https://github.com/reepadam/frameseam" target="_blank" rel="noopener">GitHub</a></div>
+  <p><span class="lbl">Problem:</span> I cut long recordings down regularly. Clipchamp's layout was right for the job, but its exports top out at 30 fps, it kept pushing projects into OneDrive, and its cache had quietly taken 35 GB of my drive.</p>
+  <p><span class="lbl">Built:</span> A Clipchamp-style cutter built around one rule: the export is the original video, 1:1, with only the deleted parts removed. Resolution, frame rate (60 and 120 fps included), orientation and HDR color carry through untouched. Cuts land on the exact frame, clips can be joined, and encoding runs on the GPU (NVIDIA, Intel or AMD, detected automatically) with a picker for PCs that have more than one card. A lossless mode skips re-encoding entirely. Everything runs locally.</p>
+  <p><span class="lbl">Result:</span> The idea, the interface brief and the testing are mine; Claude wrote the code to that brief. It's open source on GitHub.</p>
+</div>
+
+<div class="project">
   <div class="title" role="heading" aria-level="3">OCR + LLM Document Pipeline (proof of concept)</div>
   <div class="meta">Google Cloud Vision, Claude, Streamlit · <a class="inline-link" href="/OCR_LLM_Demo/">live demo</a></div>
   <p>A ten-module tool for the paperwork small shops drown in: order and artwork intake, vendor invoices, receipts and expense sorting, spec sheets, handwritten production notes, customer requests, a customer library with order history, and reporting.</p>
@@ -444,7 +452,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 
 
 <footer>
-  adam@reep:~$ exit · last updated 2026.11.08 · <a href="/CV">resume</a>
+  adam@reep:~$ exit · last updated 2026.11.09 · <a href="/CV">resume</a>
 </footer>
 
 
