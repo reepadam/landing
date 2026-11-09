@@ -15,3 +15,8 @@
 
 /*.md
   Content-Type: text/markdown; charset=utf-8
+
+/*.pdf
+  ! Content-Type
+  Content-Type: application/pdf
+  Content-Disposition: attachment; filename="Adam-Reep-Resume.pdf"
