@@ -3,6 +3,6 @@
 /crawl.html  /              301
 
 # Common alternate casing for the demo route
-/ocr_llm_demo  /OCR_LLM_Demo  301
-/demo          /OCR_LLM_Demo  301
+/ocr_llm_demo  https://document-pipeline-demo.streamlit.app/  301
+/demo          https://document-pipeline-demo.streamlit.app/  301
 /cv            /CV            301
