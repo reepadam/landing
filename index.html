@@ -14,13 +14,13 @@
 html, body { height: 100%; background: #000; color: #feda4a; font-family: 'Helvetica Neue', Arial, sans-serif; overflow: hidden; }
 body.fading { opacity: 0; transition: opacity 2.5s ease; }
 #start { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; flex-direction: column; background: #000; transition: opacity 1s ease; padding: 1.5rem; }
-#start.hidden { opacity: 0; pointer-events: none; }
+#start.hidden { opacity: 0; pointer-events: none; visibility: hidden; transition: opacity 1s ease, visibility 0s linear 1s; }
 #start .name { color: #feda4a; font-family: 'Star Jedi SE', 'Helvetica Neue', Arial, sans-serif; font-size: clamp(2rem, 6vw, 4.5rem); letter-spacing: 0.04em; text-align: center; font-weight: 400; margin-bottom: 0.6rem; white-space: nowrap; }
 #start .ep { color: #888; font-size: clamp(0.8rem, 1.5vw, 1rem); letter-spacing: 0.4em; margin-bottom: 2.5rem; }
 #start button { background: transparent; border: 2px solid #feda4a; color: #feda4a; padding: 1rem 2.5rem; font-size: 0.9rem; letter-spacing: 0.25em; cursor: pointer; font-family: inherit; transition: all 0.2s; font-weight: 700; }
 #start button:hover { background: #feda4a; color: #000; }
-#start .hint { color: #555; font-size: 0.7rem; margin-top: 2.5rem; letter-spacing: 0.1em; text-align: center; max-width: 30rem; line-height: 1.6; }
-#start .resume-link { margin-top: 1.5rem; color: #888; font-size: 0.7rem; letter-spacing: 0.18em; text-decoration: none; border-bottom: 1px dotted #444; padding-bottom: 2px; transition: color 0.2s, border-color 0.2s; }
+#start .hint { color: #9a9a9a; font-size: 0.7rem; margin-top: 2.5rem; letter-spacing: 0.1em; text-align: center; max-width: 30rem; line-height: 1.6; }
+#start .resume-link { margin-top: 1.5rem; color: #b0b0b0; font-size: 0.7rem; letter-spacing: 0.18em; text-decoration: none; border-bottom: 1px dotted #777; padding-bottom: 2px; transition: color 0.2s, border-color 0.2s; }
 #start .resume-link:hover { color: #feda4a; border-color: #feda4a; }
 #stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
 .star { position: absolute; background: #fff; border-radius: 50%; animation: twinkle 3s infinite ease-in-out; }

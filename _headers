@@ -20,3 +20,11 @@
   ! Content-Type
   Content-Type: application/pdf
   Content-Disposition: attachment; filename="Adam-Reep-Resume.pdf"
+
+/*.jpg
+  ! Content-Type
+  Content-Type: image/jpeg
+
+/*.png
+  ! Content-Type
+  Content-Type: image/png

@@ -352,6 +352,11 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 @keyframes blink {
   50% { opacity: 0; }
 }
+.project .shot { float: right; margin: 0 0 0.6rem 1rem; }
+.project .shot img { width: 240px; max-width: 40vw; height: auto; border: 1px solid var(--hr); border-radius: 4px; display: block; }
+.project .shot:hover img { border-color: var(--accent); }
+.project::after { content: ""; display: block; clear: both; }
+@media (max-width: 600px) { .project .shot { float: none; margin: 0 0 0.6rem 0; } .project .shot img { width: 100%; max-width: 100%; } }
 .project .lbl { color: var(--prompt); font-weight: 700; }
 </style>
 </head>
@@ -375,11 +380,8 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
   <span>Pittsburgh, PA</span>
 </div>
 
-<div class="section-cmd" role="heading" aria-level="2">$ cat how-i-build.txt</div>
-
 <div class="project">
-  <p>I'm a systems person who builds working tools by directing AI coding assistants. I define the problem, describe what the tool must do, test the results against real data, and fix it until it's right. I can explain what each tool does and why, but I don't write code by hand. Twenty years in desktop support, telecom, networking, and security systems taught me what systems can do and how they fit together; AI gave me the way to build the fixes I could always see.</p>
-  <p>I can't do the same task more than a few times before I start looking for a way to automate it. Modern tools can take most rote work off a person's plate, so I build those fixes wherever I land. Naturally, my own job search runs on a daily AI agent that turns it into a low-friction loop: it surfaces high-value leads, filters out the noise, and finds the fastest way to apply.</p>
+  <p>Every project below started with a problem I spotted. I designed the fix, steered the build, and checked the results against real data. How I build is at the bottom.</p>
 </div>
 
 <div class="section-cmd" role="heading" aria-level="2">$ ls projects/ --work</div>
@@ -389,7 +391,7 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
   <div class="meta">Miller Information Systems · 2023–2026 · Google Forms, Sheets, OCR, Zapier, Trello</div>
   <p><span class="lbl">Problem:</span> Two VA hospitals sent paper service tickets, about 120 a month, with no searchable record. Techs were sometimes dispatched to the same issue twice.</p>
   <p><span class="lbl">Built:</span> Techs photographed each ticket. OCR turned the image into text, spreadsheet formulas pulled out the fields, duplicates were dropped by ticket number, and each ticket landed on a Trello board.</p>
-  <p><span class="lbl">Result:</span> Duplicate dispatches stopped, and the workload numbers were used in contract renegotiation. This was my first AI-built tool, put together entirely through chat with an AI assistant, before AI coding tools existed.</p>
+  <p><span class="lbl">Result:</span> Duplicate dispatches stopped, and the workload numbers backed a contract renegotiation. My first AI-built tool, put together entirely through chat with an AI assistant, before AI coding tools existed.</p>
 </div>
 
 <div class="project">
@@ -401,14 +403,6 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
 </div>
 
 <div class="project">
-  <div class="title" role="heading" aria-level="3">Quote-to-Purchase-Order Splitter</div>
-  <div class="meta">Miller Information Systems · Excel VBA, AI-assisted</div>
-  <p><span class="lbl">Problem:</span> Large quotes had to be broken into purchase orders under a client's $2,500 card limit, by hand, every week.</p>
-  <p><span class="lbl">Built:</span> An Excel macro that splits a quote into as few purchase orders as possible under the limit.</p>
-  <p><span class="lbl">Result:</span> Weekly quoting time went from about 3 hours to 30 minutes.</p>
-</div>
-
-<div class="project">
   <div class="title" role="heading" aria-level="3">Telecom Cost Recovery Program</div>
   <div class="meta">Education Management Corporation · 2011–2016 · Excel, carrier portals, call reports, SharePoint</div>
   <p><span class="lbl">Problem:</span> As campuses opened and moved, bills kept arriving for phone lines and circuits nobody could explain. Services had been ordered for years with no central record.</p>
@@ -416,26 +410,35 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
   <p><span class="lbl">Result:</span> More than $2.5M in yearly savings, and I was named the company's sole authorized ordering agent with its telecom and data carriers.</p>
 </div>
 
+<div class="project">
+  <div class="title" role="heading" aria-level="3">John Henry Custom Guitars Website</div>
+  <div class="meta">Freelance client · 2026 · GitHub, Cloudflare, Python · <a class="inline-link" href="https://johnhenrycustomguitars.com/" target="_blank" rel="noopener">live site</a></div>
+  <p>Built and launched a 25-page site for a local guitar maker with no hosting cost. John isn't an IT person; he's comfortable on his phone in social media apps. So I gave him a content editor that works like those apps, letting him update his own site without paying a web admin. I also used an LLM-built Python script to sort years of scattered build photos into a dated portfolio, and I checked every result by hand.</p>
+</div>
+
 <div class="section-cmd" role="heading" aria-level="2">$ ls projects/ --personal</div>
 
 <div class="project">
+  <a class="shot" href="img/frameseam.jpg" target="_blank" rel="noopener"><img src="img/frameseam-thumb.jpg" alt="FrameSeam editor with clips on the timeline" loading="lazy"></a>
   <div class="title" role="heading" aria-level="3">FrameSeam (video cutter)</div>
   <div class="meta">2026 · Electron, ffmpeg, AI coding assistant · <a class="inline-link" href="https://github.com/reepadam/frameseam" target="_blank" rel="noopener">GitHub</a></div>
   <p><span class="lbl">Problem:</span> I cut long recordings down regularly. Clipchamp's layout was right for the job, but its exports top out at 30 fps, it kept pushing projects into OneDrive, and its cache had quietly taken 35 GB of my drive.</p>
-  <p><span class="lbl">Built:</span> A Clipchamp-style cutter built around one rule: the export is the original video, 1:1, with only the deleted parts removed. Resolution, frame rate (60 and 120 fps included), orientation and HDR color carry through untouched. Cuts land on the exact frame, clips can be joined, and encoding runs on the GPU (NVIDIA, Intel or AMD, detected automatically) with a picker for PCs that have more than one card. A lossless mode skips re-encoding entirely. Everything runs locally.</p>
+  <p><span class="lbl">Built:</span> A Clipchamp-style cutter whose exports keep the original resolution, frame rate (60 and 120 fps included), orientation and HDR color. Two export modes: <em>exact cuts</em> land on the chosen frame and re-encode at near-original quality on the GPU (NVIDIA, Intel or AMD, detected automatically, with a picker for PCs that have more than one card); <em>fast and lossless</em> skips re-encoding entirely and finishes in seconds, with cuts snapping to the nearest keyframe. Everything runs locally.</p>
   <p><span class="lbl">Result:</span> The idea, the interface brief and the testing are mine; an AI coding assistant wrote the code to that brief. It's open source on GitHub.</p>
 </div>
 
 <div class="project">
+  <a class="shot" href="img/ocr.jpg" target="_blank" rel="noopener"><img src="img/ocr-thumb.jpg" alt="OCR + LLM Document Pipeline home screen" loading="lazy"></a>
   <div class="title" role="heading" aria-level="3">OCR + LLM Document Pipeline (proof of concept)</div>
   <div class="meta">Google Cloud Vision, LLM extraction, Streamlit · <a class="inline-link" href="https://document-pipeline-demo.streamlit.app/" target="_blank" rel="noopener">live demo</a></div>
   <p>Built to show that an LLM can handle the judgment calls in document processing (messy scans, handwriting, odd layouts, fields that need a second look) that keep small businesses doing data entry by hand even after they move to an ERP. Four modules: vendor bills and invoices, receipts and expenses, handwritten forms and notes, and a universal text extractor for any file type.</p>
 </div>
 
 <div class="project">
+  <a class="shot" href="img/specials.jpg" target="_blank" rel="noopener"><img src="img/specials-thumb.jpg" alt="Pittsburgh Food Specials map and deal list" loading="lazy"></a>
   <div class="title" role="heading" aria-level="3">Pittsburgh Food Specials (live proof of concept)</div>
   <div class="meta">2026 · AI agents, Airtable, Gmail drafts, Cloudflare · <a class="inline-link" href="/specials/">live site</a></div>
-  <p>A working app for finding weekly recurring restaurant deals around Pittsburgh, open on deals happening right now near you, closest first. Behind it, a research agent runs every morning: it investigates restaurants ZIP code by ZIP code, records each deal with its source and a confidence level, and drafts friendly emails to restaurants it can't confirm online. I send every email myself. Visitors can send in a screenshot of a chalkboard or menu, and the next run checks it. The site republishes itself from Airtable daily. More than 200 restaurants and about 100 deals so far.</p>
+  <p>A working app for finding weekly recurring restaurant deals around Pittsburgh, opening on deals happening right now near you, closest first. Behind it, a research agent runs every morning: it investigates restaurants ZIP code by ZIP code, records each deal with its source and a confidence level, and drafts friendly emails to restaurants it can't confirm online. I send every email myself. Visitors can send in a screenshot of a chalkboard or menu, and the next run checks it. Only deals that pass review go live, and the site republishes itself daily. More than 200 restaurants researched so far.</p>
 </div>
 
 <div class="project">
@@ -444,12 +447,12 @@ footer a:hover { color: var(--accent); border-color: var(--accent); }
   <p>My main PC kept shutting off while I was away. The logs pointed to the power button, almost certainly pressed by my cat. I disabled the button, and the fix grew into a daily health system. A monitor logs temperatures, fans and load every 30 seconds and runs a custom fan curve on the main graphics card. Every morning an agent reviews crashes, hardware errors, disk health, updates and remote access, fixes what it can from a fixed list of safe actions, and shows me a green, yellow or red summary on login. Anything that needs a decision stays with me, with a recommendation attached.</p>
 </div>
 
-<div class="project">
-  <div class="title" role="heading" aria-level="3">John Henry Custom Guitars Website</div>
-  <div class="meta">2026 · freelance build for a local guitar maker · GitHub, Cloudflare, Python · <a class="inline-link" href="https://johnhenrycustomguitars.com/" target="_blank" rel="noopener">live site</a></div>
-  <p>Built and launched a 25-page site with no hosting cost. John isn't an IT person; he's comfortable on his phone in social media apps. So I gave him a content editor that works like those apps, letting him update his own site without paying a web admin. I also used an LLM-built Python script to sort years of scattered build photos into a dated portfolio, and I checked every result by hand.</p>
-</div>
+<div class="section-cmd" role="heading" aria-level="2">$ cat how-i-build.txt</div>
 
+<div class="project">
+  <p>I'm a systems person who builds working tools by directing AI coding assistants. I define the problem, describe what the tool must do, test the results against real data, and fix it until it's right. I can explain what each tool does and why, but I don't write code by hand. Twenty years in desktop support, telecom, networking, and security systems taught me what systems can do and how they fit together; AI gave me the way to build the fixes I could always see.</p>
+  <p>I can't do the same task more than a few times before I start looking for a way to automate it. Modern tools can take most rote work off a person's plate, so I build those fixes wherever I land. Naturally, my own job search runs on a daily AI agent that turns it into a low-friction loop: it surfaces high-value leads, filters out the noise, and finds the fastest way to apply.</p>
+</div>
 
 <footer>
   adam@reep:~$ exit · last updated 2026.11.09 · <a href="/CV">resume</a>
