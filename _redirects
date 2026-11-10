@@ -6,3 +6,5 @@
 /ocr_llm_demo  https://document-pipeline-demo.streamlit.app/  301
 /demo          https://document-pipeline-demo.streamlit.app/  301
 /cv            /CV            301
+/pipeline       https://document-pipeline-demo.streamlit.app/  302
+/pipeline/      https://document-pipeline-demo.streamlit.app/  302
