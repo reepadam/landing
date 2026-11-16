@@ -164,13 +164,31 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
     return Number.isInteger(v) ? `$${v}` : `$${v.toFixed(2)}`;
   }
 
+  // Links to the bar's own posts, e.g. "Instagram + Facebook" with each name linking to its post.
+  function postLinks(posts) {
+    const parts = [];
+    for (const [site, url] of Object.entries(posts || {})) {
+      if (parts.length) parts.push(" + ");
+      parts.push(safeUrl(url) ? el("a", { href: url, target: "_blank", rel: "noopener" }, site) : site);
+    }
+    return parts;
+  }
+
   function badge(s) {
     const checked = s.checked ? ` · checked ${s.checked}` : "";
     if (s.by === "Restaurant") return el("span", { class: "badge ok" }, "Confirmed by the restaurant" + checked);
     if (s.by === "Crowd") return el("span", { class: "badge info" }, "Sent in by a reader" + checked);
+    if (s.by === "Social") {
+      // From the bar's own Instagram/Facebook posts. The same deal on both sites counts as confirmed.
+      const posted = s.srcDate ? ` · last posted ${s.srcDate}` : "";
+      if (s.priceCheck) return el("span", { class: "badge warn" }, `Their posts disagree: ${s.priceCheck}` + posted);
+      if (s.confirmed) return el("span", { class: "badge ok" }, "Confirmed on ", postLinks(s.posts), posted);
+      return el("span", { class: "badge info" }, "From their ", postLinks(s.posts), posted);
+    }
     if (!hasPrice(s)) return el("span", { class: "badge warn" }, "Price not listed" + checked);
     const src = safeUrl(s.src);
-    return el("span", { class: "badge info" }, src ? el("a", { href: src, target: "_blank", rel: "noopener" }, "Found online") : "Found online", checked);
+    const also = s.also && Object.keys(s.also).length ? [" · also on their ", ...postLinks(s.also)] : null;
+    return el("span", { class: "badge info" }, src ? el("a", { href: src, target: "_blank", rel: "noopener" }, "Found online") : "Found online", checked, also);
   }
 
   // Only food deals are listed. Trivia isn't listed on its own; it's called out on a deal it overlaps.
@@ -244,6 +262,7 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
             says ? el("div", { class: "says" }, says) : null,
             details.length ? el("div", { class: "detail" }, details.join(" · ")) : null,
             s.days.length > 1 && s.days.length < 7 ? el("div", { class: "detail" }, s.days.join(", ")) : null,
+            s.socialSays ? el("div", { class: "detail" }, s.socialSays) : null,
             badge(s));
         }),
         el("div", { class: "actions" },
@@ -346,7 +365,7 @@ footer { font-size: 0.8rem; color: var(--muted); text-align: center; padding: 0 
       state.data = data;
       const food = data.restaurants.map((r) => r.specials.filter((s) => s.cat === "Food special").length);
       const places = food.filter(Boolean).length, deals = food.reduce((a, b) => a + b, 0);
-      $("foot").textContent = `Deals change without notice, so call ahead before you go. Listings come from restaurant websites, restaurants themselves and readers' tips; we're not affiliated with any restaurant listed. ${deals} deals at ${places} places, updated ${data.updated}.`;
+      $("foot").textContent = `Deals change without notice, so call ahead before you go. Listings come from restaurant websites, bars' own Instagram and Facebook posts, restaurants themselves and readers' tips; we're not affiliated with any restaurant listed. ${deals} deals at ${places} places, updated ${data.updated}.`;
       render();
     })
     .catch(() => { $("count").textContent = "Couldn't load the specials. Try again in a minute."; });
